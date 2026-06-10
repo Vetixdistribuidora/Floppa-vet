@@ -112,6 +112,11 @@ export default function ConfiguracionPage() {
     if (!org) return
     setGuardandoModulos(true)
     await supabase.from("organizaciones").update({ modulos: modulosSel, rubro: rubroSel }).eq("id", org.id)
+    // El plan/precio sigue al rubro
+    const { data: plan } = await supabase.from("planes").select("id").eq("rubro", rubroSel).maybeSingle()
+    if (plan && usuario?.email) {
+      await supabase.from("suscripciones").update({ plan_id: plan.id }).eq("email", usuario.email)
+    }
     setGuardandoModulos(false)
     setModulosGuardados(true)
     setTimeout(() => window.location.reload(), 800) // recargar para refrescar el menú lateral
