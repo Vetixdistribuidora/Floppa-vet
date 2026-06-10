@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase"
 import { setEmpresa } from "@/lib/empresa"
+import { MODULOS_TOGGLEABLES, PRESETS_RUBRO, RUBROS, modulosActivos } from "@/lib/modulos"
 
 function fmt(n: number) {
   return "$" + Math.round(n).toLocaleString("es-AR")
@@ -26,6 +27,10 @@ export default function ConfiguracionPage() {
   const [empresaForm, setEmpresaForm] = useState({ nombre: "", direccion: "", telefono: "", email: "" })
   const [guardandoEmpresa, setGuardandoEmpresa] = useState(false)
   const [empresaGuardada, setEmpresaGuardada] = useState(false)
+  const [modulosSel, setModulosSel] = useState<string[]>([])
+  const [rubroSel, setRubroSel] = useState("distribuidora")
+  const [guardandoModulos, setGuardandoModulos] = useState(false)
+  const [modulosGuardados, setModulosGuardados] = useState(false)
 
   useEffect(() => { cargar() }, [])
 
@@ -73,6 +78,8 @@ export default function ConfiguracionPage() {
         telefono: orgData.telefono || "",
         email: orgData.email || "",
       })
+      setModulosSel(modulosActivos(orgData.modulos))
+      setRubroSel(orgData.rubro || "distribuidora")
     }
     setLoading(false)
   }
@@ -92,6 +99,22 @@ export default function ConfiguracionPage() {
     setGuardandoEmpresa(false)
     setEmpresaGuardada(true)
     setTimeout(() => setEmpresaGuardada(false), 2500)
+  }
+
+  function toggleModulo(key: string) {
+    setModulosSel(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key])
+  }
+  function aplicarRubro(rubro: string) {
+    setRubroSel(rubro)
+    if (PRESETS_RUBRO[rubro]) setModulosSel(PRESETS_RUBRO[rubro])
+  }
+  async function guardarModulos() {
+    if (!org) return
+    setGuardandoModulos(true)
+    await supabase.from("organizaciones").update({ modulos: modulosSel, rubro: rubroSel }).eq("id", org.id)
+    setGuardandoModulos(false)
+    setModulosGuardados(true)
+    setTimeout(() => window.location.reload(), 800) // recargar para refrescar el menú lateral
   }
 
   async function iniciarSuscripcion() {
@@ -301,6 +324,60 @@ export default function ConfiguracionPage() {
             👑 Cuenta owner — acceso ilimitado sin costo.
           </div>
         )}
+      </div>
+
+      {/* ── Módulos y rubro ──────────────────────────────────────────────────── */}
+      <div style={{
+        background: "white", border: "1px solid #e2e8f0",
+        borderRadius: 20, padding: "24px 28px", marginBottom: 20,
+        boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
+      }}>
+        <h2 style={{ margin: "0 0 4px", color: "#0f172a", fontSize: 17, fontWeight: 700 }}>🧩 Módulos y rubro</h2>
+        <p style={{ margin: "0 0 18px", color: "#64748b", fontSize: 13 }}>
+          Elegí qué secciones aparecen en el menú. Podés partir de un preset según tu rubro.
+        </p>
+
+        <label style={{ display: "block", fontSize: 11, color: "#64748b", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 6 }}>
+          Rubro
+        </label>
+        <select
+          value={rubroSel}
+          onChange={e => aplicarRubro(e.target.value)}
+          style={{ width: "100%", padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 14, color: "#0f172a", background: "white", marginBottom: 18, boxSizing: "border-box" }}>
+          {RUBROS.map(r => <option key={r.key} value={r.key}>{r.label}</option>)}
+        </select>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(170px, 1fr))", gap: 10, marginBottom: 18 }}>
+          {MODULOS_TOGGLEABLES.map(m => {
+            const on = modulosSel.includes(m.key)
+            return (
+              <button
+                key={m.key} type="button" onClick={() => toggleModulo(m.key)}
+                style={{
+                  display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, padding: "10px 12px",
+                  border: `1px solid ${on ? "#8a9a5b" : "#e2e8f0"}`, background: on ? "#f4f2e6" : "white",
+                  borderRadius: 10, cursor: "pointer", fontSize: 13, fontWeight: 600, color: "#0f172a",
+                }}>
+                <span>{m.label}</span>
+                <span style={{ width: 34, height: 20, borderRadius: 20, background: on ? "#6f7d49" : "#cbd5e1", position: "relative", flexShrink: 0, transition: "background .2s" }}>
+                  <span style={{ position: "absolute", top: 2, left: on ? 16 : 2, width: 16, height: 16, borderRadius: "50%", background: "white", transition: "left .2s" }} />
+                </span>
+              </button>
+            )
+          })}
+        </div>
+
+        <button
+          onClick={guardarModulos}
+          disabled={guardandoModulos}
+          style={{
+            padding: "11px 20px",
+            background: modulosGuardados ? "#16a34a" : "#0f172a",
+            border: "none", borderRadius: 9, color: "white",
+            fontSize: 13, fontWeight: 700, cursor: guardandoModulos ? "not-allowed" : "pointer",
+          }}>
+          {guardandoModulos ? "Guardando..." : modulosGuardados ? "✓ Guardado — actualizando menú..." : "Guardar módulos"}
+        </button>
       </div>
 
       {/* ── Datos para comprobantes ──────────────────────────────────────────── */}

@@ -8,11 +8,13 @@ import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 import { setEmpresa } from "@/lib/empresa"
 import Logo from "@/components/Logo"
+import { MODULOS, modulosActivos } from "@/lib/modulos"
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const [usuario, setUsuario] = useState<any>(null)
   const [orgNombre, setOrgNombre] = useState<string>("Floppa")
+  const [modulos, setModulos] = useState<string[] | null>(null)
   const [sidebarAbierto, setSidebarAbierto] = useState(false)
   const router = useRouter()
   // Refs para acceder siempre al valor actualizado dentro del callback (evitar stale closure)
@@ -39,9 +41,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         if (usuarioIdRef.current === session.user.id) return
         usuarioIdRef.current = session.user.id
         setUsuario(session.user)
-        const { data: org } = await supabase.from("organizaciones").select("nombre, direccion, telefono, email, logo_url").maybeSingle()
+        const { data: org } = await supabase.from("organizaciones").select("nombre, direccion, telefono, email, logo_url, modulos").maybeSingle()
         if (org) {
-          setOrgNombre(org.nombre); setEmpresa(org)
+          setOrgNombre(org.nombre); setEmpresa(org); setModulos(org.modulos)
         } else if (!RUTAS_PUBLICAS.includes(pathnameRef.current)) {
           // Usuario autenticado pero sin organización todavía → onboarding
           router.replace("/onboarding")
@@ -234,102 +236,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         {/* NAV */}
         <nav>
-          <Link href="/" style={getItemStyle("/")} onClick={() => setSidebarAbierto(false)}>
-            <svg style={iconStyle("#8a9a5b", pathname === "/")} fill="none" strokeWidth="2" viewBox="0 0 24 24">
-              <path d="M3 10l9-7 9 7" /><path d="M9 21V12h6v9" />
-            </svg>
-            Inicio
-          </Link>
-          <Link href="/productos" style={getItemStyle("/productos")} onClick={() => setSidebarAbierto(false)}>
-            <svg style={iconStyle("#34d399", pathname.startsWith("/productos"))} fill="none" strokeWidth="2" viewBox="0 0 24 24">
-              <path d="M20 7l-8-4-8 4 8 4 8-4z" /><path d="M4 7v10l8 4 8-4V7" />
-            </svg>
-            Productos
-          </Link>
-          <Link href="/clientes" style={getItemStyle("/clientes")} onClick={() => setSidebarAbierto(false)}>
-            <svg style={iconStyle("#a78bfa", pathname.startsWith("/clientes"))} fill="none" strokeWidth="2" viewBox="0 0 24 24">
-              <circle cx="12" cy="7" r="4" /><path d="M5.5 21a6.5 6.5 0 0 1 13 0" />
-            </svg>
-            Clientes
-          </Link>
-          <Link href="/ventas" style={getItemStyle("/ventas")} onClick={() => setSidebarAbierto(false)}>
-            <svg style={iconStyle("#fbbf24", pathname.startsWith("/ventas"))} fill="none" strokeWidth="2" viewBox="0 0 24 24">
-              <path d="M3 3h2l.4 2M7 13h10l4-8H5.4" /><circle cx="9" cy="19" r="1" /><circle cx="17" cy="19" r="1" />
-            </svg>
-            Ventas
-          </Link>
-          <Link href="/proveedores" style={getItemStyle("/proveedores")} onClick={() => setSidebarAbierto(false)}>
-            <svg style={iconStyle("#f87171", pathname.startsWith("/proveedores"))} fill="none" strokeWidth="2" viewBox="0 0 24 24">
-              <path d="M3 7h13v10H3z" /><path d="M16 10h4l1 2v5h-5z" />
-              <circle cx="7.5" cy="17.5" r="1.5" /><circle cx="17.5" cy="17.5" r="1.5" />
-            </svg>
-            Proveedores
-          </Link>
-          <Link href="/compras" style={getItemStyle("/compras")} onClick={() => setSidebarAbierto(false)}>
-            <svg style={iconStyle("#fb923c", pathname.startsWith("/compras"))} fill="none" strokeWidth="2" viewBox="0 0 24 24">
-              <path d="M6 6h15l-1.5 9h-13z" /><path d="M6 6L5 3H2" />
-              <circle cx="9" cy="20" r="1" /><circle cx="18" cy="20" r="1" />
-            </svg>
-            Compras
-          </Link>
-          <Link href="/cuentas" style={getItemStyle("/cuentas")} onClick={() => setSidebarAbierto(false)}>
-            <svg style={iconStyle("#22c55e", pathname.startsWith("/cuentas"))} fill="none" strokeWidth="2" viewBox="0 0 24 24">
-              <path d="M6 2h9l5 5v15a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" />
-              <path d="M14 2v6h6" />
-            </svg>
-            Cuenta Corriente
-          </Link>
-          <Link href="/caja" style={getItemStyle("/caja")} onClick={() => setSidebarAbierto(false)}>
-            <svg style={iconStyle("#10b981", pathname.startsWith("/caja"))} fill="none" strokeWidth="2" viewBox="0 0 24 24">
-              <rect x="2" y="6" width="20" height="12" rx="2" />
-              <circle cx="12" cy="12" r="2.5" />
-              <path d="M6 10v4M18 10v4" />
-            </svg>
-            Caja
-          </Link>
-          <Link href="/reportes" style={getItemStyle("/reportes")} onClick={() => setSidebarAbierto(false)}>
-            <svg style={iconStyle("#a78bfa", pathname.startsWith("/reportes"))} fill="none" strokeWidth="2" viewBox="0 0 24 24">
-              <path d="M18 20V10M12 20V4M6 20v-6" />
-            </svg>
-            Reportes
-          </Link>
-          <Link href="/deudores" style={getItemStyle("/deudores")} onClick={() => setSidebarAbierto(false)}>
-            <svg style={iconStyle("#f87171", pathname.startsWith("/deudores"))} fill="none" strokeWidth="2" viewBox="0 0 24 24">
-              <circle cx="12" cy="7" r="4" />
-              <path d="M5.5 21a6.5 6.5 0 0 1 13 0" />
-              <line x1="17" y1="3" x2="21" y2="7" />
-              <line x1="21" y1="3" x2="17" y2="7" />
-            </svg>
-            Deudores
-          </Link>
-          <Link href="/tienda-online" style={getItemStyle("/tienda-online")} onClick={() => setSidebarAbierto(false)}>
-            <svg style={iconStyle("#f472b6", pathname.startsWith("/tienda-online"))} fill="none" strokeWidth="2" viewBox="0 0 24 24">
-              <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
-            </svg>
-            Tienda Online
-          </Link>
-          <Link href="/pedidos" style={getItemStyle("/pedidos")} onClick={() => setSidebarAbierto(false)}>
-            <svg style={iconStyle("#8a9a5b", pathname.startsWith("/pedidos"))} fill="none" strokeWidth="2" viewBox="0 0 24 24">
-              <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
-              <rect x="9" y="3" width="6" height="4" rx="1" />
-              <path d="M9 12h6M9 16h4" />
-            </svg>
-            Pedidos
-          </Link>
-          <Link href="/cheques" style={getItemStyle("/cheques")} onClick={() => setSidebarAbierto(false)}>
-            <svg style={iconStyle("#34d399", pathname.startsWith("/cheques"))} fill="none" strokeWidth="2" viewBox="0 0 24 24">
-              <rect x="2" y="5" width="20" height="14" rx="2" />
-              <path d="M2 10h20" />
-              <path d="M6 15h4M14 15h2" />
-            </svg>
-            Cheques
-          </Link>
-          <Link href="/mermas" style={getItemStyle("/mermas")} onClick={() => setSidebarAbierto(false)}>
-            <svg style={iconStyle("#f87171", pathname.startsWith("/mermas"))} fill="none" strokeWidth="2" viewBox="0 0 24 24">
-              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-            </svg>
-            Mermas
-          </Link>
+          {MODULOS.filter(m => m.core || modulosActivos(modulos).includes(m.key)).map(m => {
+            const active = m.path === "/" ? pathname === "/" : pathname.startsWith(m.path)
+            return (
+              <Link key={m.key} href={m.path} style={getItemStyle(m.path)} onClick={() => setSidebarAbierto(false)}>
+                <svg style={iconStyle(m.color, active)} fill="none" strokeWidth="2" viewBox="0 0 24 24">{m.icon}</svg>
+                {m.label}
+              </Link>
+            )
+          })}
           <Link href="/configuracion" style={getItemStyle("/configuracion")} onClick={() => setSidebarAbierto(false)}>
             <svg style={iconStyle("#94a3b8", pathname.startsWith("/configuracion"))} fill="none" strokeWidth="2" viewBox="0 0 24 24">
               <circle cx="12" cy="12" r="3" />
