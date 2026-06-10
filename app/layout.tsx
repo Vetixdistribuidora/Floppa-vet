@@ -7,6 +7,7 @@ import { useEffect, useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 import { setEmpresa } from "@/lib/empresa"
+import Logo from "@/components/Logo"
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
@@ -72,7 +73,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       transition: "all 0.2s ease",
       background: active ? "#1f2937" : "transparent",
       color: active ? "white" : "#9ca3af",
-      borderLeft: active ? "3px solid #3b82f6" : "3px solid transparent",
+      borderLeft: active ? "3px solid #8a9a5b" : "3px solid transparent",
     }
   }
 
@@ -198,7 +199,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     return (
       <html lang="es">
         <head>
-          <meta name="theme-color" content="#1e40af" />
+          <meta name="theme-color" content="#647a3e" />
           <link rel="manifest" href="/manifest.webmanifest" />
         </head>
         <body>
@@ -222,16 +223,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <div style={{ padding: "20px", flex: 1, overflowY: "auto", minHeight: 0 }}>
         {/* LOGO */}
         <div style={{ marginBottom: "28px", display: "flex", alignItems: "center", gap: "12px" }}>
-          <div style={{
-            width: "38px", height: "38px", borderRadius: "10px",
-            background: "linear-gradient(145deg, #1e40af, #3b82f6)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            flexShrink: 0, boxShadow: "0 4px 14px rgba(59,130,246,0.4)",
-          }}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-              <polyline points="3,5 9,19 12,13 15,19 21,5" stroke="white" strokeWidth="2.2" strokeLinejoin="round" strokeLinecap="round" fill="none" />
-              <circle cx="12" cy="4" r="1.3" fill="#93c5fd" />
-            </svg>
+          <div style={{ flexShrink: 0, filter: "drop-shadow(0 4px 12px rgba(80,96,55,0.4))" }}>
+            <Logo size={40} />
           </div>
           <div style={{ overflow: "hidden" }}>
             <div style={{ fontWeight: "800", fontSize: "15px", letterSpacing: "1px", color: "white", lineHeight: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 150 }}>{orgNombre}</div>
@@ -359,7 +352,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <div style={{ borderTop: "1px solid #1f2937", padding: "14px 16px", display: "flex", alignItems: "center", gap: "10px" }}>
         <div style={{
           width: "34px", height: "34px", borderRadius: "50%",
-          background: "linear-gradient(135deg, #3b82f6, #6366f1)",
+          background: "linear-gradient(135deg, #6f7d49, #4b5a2c)",
           display: "flex", alignItems: "center", justifyContent: "center",
           fontSize: "13px", fontWeight: "700", color: "white", flexShrink: 0,
         }}>
@@ -385,7 +378,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="es">
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="theme-color" content="#1e40af" />
+        <meta name="theme-color" content="#647a3e" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -455,9 +448,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
               <div style={{
                 width: "36px", height: "36px", borderRadius: "10px",
-                background: "linear-gradient(135deg, #1e40af, #3b82f6)",
+                background: "linear-gradient(135deg, #4b5a2c, #6f7d49)",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: "16px", boxShadow: "0 2px 8px rgba(59,130,246,0.3)"
+                fontSize: "16px", boxShadow: "0 2px 8px rgba(80,96,55,0.35)"
               }}>
                 {getPageIcon()}
               </div>
@@ -474,7 +467,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 onClick={() => window.location.reload()}
                 title="Actualizar app"
                 style={{
-                  background: hayActualizacion ? "linear-gradient(135deg,#1e40af,#3b82f6)" : "none",
+                  background: hayActualizacion ? "linear-gradient(135deg,#4b5a2c,#6f7d49)" : "none",
                   border: hayActualizacion ? "none" : "1px solid #e2e8f0",
                   borderRadius: "8px",
                   padding: hayActualizacion ? "0 12px" : "0",

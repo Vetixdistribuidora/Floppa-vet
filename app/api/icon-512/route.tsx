@@ -9,40 +9,20 @@ export async function GET() {
         style={{
           width: 512,
           height: 512,
-          background: "linear-gradient(145deg, #0c0f1a, #111827)",
+          background: "#ddcca8",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
         }}
       >
-        <div
-          style={{
-            width: 364,
-            height: 364,
-            background: "linear-gradient(145deg, #1e40af, #3b82f6)",
-            borderRadius: 76,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <svg
-            width="224"
-            height="224"
-            viewBox="0 0 24 24"
-            fill="none"
-            style={{ display: "flex" }}
-          >
-            <polyline
-              points="3,5 9,19 12,13 15,19 21,5"
-              stroke="white"
-              stroke-width="2.2"
-              stroke-linejoin="round"
-              stroke-linecap="round"
-            />
-            <circle cx="12" cy="4" r="1.3" fill="#93c5fd" />
-          </svg>
-        </div>
+        <svg width="368" height="368" viewBox="0 0 64 64" style={{ display: "flex" }}>
+          <path d="M32 14 47 22 32 30 17 22Z" fill="#9aa86a" />
+          <path d="M17 22 32 30 32 48 17 40Z" fill="#6f7d49" />
+          <path d="M47 22 32 30 32 48 47 40Z" fill="#506037" />
+          <path d="M32 14 47 22 47 40 32 48 17 40 17 22Z" fill="none" stroke="#ffffff" strokeWidth="1.4" strokeLinejoin="round" />
+          <path d="M17 22 32 30 47 22" fill="none" stroke="#ffffff" strokeWidth="1.4" strokeLinejoin="round" />
+          <path d="M32 30 32 48" fill="none" stroke="#ffffff" strokeWidth="1.4" />
+        </svg>
       </div>
     ),
     { width: 512, height: 512 }

@@ -7,8 +7,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Sistema de gestión para distribuidoras",
     start_url: "/",
     display: "standalone",
-    background_color: "#0c0f1a",
-    theme_color: "#1e40af",
+    background_color: "#14130d",
+    theme_color: "#647a3e",
     orientation: "portrait-primary",
     icons: [
       {

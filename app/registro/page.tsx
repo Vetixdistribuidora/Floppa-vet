@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
+import Logo from "@/components/Logo"
 
 export default function RegistroPage() {
   const [nombreNegocio, setNombreNegocio] = useState("")
@@ -61,11 +62,11 @@ export default function RegistroPage() {
     <>
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: #0c0f1a; }
+        body { background: #14130d; }
       `}</style>
       <div style={{
         minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center",
-        background: "#0c0f1a", padding: 24,
+        background: "#14130d", padding: 24,
       }}>
         <div style={{
           background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)",
@@ -85,10 +86,10 @@ export default function RegistroPage() {
             onClick={() => router.push("/login")}
             style={{
               width: "100%", padding: "13px",
-              background: "linear-gradient(135deg, #2563eb, #3b82f6)",
+              background: "linear-gradient(135deg, #4b5a2c, #6f7d49)",
               border: "none", borderRadius: 10, color: "white",
               fontSize: 14, fontWeight: 700, cursor: "pointer",
-              boxShadow: "0 4px 16px rgba(59,130,246,0.35)",
+              boxShadow: "0 4px 16px rgba(80,96,55,0.4)",
             }}>
             Ir al login
           </button>
@@ -102,10 +103,10 @@ export default function RegistroPage() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: #0c0f1a; }
+        body { background: #14130d; }
         .reg-wrapper {
           min-height: 100vh; display: flex; align-items: center; justify-content: center;
-          background: #0c0f1a; font-family: 'DM Sans', sans-serif; padding: 24px;
+          background: #14130d; font-family: 'DM Sans', sans-serif; padding: 24px;
         }
         .reg-card {
           background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
@@ -123,13 +124,13 @@ export default function RegistroPage() {
           border-radius: 9px; color: white; font-size: 14px;
           font-family: 'DM Sans', sans-serif; outline: none; transition: border-color 0.2s;
         }
-        .field input:focus { border-color: #3b82f6; background: rgba(59,130,246,0.06); }
+        .field input:focus { border-color: #8a9a5b; background: rgba(138,154,91,0.08); }
         .field input::placeholder { color: #4b5563; }
         .btn-reg {
-          width: 100%; padding: 13px; background: linear-gradient(135deg, #2563eb, #3b82f6);
+          width: 100%; padding: 13px; background: linear-gradient(135deg, #4b5a2c, #6f7d49);
           border: none; border-radius: 10px; color: white; font-size: 14px; font-weight: 700;
           font-family: 'DM Sans', sans-serif; cursor: pointer; margin-top: 6px;
-          box-shadow: 0 4px 16px rgba(59,130,246,0.35); transition: opacity 0.2s;
+          box-shadow: 0 4px 16px rgba(80,96,55,0.4); transition: opacity 0.2s;
         }
         .btn-reg:disabled { opacity: 0.5; cursor: not-allowed; }
       `}</style>
@@ -139,20 +140,13 @@ export default function RegistroPage() {
 
           {/* Logo */}
           <div style={{ textAlign: "center", marginBottom: 32 }}>
-            <div style={{
-              width: 52, height: 52, borderRadius: 14,
-              background: "linear-gradient(145deg, #1e40af, #3b82f6)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              margin: "0 auto 12px", boxShadow: "0 8px 24px rgba(59,130,246,0.4)",
-            }}>
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-                <polyline points="3,5 9,19 12,13 15,19 21,5" stroke="white" strokeWidth="2.2" strokeLinejoin="round" strokeLinecap="round" />
-              </svg>
+            <div style={{ display: "flex", justifyContent: "center", marginBottom: 12, filter: "drop-shadow(0 8px 20px rgba(80,96,55,0.45))" }}>
+              <Logo size={52} />
             </div>
             <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 22, letterSpacing: 3, color: "white" }}>
               FLOPPA
             </div>
-            <div style={{ fontSize: 11, color: "#3b82f6", letterSpacing: 2, fontWeight: 600, marginTop: 3, textTransform: "uppercase" }}>
+            <div style={{ fontSize: 11, color: "#8a9a5b", letterSpacing: 2, fontWeight: 600, marginTop: 3, textTransform: "uppercase" }}>
               Crear cuenta
             </div>
           </div>
@@ -214,7 +208,7 @@ export default function RegistroPage() {
 
           <div style={{ textAlign: "center", marginTop: 18, fontSize: 12, color: "#6b7280" }}>
             ¿Ya tenés cuenta?{" "}
-            <a href="/login" style={{ color: "#60a5fa", textDecoration: "none", fontWeight: 600 }}>
+            <a href="/login" style={{ color: "#9aa86a", textDecoration: "none", fontWeight: 600 }}>
               Iniciá sesión
             </a>
           </div>

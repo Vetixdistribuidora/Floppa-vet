@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
+import Logo from "@/components/Logo"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -40,7 +41,7 @@ export default function LoginPage() {
           display: flex;
           align-items: center;
           justify-content: center;
-          background: #0c0f1a;
+          background: #14130d;
           position: relative;
           overflow: hidden;
           font-family: 'DM Sans', sans-serif;
@@ -53,7 +54,7 @@ export default function LoginPage() {
           width: 600px;
           height: 600px;
           border-radius: 50%;
-          background: radial-gradient(circle, rgba(59,130,246,0.12) 0%, transparent 70%);
+          background: radial-gradient(circle, rgba(111,125,73,0.16) 0%, transparent 70%);
           top: -100px;
           left: -100px;
           pointer-events: none;
@@ -64,7 +65,7 @@ export default function LoginPage() {
           width: 400px;
           height: 400px;
           border-radius: 50%;
-          background: radial-gradient(circle, rgba(99,102,241,0.1) 0%, transparent 70%);
+          background: radial-gradient(circle, rgba(221,204,168,0.10) 0%, transparent 70%);
           bottom: -80px;
           right: -80px;
           pointer-events: none;
@@ -100,12 +101,10 @@ export default function LoginPage() {
         .logo-icon {
           width: 58px;
           height: 58px;
-          border-radius: 16px;
-          background: linear-gradient(145deg, #1e40af, #3b82f6);
           display: flex;
           align-items: center;
           justify-content: center;
-          box-shadow: 0 8px 24px rgba(59,130,246,0.45);
+          filter: drop-shadow(0 8px 20px rgba(80,96,55,0.45));
         }
 
         .logo-text {
@@ -124,7 +123,7 @@ export default function LoginPage() {
         .logo-text .sub {
           font-size: 10px;
           letter-spacing: 3px;
-          color: #3b82f6;
+          color: #9aa86a;
           font-weight: 600;
           margin-top: 4px;
           text-transform: uppercase;
@@ -166,8 +165,8 @@ export default function LoginPage() {
         }
 
         .field input:focus {
-          border-color: #3b82f6;
-          background: rgba(59,130,246,0.06);
+          border-color: #8a9a5b;
+          background: rgba(138,154,91,0.08);
         }
 
         .field input::placeholder {
@@ -188,7 +187,7 @@ export default function LoginPage() {
         .btn-login {
           width: 100%;
           padding: 13px;
-          background: linear-gradient(135deg, #2563eb, #3b82f6);
+          background: linear-gradient(135deg, #4b5a2c, #6f7d49);
           border: none;
           border-radius: 10px;
           color: white;
@@ -199,7 +198,7 @@ export default function LoginPage() {
           cursor: pointer;
           transition: opacity 0.2s, transform 0.15s;
           margin-top: 6px;
-          box-shadow: 0 4px 16px rgba(59,130,246,0.35);
+          box-shadow: 0 4px 16px rgba(80,96,55,0.4);
         }
 
         .btn-login:hover:not(:disabled) {
@@ -219,16 +218,7 @@ export default function LoginPage() {
           {/* LOGO */}
           <div className="logo-area">
             <div className="logo-icon">
-              <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
-                <polyline
-                  points="3,5 9,19 12,13 15,19 21,5"
-                  stroke="white"
-                  strokeWidth="2.2"
-                  strokeLinejoin="round"
-                  strokeLinecap="round"
-                />
-                <circle cx="12" cy="4" r="1.3" fill="#93c5fd" />
-              </svg>
+              <Logo size={58} />
             </div>
             <div className="logo-text">
               <div className="brand">FLOPPA</div>
