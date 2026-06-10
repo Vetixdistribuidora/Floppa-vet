@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 
@@ -9,6 +9,14 @@ export default function OnboardingPage() {
   const [nombre, setNombre] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Precargar el nombre del negocio que se ingresó en el registro
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      const n = data.user?.user_metadata?.nombre_negocio
+      if (n) setNombre(n)
+    })
+  }, [])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -25,6 +33,20 @@ export default function OnboardingPage() {
       setError("Error al crear la organización: " + rpcError.message)
       setLoading(false)
       return
+    }
+
+    // Crear la suscripción trial (15 días) — ya autenticado, la RLS lo permite
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user?.email) {
+      const venc = new Date(); venc.setDate(venc.getDate() + 15)
+      await supabase.from("suscripciones").upsert({
+        email: user.email,
+        nombre_negocio: nombre.trim(),
+        estado: "trial",
+        plan_id: 1,
+        fecha_inicio: new Date().toISOString().split("T")[0],
+        fecha_vencimiento: venc.toISOString().split("T")[0],
+      }, { onConflict: "email" })
     }
 
     router.replace("/")

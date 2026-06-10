@@ -41,18 +41,15 @@ export default function RegistroPage() {
         return
       }
 
-      // 2. Crear fila en suscripciones (trial 15 días)
-      const venc = new Date(); venc.setDate(venc.getDate() + 15)
-      await supabase.from("suscripciones").insert({
-        email: email.trim().toLowerCase(),
-        nombre_negocio: nombreNegocio.trim(),
-        estado: "trial",
-        plan_id: 1,
-        fecha_inicio: new Date().toISOString().split("T")[0],
-        fecha_vencimiento: venc.toISOString().split("T")[0],
-      })
-
-      setExito(true)
+      // Si el proyecto NO pide confirmación de email, ya hay sesión activa →
+      // mandamos directo al onboarding. Si la pide, mostramos "revisá tu email".
+      // (La suscripción trial y la organización se crean en el onboarding, ya
+      //  autenticado, para que la RLS lo permita.)
+      if (authData.session) {
+        router.replace("/onboarding")
+      } else {
+        setExito(true)
+      }
     } catch (e: any) {
       setError(e.message || "Error al registrarse")
     } finally {

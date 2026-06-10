@@ -41,8 +41,13 @@ function fetchConTimeout(input: RequestInfo | URL, init?: RequestInit): Promise<
     .finally(() => clearTimeout(timer))
 }
 
+// Tolerar que NEXT_PUBLIC_SUPABASE_URL venga con /rest/v1 o barra final
+// (error común al copiar la "API URL" del dashboard de Supabase).
+export const SUPABASE_URL = (process.env.NEXT_PUBLIC_SUPABASE_URL || "")
+  .trim().replace(/\/+$/, "").replace(/\/rest\/v1$/i, "")
+
 export const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  SUPABASE_URL,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
   { global: { fetch: fetchConTimeout } }
 )

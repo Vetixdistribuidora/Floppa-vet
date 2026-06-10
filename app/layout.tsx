@@ -38,8 +38,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         if (usuarioIdRef.current === session.user.id) return
         usuarioIdRef.current = session.user.id
         setUsuario(session.user)
-        const { data: org } = await supabase.from("organizaciones").select("nombre, direccion, telefono, email, logo_url").single()
-        if (org) { setOrgNombre(org.nombre); setEmpresa(org) }
+        const { data: org } = await supabase.from("organizaciones").select("nombre, direccion, telefono, email, logo_url").maybeSingle()
+        if (org) {
+          setOrgNombre(org.nombre); setEmpresa(org)
+        } else if (!RUTAS_PUBLICAS.includes(pathnameRef.current)) {
+          // Usuario autenticado pero sin organización todavía → onboarding
+          router.replace("/onboarding")
+        }
       }
     })
     return () => subscription.unsubscribe()
