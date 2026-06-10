@@ -380,9 +380,9 @@ export default function Clientes() {
           )}
         </p>
         <button className="clientes-header-btn" onClick={() => setModalNuevo(true)} style={{
-          background: "linear-gradient(135deg, #2563eb, #3b82f6)", color: "white",
+          background: "linear-gradient(135deg, #5b6b34, #6f7d49)", color: "white",
           border: "none", borderRadius: 10, padding: "10px 18px",
-          fontSize: 13, fontWeight: 700, cursor: "pointer", boxShadow: "0 2px 8px rgba(59,130,246,0.3)"
+          fontSize: 13, fontWeight: 700, cursor: "pointer", boxShadow: "0 2px 8px rgba(111,125,73,0.3)"
         }}>+ Nuevo cliente</button>
       </div>
 
@@ -411,7 +411,7 @@ export default function Clientes() {
                   width: 44, height: 44, borderRadius: "50%", flexShrink: 0,
                   background: deudasPorCliente[c.id]
                     ? "linear-gradient(135deg, #dc2626, #ef4444)"
-                    : "linear-gradient(135deg, #1e40af, #3b82f6)",
+                    : "linear-gradient(135deg, #4b5a2c, #6f7d49)",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   fontSize: 16, fontWeight: 800, color: "white"
                 }}>
@@ -435,7 +435,7 @@ export default function Clientes() {
               </div>
               <div className="clientes-card-acciones" style={{ display: "flex", gap: 8, flexShrink: 0 }}>
                 <button onClick={() => abrirHistorial(c)} style={{
-                  background: "linear-gradient(135deg, #2563eb, #3b82f6)", color: "white",
+                  background: "linear-gradient(135deg, #5b6b34, #6f7d49)", color: "white",
                   border: "none", borderRadius: 8, padding: "7px 14px", fontSize: 12, fontWeight: 700, cursor: "pointer"
                 }}>Historial</button>
                 <button onClick={() => setModalEditar({ ...c, porcentaje: String(c.porcentaje || "") })} style={{
@@ -513,7 +513,7 @@ export default function Clientes() {
             </div>
             <div style={{ display: "flex", gap: 10, marginTop: 24 }}>
               <button onClick={() => setModalEditar(null)} style={{ flex: 1, padding: "11px", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, color: "#9ca3af", fontSize: 13, cursor: "pointer", fontWeight: 600 }}>Cancelar</button>
-              <button onClick={guardarEdicion} disabled={guardando} style={{ flex: 1, padding: "11px", background: "linear-gradient(135deg, #2563eb, #3b82f6)", border: "none", borderRadius: 10, color: "white", fontSize: 13, fontWeight: 700, cursor: "pointer", opacity: guardando ? 0.5 : 1 }}>
+              <button onClick={guardarEdicion} disabled={guardando} style={{ flex: 1, padding: "11px", background: "linear-gradient(135deg, #5b6b34, #6f7d49)", border: "none", borderRadius: 10, color: "white", fontSize: 13, fontWeight: 700, cursor: "pointer", opacity: guardando ? 0.5 : 1 }}>
                 {guardando ? "Guardando..." : "Guardar cambios"}
               </button>
             </div>
@@ -571,8 +571,8 @@ export default function Clientes() {
                 <button key={t.key} onClick={() => setTabActiva(t.key)} style={{
                   padding: "14px 16px", border: "none", background: "none", cursor: "pointer",
                   fontSize: 13, fontWeight: 600,
-                  color: tabActiva === t.key ? "#3b82f6" : "#6b7280",
-                  borderBottom: tabActiva === t.key ? "2px solid #3b82f6" : "2px solid transparent",
+                  color: tabActiva === t.key ? "#6f7d49" : "#6b7280",
+                  borderBottom: tabActiva === t.key ? "2px solid #6f7d49" : "2px solid transparent",
                   marginBottom: -1, whiteSpace: "nowrap"
                 }}>{t.label}</button>
               ))}
@@ -609,7 +609,7 @@ export default function Clientes() {
                                 {p.nro_recibo && <span style={{ color: "#6b7280" }}> · {p.nro_recibo}</span>}
                                 {p.nota ? <span style={{ color: "#6b7280" }}> ({p.nota})</span> : ""}
                               </span>
-                              <button onClick={() => imprimirRecibo(p, v)} style={{ background: "rgba(59,130,246,0.15)", color: "#3b82f6", border: "none", borderRadius: 6, padding: "3px 10px", cursor: "pointer", fontSize: 11, fontWeight: 600, flexShrink: 0, marginLeft: 8 }}>🖨️ Recibo</button>
+                              <button onClick={() => imprimirRecibo(p, v)} style={{ background: "rgba(111,125,73,0.15)", color: "#6f7d49", border: "none", borderRadius: 6, padding: "3px 10px", cursor: "pointer", fontSize: 11, fontWeight: 600, flexShrink: 0, marginLeft: 8 }}>🖨️ Recibo</button>
                             </div>
                           ))}
                         </div>
@@ -623,7 +623,7 @@ export default function Clientes() {
                           🖨️ Recibo
                         </button>
                       )}
-                      <button onClick={() => reimprimirFactura(v)} style={{ marginTop: 10, marginLeft: v.estado === "cobrada" && (!v.pagos || v.pagos.length === 0) ? 6 : 0, background: "rgba(59,130,246,0.15)", color: "#3b82f6", border: "none", borderRadius: 7, padding: "5px 12px", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>
+                      <button onClick={() => reimprimirFactura(v)} style={{ marginTop: 10, marginLeft: v.estado === "cobrada" && (!v.pagos || v.pagos.length === 0) ? 6 : 0, background: "rgba(111,125,73,0.15)", color: "#6f7d49", border: "none", borderRadius: 7, padding: "5px 12px", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>
                         🖨️ Presupuesto
                       </button>
                     </div>
@@ -669,14 +669,14 @@ export default function Clientes() {
                             {v.pagos.map((p: any, i: number) => (
                               <div key={i} className="pago-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 12, padding: "4px 0", borderBottom: i < v.pagos.length - 1 ? "1px solid rgba(255,255,255,0.06)" : "none" }}>
                                 <span style={{ color: "#d1d5db", flex: 1, minWidth: 0 }}>{fechaCorta(p.fecha)} — <b style={{ color: "#4ade80" }}>{fmt(p.monto)}</b>{p.nota ? <span style={{ color: "#6b7280" }}> ({p.nota})</span> : ""}</span>
-                                <button onClick={() => imprimirRecibo(p, v)} style={{ background: "rgba(59,130,246,0.15)", color: "#3b82f6", border: "none", borderRadius: 6, padding: "3px 10px", cursor: "pointer", fontSize: 11, fontWeight: 600, flexShrink: 0, marginLeft: 8 }}>Recibo</button>
+                                <button onClick={() => imprimirRecibo(p, v)} style={{ background: "rgba(111,125,73,0.15)", color: "#6f7d49", border: "none", borderRadius: 6, padding: "3px 10px", cursor: "pointer", fontSize: 11, fontWeight: 600, flexShrink: 0, marginLeft: 8 }}>Recibo</button>
                               </div>
                             ))}
                           </div>
                         )}
                         <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
                           <button onClick={() => abrirPago(v)} style={{ flex: 1, padding: "9px", background: "linear-gradient(135deg, #16a34a, #22c55e)", border: "none", borderRadius: 8, color: "white", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>+ Registrar pago</button>
-                          <button onClick={() => reimprimirFactura(v)} style={{ padding: "9px 14px", background: "rgba(59,130,246,0.15)", border: "none", borderRadius: 8, color: "#3b82f6", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>🖨️</button>
+                          <button onClick={() => reimprimirFactura(v)} style={{ padding: "9px 14px", background: "rgba(111,125,73,0.15)", border: "none", borderRadius: 8, color: "#6f7d49", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>🖨️</button>
                         </div>
                       </div>
                     )
@@ -691,7 +691,7 @@ export default function Clientes() {
                       {v.pagos.map((p: any, i: number) => (
                         <div key={i} className="pago-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 12, padding: "3px 0", flexWrap: "wrap", gap: 4 }}>
                           <span style={{ color: "#9ca3af", flex: 1, minWidth: 0 }}>{fechaCorta(p.fecha)} — <b style={{ color: "#4ade80" }}>{fmt(p.monto)}</b>{p.nota ? <span> ({p.nota})</span> : ""}</span>
-                          <button onClick={() => imprimirRecibo(p, v)} style={{ background: "rgba(59,130,246,0.15)", color: "#3b82f6", border: "none", borderRadius: 6, padding: "3px 10px", cursor: "pointer", fontSize: 11, flexShrink: 0 }}>Recibo</button>
+                          <button onClick={() => imprimirRecibo(p, v)} style={{ background: "rgba(111,125,73,0.15)", color: "#6f7d49", border: "none", borderRadius: 6, padding: "3px 10px", cursor: "pointer", fontSize: 11, flexShrink: 0 }}>Recibo</button>
                         </div>
                       ))}
                     </div>
@@ -719,7 +719,7 @@ export default function Clientes() {
                 return (
                   <button key={pct} onClick={() => setMontoPago(String(val))} style={{
                     flex: 1, padding: "7px 0", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8,
-                    background: Number(montoPago) === val ? "#3b82f6" : "rgba(255,255,255,0.05)",
+                    background: Number(montoPago) === val ? "#6f7d49" : "rgba(255,255,255,0.05)",
                     color: Number(montoPago) === val ? "white" : "#9ca3af",
                     fontSize: 12, fontWeight: 600, cursor: "pointer"
                   }}>{pct}%</button>

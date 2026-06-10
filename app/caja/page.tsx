@@ -21,7 +21,7 @@ function fechaOrden(f: string | null | undefined): number {
 // Métodos de pago (ingresos) ─────────────────────────────────────────────────
 const METODOS: Record<string, { label: string; icon: string; color: string }> = {
   efectivo:       { label: "Efectivo",       icon: "💵", color: "#16a34a" },
-  transferencia:  { label: "Transferencia",  icon: "🏦", color: "#2563eb" },
+  transferencia:  { label: "Transferencia",  icon: "🏦", color: "#5b6b34" },
   cheque:         { label: "Cheque",         icon: "🧾", color: "#7c3aed" },
   echeq:          { label: "E-Cheq",         icon: "📲", color: "#0891b2" },
   tarjeta:        { label: "Tarjeta",        icon: "💳", color: "#ea580c" },
@@ -35,7 +35,7 @@ const CAT_EGRESO: Record<string, { label: string; icon: string; color: string; a
   proveedores:         { label: "Proveedores",        icon: "🚚", color: "#f59e0b", auto: true },
   retiro:              { label: "Retiros",            icon: "🏧", color: "#ef4444" },
   flete:               { label: "Fletes",             icon: "🚛", color: "#d97706" },
-  gasto_distribuidora: { label: "Gasto Distribuidora",icon: "🏢", color: "#0ea5e9" },
+  gasto_distribuidora: { label: "Gasto Distribuidora",icon: "🏢", color: "#6f7d49" },
   gasto_casa:          { label: "Gasto Casa",         icon: "🏠", color: "#a855f7" },
   gasto_camioneta:     { label: "Gasto Camioneta",    icon: "🚐", color: "#14b8a6" },
   otro_egreso:         { label: "Otros egresos",      icon: "📤", color: "#64748b" },
@@ -99,7 +99,7 @@ const selectClaro: React.CSSProperties = {
 const BLOQUES: { key: string; label: string; icon: string; color: string; modo: "ingreso" | "egreso" }[] = [
   { key: "ingresos",            label: "Ingresos",             icon: "💵", color: "#16a34a", modo: "ingreso" },
   { key: "proveedores",         label: "Pagos a proveedores",  icon: "🚚", color: "#f59e0b", modo: "egreso" },
-  { key: "gasto_distribuidora", label: "Gastos Distribuidora", icon: "🏢", color: "#0ea5e9", modo: "egreso" },
+  { key: "gasto_distribuidora", label: "Gastos Distribuidora", icon: "🏢", color: "#6f7d49", modo: "egreso" },
   { key: "gasto_casa",          label: "Gastos Casa",          icon: "🏠", color: "#a855f7", modo: "egreso" },
   { key: "gasto_camioneta",     label: "Gastos Camioneta",     icon: "🚐", color: "#14b8a6", modo: "egreso" },
   { key: "retiro",              label: "Retiros",              icon: "🏧", color: "#ef4444", modo: "egreso" },
@@ -579,10 +579,10 @@ export default function CajaPage() {
       <>
       {/* ── Cards de saldo ── */}
       <div className="caja-cards" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 22 }}>
-        <SaldoCard titulo="Saldo de apertura" valor={apertura} sub="Arrastre del mes anterior" color="#6366f1" icon="📥" />
+        <SaldoCard titulo="Saldo de apertura" valor={apertura} sub="Arrastre del mes anterior" color="#647a3e" icon="📥" />
         <SaldoCard titulo="Ingresos del mes" valor={ingresosMes} sub="Plata que entró" color="#16a34a" icon="💵" />
         <SaldoCard titulo="Egresos del mes" valor={egresosMes} sub="Plata que salió" color="#ef4444" icon="📤" />
-        <SaldoCard titulo="Saldo final" valor={cierre} sub="Pasa al mes siguiente" color={cierre >= 0 ? "#0ea5e9" : "#ef4444"} icon="🏦" destacado />
+        <SaldoCard titulo="Saldo final" valor={cierre} sub="Pasa al mes siguiente" color={cierre >= 0 ? "#6f7d49" : "#ef4444"} icon="🏦" destacado />
       </div>
 
       {/* ── Paneles ingresos / egresos ── */}
@@ -878,7 +878,7 @@ function Campo({ label, children }: { label: string; children: React.ReactNode }
 }
 
 const navBtn: React.CSSProperties = { width: 36, height: 36, borderRadius: 10, border: "1px solid #e2e8f0", background: "white", color: "#475569", fontSize: 14, cursor: "pointer", fontWeight: 700 }
-const btnPri: React.CSSProperties = { padding: "9px 16px", borderRadius: 10, border: "none", background: "linear-gradient(135deg, #1e40af, #3b82f6)", color: "white", fontSize: 13, fontWeight: 700, cursor: "pointer" }
+const btnPri: React.CSSProperties = { padding: "9px 16px", borderRadius: 10, border: "none", background: "linear-gradient(135deg, #4b5a2c, #6f7d49)", color: "white", fontSize: 13, fontWeight: 700, cursor: "pointer" }
 const btnSec: React.CSSProperties = { padding: "9px 14px", borderRadius: 10, border: "1px solid #e2e8f0", background: "white", color: "#475569", fontSize: 13, fontWeight: 600, cursor: "pointer" }
 const btnModalPri: React.CSSProperties = { flex: 2, padding: "11px", borderRadius: 10, border: "none", background: "linear-gradient(135deg, #16a34a, #22c55e)", color: "white", fontSize: 14, fontWeight: 700, cursor: "pointer" }
 const btnModalSec: React.CSSProperties = { flex: 1, padding: "11px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.15)", background: "rgba(255,255,255,0.05)", color: "#9ca3af", fontSize: 14, fontWeight: 600, cursor: "pointer" }

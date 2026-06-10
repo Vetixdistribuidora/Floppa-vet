@@ -32,7 +32,7 @@ const MOTIVOS: Record<string, { label: string; color: string; bg: string; border
   vencimiento: { label: "Vencimiento", color: "#b45309", bg: "#fef9c3", border: "#fde68a" },
   daño:        { label: "Daño",        color: "#9a3412", bg: "#ffedd5", border: "#fed7aa" },
   robo:        { label: "Robo",        color: "#7c3aed", bg: "#ede9fe", border: "#ddd6fe" },
-  otro:        { label: "Otro",        color: "#0369a1", bg: "#e0f2fe", border: "#bae6fd" },
+  otro:        { label: "Otro",        color: "#0369a1", bg: "#e9ecd6", border: "#bae6fd" },
 };
 
 const EMPTY_FORM = {
@@ -73,10 +73,10 @@ const labelStyle: React.CSSProperties = {
 };
 
 const btnPrimario: React.CSSProperties = {
-  background: "linear-gradient(135deg, #2563eb, #3b82f6)",
+  background: "linear-gradient(135deg, #5b6b34, #6f7d49)",
   color: "white", border: "none", borderRadius: 10,
   padding: "11px 22px", fontSize: 14, fontWeight: 700, cursor: "pointer",
-  boxShadow: "0 2px 8px rgba(59,130,246,0.3)",
+  boxShadow: "0 2px 8px rgba(111,125,73,0.3)",
 };
 
 const btnSecundario: React.CSSProperties = {
@@ -400,7 +400,7 @@ export default function MermasPage() {
           { icon: "📊", label: "Margen no ganado",     value: fmt(totales.perdidaMargen),   bg: "#fef9c3", border: "#fde68a", color: "#b45309" },
           { icon: "🔥", label: "Pérdida total",        value: fmt(totales.perdidaTotal),    bg: "#fff1f2", border: "#ffa0a0", color: "#9f1239" },
           { icon: "📦", label: "Unidades perdidas",    value: fmtNum(totales.unidades, 0),  bg: "#f0fdf4", border: "#bbf7d0", color: "#15803d" },
-          { icon: "🏷️", label: "Productos afectados",  value: String(totales.productosAfectados), bg: "#eff6ff", border: "#bfdbfe", color: "#1d4ed8" },
+          { icon: "🏷️", label: "Productos afectados",  value: String(totales.productosAfectados), bg: "#f4f2e6", border: "#cdd6a8", color: "#55692f" },
         ].map(chip => (
           <div key={chip.label} className="mr-card" style={{
             background: chip.bg, border: `1px solid ${chip.border}`,
@@ -425,7 +425,7 @@ export default function MermasPage() {
           <button key={p} onClick={() => setFiltroPeriodo(p)} style={{
             padding: "6px 14px", borderRadius: 20, fontSize: 12, fontWeight: 600, cursor: "pointer",
             border: filtroPeriodo === p ? "none" : "1px solid #e2e8f0",
-            background: filtroPeriodo === p ? "#1e40af" : "#f8fafc",
+            background: filtroPeriodo === p ? "#4b5a2c" : "#f8fafc",
             color: filtroPeriodo === p ? "white" : "#64748b",
           }}>
             {{ todo: "Todo", hoy: "Hoy", semana: "Esta semana", mes: "Este mes" }[p]}
@@ -600,7 +600,7 @@ export default function MermasPage() {
       {/* ── Nota explicativa ─────────────────────────────────────────────────── */}
       <div style={{
         marginTop: 16, padding: "14px 18px", borderRadius: 10,
-        background: "#eff6ff", border: "1px solid #bfdbfe", fontSize: 12, color: "#1e40af",
+        background: "#f4f2e6", border: "1px solid #cdd6a8", fontSize: 12, color: "#4b5a2c",
       }}>
         💡 <strong>Pérdida por costo:</strong> dinero que ya gastaste en el producto (cantidad × costo).
         &nbsp;&nbsp;<strong>Margen no ganado:</strong> ganancia que dejaste de obtener (cantidad × (PV − costo)).

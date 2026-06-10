@@ -36,7 +36,7 @@ function fechaLocal(f: string | null | undefined): string {
 }
 const METODO_COLOR: Record<string, { bg: string; color: string }> = {
   Efectivo:      { bg: "rgba(74,222,128,0.15)",  color: "#4ade80" },
-  Transferencia: { bg: "rgba(96,165,250,0.15)",  color: "#60a5fa" },
+  Transferencia: { bg: "rgba(96,165,250,0.15)",  color: "#8a9a5b" },
   Cheque:        { bg: "rgba(251,191,36,0.15)",  color: "#fbbf24" },
   Tarjeta:       { bg: "rgba(167,139,250,0.15)", color: "#a78bfa" },
   Otro:          { bg: "rgba(156,163,175,0.15)", color: "#9ca3af" },
@@ -723,9 +723,9 @@ export default function ComprasPage() {
             opacity: filtradas.length === 0 ? 0.5 : 1
           }}>📊 Excel</button>
           <button className="compras-header-btn" onClick={abrirNueva} style={{
-            background: "linear-gradient(135deg, #2563eb, #3b82f6)", color: "white",
+            background: "linear-gradient(135deg, #5b6b34, #6f7d49)", color: "white",
             border: "none", borderRadius: 10, padding: "10px 18px",
-            fontSize: 13, fontWeight: 700, cursor: "pointer", boxShadow: "0 2px 8px rgba(59,130,246,0.3)",
+            fontSize: 13, fontWeight: 700, cursor: "pointer", boxShadow: "0 2px 8px rgba(111,125,73,0.3)",
             position: "relative"
           }}>
             + Nueva compra
@@ -770,7 +770,7 @@ export default function ComprasPage() {
                   <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 4 }}>
                     <span style={{ fontWeight: 700, fontSize: 14, color: "#111827" }}>{c.proveedores?.nombre ?? "—"}</span>
                     <span style={{ background: est.bg, color: est.color, fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 20 }}>{est.label}</span>
-                    {c.incluye_iva && <span style={{ background: "rgba(59,130,246,0.1)", color: "#3b82f6", fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 20 }}>IVA {c.porcentaje_iva}%</span>}
+                    {c.incluye_iva && <span style={{ background: "rgba(111,125,73,0.1)", color: "#6f7d49", fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 20 }}>IVA {c.porcentaje_iva}%</span>}
                     {c.monto_flete > 0 && <span style={{ background: "rgba(249,115,22,0.1)", color: "#ea580c", fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 20 }}>🚚 {fmt(c.monto_flete)}</span>}
                     {vencido && <span style={{ color: "#dc2626", fontSize: 11, fontWeight: 700 }}>⚠️ Vencida</span>}
                   </div>
@@ -871,9 +871,9 @@ export default function ComprasPage() {
                         <div style={{ padding: "10px 14px", fontSize: 13, color: "#6b7280", textAlign: "center" }}>Sin resultados</div>
                       ) : productosFiltradosDropdown.map((p, idx) => (
                         <div key={p.id} onMouseDown={() => agregarItem(p)}
-                          style={{ padding: "9px 14px", cursor: "pointer", fontSize: 13, display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid rgba(255,255,255,0.06)", color: "white", background: idx === productoIndiceCompras ? "rgba(59,130,246,0.25)" : "transparent" }}
-                          onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.background = idx === productoIndiceCompras ? "rgba(59,130,246,0.25)" : "rgba(59,130,246,0.15)"}
-                          onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.background = idx === productoIndiceCompras ? "rgba(59,130,246,0.25)" : "transparent"}>
+                          style={{ padding: "9px 14px", cursor: "pointer", fontSize: 13, display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid rgba(255,255,255,0.06)", color: "white", background: idx === productoIndiceCompras ? "rgba(111,125,73,0.25)" : "transparent" }}
+                          onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.background = idx === productoIndiceCompras ? "rgba(111,125,73,0.25)" : "rgba(111,125,73,0.15)"}
+                          onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.background = idx === productoIndiceCompras ? "rgba(111,125,73,0.25)" : "transparent"}>
                           <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
                             <span style={{ fontWeight: 500 }}>{p.nombre}</span>
                             {p.laboratorio && <span style={{ fontSize: 11, color: "#86efac" }}>{p.laboratorio}</span>}
@@ -882,7 +882,7 @@ export default function ComprasPage() {
                         </div>
                       ))}
                       <div onMouseDown={() => { setMostrarFormNuevoProd(true); setFormNuevoProd(f => ({ ...f, nombre: busquedaProducto.trim().toUpperCase() })); setProductoDropdown(false); }}
-                        style={{ padding: "10px 14px", cursor: "pointer", fontSize: 13, color: "#60a5fa", borderTop: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", gap: 6 }}>
+                        style={{ padding: "10px 14px", cursor: "pointer", fontSize: 13, color: "#8a9a5b", borderTop: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", gap: 6 }}>
                         <span style={{ fontWeight: 700, fontSize: 16 }}>+</span> Crear nuevo producto
                       </div>
                     </div>
@@ -890,9 +890,9 @@ export default function ComprasPage() {
                 </div>
 
                 {mostrarFormNuevoProd && (
-                  <div style={{ background: "rgba(59,130,246,0.08)", border: "1px solid rgba(59,130,246,0.25)", borderRadius: 12, padding: "16px" }}>
+                  <div style={{ background: "rgba(111,125,73,0.08)", border: "1px solid rgba(111,125,73,0.25)", borderRadius: 12, padding: "16px" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                      <span style={{ color: "#60a5fa", fontWeight: 700, fontSize: 13 }}>+ Nuevo producto</span>
+                      <span style={{ color: "#8a9a5b", fontWeight: 700, fontSize: 13 }}>+ Nuevo producto</span>
                       <button onClick={() => setMostrarFormNuevoProd(false)} style={{ background: "none", border: "none", color: "#6b7280", cursor: "pointer", fontSize: 18, lineHeight: 1 }}>×</button>
                     </div>
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
@@ -914,7 +914,7 @@ export default function ComprasPage() {
                       </div>
                     </div>
                     <button onClick={crearYAgregarProducto} disabled={!formNuevoProd.nombre.trim() || guardandoNuevoProd}
-                      style={{ background: "#2563eb", color: "white", border: "none", borderRadius: 8, padding: "9px 18px", fontSize: 13, fontWeight: 700, cursor: !formNuevoProd.nombre.trim() || guardandoNuevoProd ? "not-allowed" : "pointer", opacity: !formNuevoProd.nombre.trim() || guardandoNuevoProd ? 0.6 : 1 }}>
+                      style={{ background: "#5b6b34", color: "white", border: "none", borderRadius: 8, padding: "9px 18px", fontSize: 13, fontWeight: 700, cursor: !formNuevoProd.nombre.trim() || guardandoNuevoProd ? "not-allowed" : "pointer", opacity: !formNuevoProd.nombre.trim() || guardandoNuevoProd ? 0.6 : 1 }}>
                       {guardandoNuevoProd ? "Guardando..." : "Crear y agregar a la compra"}
                     </button>
                   </div>
@@ -968,7 +968,7 @@ export default function ComprasPage() {
                                   style={{ padding: "5px 8px", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, color: "white", fontSize: 12, outline: "none", colorScheme: "dark" }} />
                               </td>
                               <td style={{ padding: "9px 10px", textAlign: "right", color: "#d1d5db", fontSize: 12, whiteSpace: "nowrap" }}>{fmt(it.subtotalItem)}</td>
-                              <td style={{ padding: "9px 10px", textAlign: "right", color: "#93c5fd", fontSize: 12, whiteSpace: "nowrap" }}>{fmt(it.ivaItem)}</td>
+                              <td style={{ padding: "9px 10px", textAlign: "right", color: "#a8b67d", fontSize: 12, whiteSpace: "nowrap" }}>{fmt(it.ivaItem)}</td>
                               <td style={{ padding: "9px 10px", textAlign: "right", color: "#fb923c", fontSize: 12, whiteSpace: "nowrap" }}>{fmt(it.fleteItem)}</td>
                               <td style={{ padding: "9px 10px", textAlign: "right", color: "white", fontSize: 12, fontWeight: 700, whiteSpace: "nowrap" }}>{fmt(it.subtotalItem + it.ivaItem + it.fleteItem)}</td>
                               <td style={{ padding: "9px 10px", textAlign: "center" }}>
@@ -983,7 +983,7 @@ export default function ComprasPage() {
                     <div style={{ marginTop: 8, padding: "10px 14px", background: "rgba(255,255,255,0.04)", borderRadius: 10, border: "1px solid rgba(255,255,255,0.08)", display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 20, flexWrap: "wrap" }}>
                       <span style={{ fontSize: 12, color: "#6b7280" }}>Subtotal: <b style={{ color: "#d1d5db" }}>{fmt(subtotalForm)}</b></span>
                       {form.incluye_descuento && descuentoForm > 0 && <span style={{ fontSize: 12, color: "#4ade80" }}>🏷️ −{pctDescuentoForm}%: <b>−{fmt(descuentoForm)}</b></span>}
-                      {form.incluye_iva && ivaForm > 0 && <span style={{ fontSize: 12, color: "#93c5fd" }}>IVA {pctIvaForm}%: <b>{fmt(ivaForm)}</b></span>}
+                      {form.incluye_iva && ivaForm > 0 && <span style={{ fontSize: 12, color: "#a8b67d" }}>IVA {pctIvaForm}%: <b>{fmt(ivaForm)}</b></span>}
                       {form.incluye_flete && fleteForm > 0 && <span style={{ fontSize: 12, color: "#fb923c" }}>🚚 Flete: <b>{fmt(fleteForm)}</b></span>}
                       <span style={{ fontSize: 14, color: "white", fontWeight: 800 }}>Total: {fmt(totalForm)}</span>
                     </div>
@@ -1012,18 +1012,18 @@ export default function ComprasPage() {
 
               {/* IVA toggle */}
               <div onClick={() => setForm({ ...form, incluye_iva: !form.incluye_iva })}
-                style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", borderRadius: 10, cursor: "pointer", background: form.incluye_iva ? "rgba(59,130,246,0.1)" : "rgba(255,255,255,0.04)", border: form.incluye_iva ? "1px solid rgba(59,130,246,0.3)" : "1px solid rgba(255,255,255,0.08)", flexWrap: "wrap" }}>
-                <div style={{ width: 20, height: 20, borderRadius: 5, flexShrink: 0, background: form.incluye_iva ? "#3b82f6" : "rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", borderRadius: 10, cursor: "pointer", background: form.incluye_iva ? "rgba(111,125,73,0.1)" : "rgba(255,255,255,0.04)", border: form.incluye_iva ? "1px solid rgba(111,125,73,0.3)" : "1px solid rgba(255,255,255,0.08)", flexWrap: "wrap" }}>
+                <div style={{ width: 20, height: 20, borderRadius: 5, flexShrink: 0, background: form.incluye_iva ? "#6f7d49" : "rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   {form.incluye_iva && <span style={{ color: "white", fontSize: 12 }}>✓</span>}
                 </div>
-                <span style={{ fontSize: 13, fontWeight: 700, color: form.incluye_iva ? "#93c5fd" : "#9ca3af" }}>Agregar IVA</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: form.incluye_iva ? "#a8b67d" : "#9ca3af" }}>Agregar IVA</span>
                 {form.incluye_iva && (
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: 8 }} onClick={e => e.stopPropagation()}>
                     <input type="number" min="0" max="100" value={form.porcentaje_iva}
                       onChange={e => setForm({ ...form, porcentaje_iva: e.target.value })}
-                      style={{ width: 60, padding: "6px 10px", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(59,130,246,0.3)", borderRadius: 8, color: "white", fontSize: 13, outline: "none", textAlign: "center" }} />
-                    <span style={{ color: "#93c5fd", fontSize: 13 }}>%</span>
-                    {ivaForm > 0 && <span style={{ marginLeft: 8, color: "#93c5fd", fontSize: 12, fontWeight: 700 }}>+{fmt(ivaForm)}</span>}
+                      style={{ width: 60, padding: "6px 10px", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(111,125,73,0.3)", borderRadius: 8, color: "white", fontSize: 13, outline: "none", textAlign: "center" }} />
+                    <span style={{ color: "#a8b67d", fontSize: 13 }}>%</span>
+                    {ivaForm > 0 && <span style={{ marginLeft: 8, color: "#a8b67d", fontSize: 12, fontWeight: 700 }}>+{fmt(ivaForm)}</span>}
                   </div>
                 )}
               </div>
@@ -1100,7 +1100,7 @@ export default function ComprasPage() {
               {items.length > 0 && <span style={{ color: "#9ca3af", fontSize: 13 }}>Total: <b style={{ color: "white" }}>{fmt(totalForm)}</b></span>}
               <div className="compras-modal-footer-btns" style={{ display: "flex", gap: 10, marginLeft: "auto" }}>
                 <button onClick={() => setModalNueva(false)} style={{ padding: "10px 20px", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, color: "#9ca3af", fontSize: 13, cursor: "pointer", fontWeight: 600 }}>Cerrar (borrador guardado)</button>
-                <button onClick={guardarCompra} disabled={guardando} style={{ padding: "10px 24px", background: "linear-gradient(135deg, #2563eb, #3b82f6)", border: "none", borderRadius: 10, color: "white", fontSize: 13, fontWeight: 700, cursor: "pointer", opacity: guardando ? 0.5 : 1 }}>
+                <button onClick={guardarCompra} disabled={guardando} style={{ padding: "10px 24px", background: "linear-gradient(135deg, #5b6b34, #6f7d49)", border: "none", borderRadius: 10, color: "white", fontSize: 13, fontWeight: 700, cursor: "pointer", opacity: guardando ? 0.5 : 1 }}>
                   {guardando ? "Guardando..." : "Registrar compra"}
                 </button>
               </div>
@@ -1119,7 +1119,7 @@ export default function ComprasPage() {
                   <h2 style={{ color: "white", fontSize: 17, fontWeight: 700, margin: 0 }}>Detalle de compra</h2>
                   {(() => { const est = ESTADO_LABEL[compraVer.estado] ?? ESTADO_LABEL.pendiente; return <span style={{ background: est.bg, color: est.color, fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 20 }}>{est.label}</span> })()}
                   {compraVer.monto_descuento > 0 && <span style={{ background: "rgba(74,222,128,0.12)", color: "#4ade80", fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 20 }}>🏷️ Desc. {compraVer.descuento_pct}% (−{fmt(compraVer.monto_descuento)})</span>}
-                  {compraVer.incluye_iva && <span style={{ background: "rgba(59,130,246,0.12)", color: "#93c5fd", fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 20 }}>IVA {compraVer.porcentaje_iva}%</span>}
+                  {compraVer.incluye_iva && <span style={{ background: "rgba(111,125,73,0.12)", color: "#a8b67d", fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 20 }}>IVA {compraVer.porcentaje_iva}%</span>}
                   {compraVer.monto_flete > 0 && <span style={{ background: "rgba(249,115,22,0.12)", color: "#fb923c", fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 20 }}>🚚 {fmt(compraVer.monto_flete)}</span>}
                 </div>
                 <p style={{ color: "#6b7280", fontSize: 12, margin: 0 }}>
@@ -1161,7 +1161,7 @@ export default function ComprasPage() {
                     💳 Pago parcial
                   </button>
                   <button onClick={() => { setDescuentoCancelar(""); setModalCancelar(true); }} disabled={cancelando}
-                    style={{ flex: 1, padding: "10px", background: "linear-gradient(135deg, #2563eb, #3b82f6)", border: "none", borderRadius: 10, color: "white", fontSize: 13, fontWeight: 700, cursor: "pointer", opacity: cancelando ? 0.5 : 1 }}>
+                    style={{ flex: 1, padding: "10px", background: "linear-gradient(135deg, #5b6b34, #6f7d49)", border: "none", borderRadius: 10, color: "white", fontSize: 13, fontWeight: 700, cursor: "pointer", opacity: cancelando ? 0.5 : 1 }}>
                     {cancelando ? "..." : `✅ Cancelar deuda (${fmt(compraVer.total - compraVer.total_pagado)})`}
                   </button>
                 </div>
@@ -1176,7 +1176,7 @@ export default function ComprasPage() {
             <div className="compras-tabs" style={{ display: "flex", padding: "0 28px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
               {(["detalle", "pagos"] as const).map(t => (
                 <button key={t} onClick={() => setTabDetalle(t)}
-                  style={{ padding: "14px 18px", border: "none", background: "none", cursor: "pointer", fontSize: 13, fontWeight: 600, color: tabDetalle === t ? "#3b82f6" : "#6b7280", borderBottom: tabDetalle === t ? "2px solid #3b82f6" : "2px solid transparent", marginBottom: -1 }}>
+                  style={{ padding: "14px 18px", border: "none", background: "none", cursor: "pointer", fontSize: 13, fontWeight: 600, color: tabDetalle === t ? "#6f7d49" : "#6b7280", borderBottom: tabDetalle === t ? "2px solid #6f7d49" : "2px solid transparent", marginBottom: -1 }}>
                   {t === "detalle" ? "📦 Productos" : `💰 Pagos (${pagos.length})`}
                 </button>
               ))}
@@ -1208,7 +1208,7 @@ export default function ComprasPage() {
                               <th style={{ textAlign: "center", padding: "8px 10px", color: "#6b7280", fontSize: 11, fontWeight: 700, textTransform: "uppercase" }}>Cant.</th>
                               <th style={{ textAlign: "right",  padding: "8px 10px", color: "#6b7280", fontSize: 11, fontWeight: 700, textTransform: "uppercase" }}>P. unit.</th>
                               <th style={{ textAlign: "right",  padding: "8px 10px", color: "#6b7280", fontSize: 11, fontWeight: 700, textTransform: "uppercase" }}>Subtotal</th>
-                              {hayIva   && <th style={{ textAlign: "right", padding: "8px 10px", color: "#93c5fd", fontSize: 11, fontWeight: 700, textTransform: "uppercase" }}>IVA</th>}
+                              {hayIva   && <th style={{ textAlign: "right", padding: "8px 10px", color: "#a8b67d", fontSize: 11, fontWeight: 700, textTransform: "uppercase" }}>IVA</th>}
                               {hayFlete && <th style={{ textAlign: "right", padding: "8px 10px", color: "#fb923c", fontSize: 11, fontWeight: 700, textTransform: "uppercase" }}>Flete</th>}
                               <th style={{ textAlign: "right",  padding: "8px 10px", color: "#6b7280", fontSize: 11, fontWeight: 700, textTransform: "uppercase" }}>Total</th>
                             </tr>
@@ -1220,7 +1220,7 @@ export default function ComprasPage() {
                                 <td style={{ padding: "9px 10px", textAlign: "center", color: "#9ca3af", fontSize: 12 }}>{d.cantidad}</td>
                                 <td style={{ padding: "9px 10px", textAlign: "right",  color: "#d1d5db", fontSize: 12 }}>{fmt(d.precio_unitario)}</td>
                                 <td style={{ padding: "9px 10px", textAlign: "right",  color: "#d1d5db", fontSize: 12 }}>{fmt(d.subtotalItem)}</td>
-                                {hayIva   && <td style={{ padding: "9px 10px", textAlign: "right", color: "#93c5fd", fontSize: 12 }}>{fmt(d.ivaItem)}</td>}
+                                {hayIva   && <td style={{ padding: "9px 10px", textAlign: "right", color: "#a8b67d", fontSize: 12 }}>{fmt(d.ivaItem)}</td>}
                                 {hayFlete && <td style={{ padding: "9px 10px", textAlign: "right", color: "#fb923c", fontSize: 12 }}>{fmt(d.fleteItem)}</td>}
                                 <td style={{ padding: "9px 10px", textAlign: "right",  color: "white",   fontSize: 12, fontWeight: 700 }}>{fmt(d.subtotalItem + d.ivaItem + d.fleteItem)}</td>
                               </tr>
@@ -1235,8 +1235,8 @@ export default function ComprasPage() {
                             )}
                             {hayIva && (
                               <tr>
-                                <td colSpan={colSpanTotal} style={{ padding: "6px 10px", textAlign: "right", color: "#93c5fd", fontSize: 12 }}>IVA {compraVer.porcentaje_iva}%:</td>
-                                <td style={{ padding: "6px 10px", textAlign: "right", color: "#93c5fd", fontSize: 12, fontWeight: 600 }}>{fmt(compraVer.monto_iva)}</td>
+                                <td colSpan={colSpanTotal} style={{ padding: "6px 10px", textAlign: "right", color: "#a8b67d", fontSize: 12 }}>IVA {compraVer.porcentaje_iva}%:</td>
+                                <td style={{ padding: "6px 10px", textAlign: "right", color: "#a8b67d", fontSize: 12, fontWeight: 600 }}>{fmt(compraVer.monto_iva)}</td>
                               </tr>
                             )}
                             {hayFlete && (
@@ -1257,7 +1257,7 @@ export default function ComprasPage() {
                       )}
                       <div style={{ marginTop: 14, borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: 14, display: "flex", flexDirection: "column", gap: 8 }}>
                         <button onClick={reaplicarCompraAProductos} disabled={reaplicando}
-                          style={{ width: "100%", padding: "11px", background: reaplicando ? "rgba(255,255,255,0.05)" : "rgba(59,130,246,0.12)", border: "1px solid rgba(59,130,246,0.25)", borderRadius: 10, color: reaplicando ? "#6b7280" : "#60a5fa", fontSize: 13, fontWeight: 700, cursor: reaplicando ? "not-allowed" : "pointer" }}>
+                          style={{ width: "100%", padding: "11px", background: reaplicando ? "rgba(255,255,255,0.05)" : "rgba(111,125,73,0.12)", border: "1px solid rgba(111,125,73,0.25)", borderRadius: 10, color: reaplicando ? "#6b7280" : "#8a9a5b", fontSize: 13, fontWeight: 700, cursor: reaplicando ? "not-allowed" : "pointer" }}>
                           {reaplicando ? "Aplicando..." : "🔄 Aplicar a productos (costo · precio de venta)"}
                         </button>
                         <button onClick={corregirStockDuplicado} disabled={corrigiendoStock}
@@ -1440,14 +1440,14 @@ export default function ComprasPage() {
                 )}
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 15, fontWeight: 800, color: "white" }}>
                   <span>Total a pagar</span>
-                  <span style={{ color: "#60a5fa" }}>{fmt(montoPago)}</span>
+                  <span style={{ color: "#8a9a5b" }}>{fmt(montoPago)}</span>
                 </div>
               </div>
 
               <div style={{ display: "flex", gap: 10 }}>
                 <button onClick={() => setModalCancelar(false)} style={{ flex: 1, padding: "11px", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, color: "#9ca3af", fontSize: 13, cursor: "pointer", fontWeight: 600 }}>Cancelar</button>
                 <button onClick={() => cancelarCompra(pctDesc)} disabled={cancelando}
-                  style={{ flex: 1, padding: "11px", background: "linear-gradient(135deg, #2563eb, #3b82f6)", border: "none", borderRadius: 10, color: "white", fontSize: 13, fontWeight: 700, cursor: cancelando ? "not-allowed" : "pointer", opacity: cancelando ? 0.5 : 1 }}>
+                  style={{ flex: 1, padding: "11px", background: "linear-gradient(135deg, #5b6b34, #6f7d49)", border: "none", borderRadius: 10, color: "white", fontSize: 13, fontWeight: 700, cursor: cancelando ? "not-allowed" : "pointer", opacity: cancelando ? 0.5 : 1 }}>
                   {cancelando ? "Registrando..." : "Confirmar pago"}
                 </button>
               </div>

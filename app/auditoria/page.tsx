@@ -9,7 +9,7 @@ function fechaHora(f: string) {
 
 const ACCION_STYLE: Record<string, { label: string; bg: string; color: string; icon: string }> = {
   insert: { label: "Alta",      bg: "rgba(74,222,128,0.12)",  color: "#4ade80",  icon: "+" },
-  update: { label: "Edición",   bg: "rgba(59,130,246,0.12)",  color: "#60a5fa",  icon: "✎" },
+  update: { label: "Edición",   bg: "rgba(111,125,73,0.12)",  color: "#8a9a5b",  icon: "✎" },
   delete: { label: "Baja",      bg: "rgba(239,68,68,0.12)",   color: "#f87171",  icon: "−" },
   login:  { label: "Login",     bg: "rgba(167,139,250,0.12)", color: "#a78bfa",  icon: "→" },
 }
@@ -75,7 +75,7 @@ export default function Auditoria() {
       {/* KPIs */}
       <div className="aud-kpis" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 20 }}>
         {[
-          { label: "Total eventos",  valor: datos.length,  color: "#60a5fa", icon: "📊" },
+          { label: "Total eventos",  valor: datos.length,  color: "#8a9a5b", icon: "📊" },
           { label: "Hoy",            valor: hoy_count,     color: "#a78bfa", icon: "📅" },
           { label: "Altas",          valor: inserts,        color: "#4ade80", icon: "+"  },
           { label: "Bajas",          valor: deletes,        color: "#f87171", icon: "−"  },

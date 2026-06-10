@@ -86,7 +86,7 @@ export default function AdminPage() {
       {/* KPIs */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 14, marginBottom: 24 }}>
         {[
-          { label: "Total clientes", valor: suscripciones.length, color: "#3b82f6", icon: "👥" },
+          { label: "Total clientes", valor: suscripciones.length, color: "#6f7d49", icon: "👥" },
           { label: "Activos",         valor: totales.activos,       color: "#4ade80", icon: "✅" },
           { label: "En trial",        valor: totales.trial,         color: "#fbbf24", icon: "⏳" },
           { label: "Vencidos",        valor: totales.vencidos,      color: "#f87171", icon: "❌" },

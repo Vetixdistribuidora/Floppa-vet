@@ -228,14 +228,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </div>
           <div style={{ overflow: "hidden" }}>
             <div style={{ fontWeight: "800", fontSize: "15px", letterSpacing: "1px", color: "white", lineHeight: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 150 }}>{orgNombre}</div>
-            <div style={{ fontSize: "9px", color: "#3b82f6", letterSpacing: "2px", marginTop: "3px", textTransform: "uppercase", fontWeight: "600" }}>Distribuidora</div>
+            <div style={{ fontSize: "9px", color: "#6f7d49", letterSpacing: "2px", marginTop: "3px", textTransform: "uppercase", fontWeight: "600" }}>Distribuidora</div>
           </div>
         </div>
 
         {/* NAV */}
         <nav>
           <Link href="/" style={getItemStyle("/")} onClick={() => setSidebarAbierto(false)}>
-            <svg style={iconStyle("#60a5fa", pathname === "/")} fill="none" strokeWidth="2" viewBox="0 0 24 24">
+            <svg style={iconStyle("#8a9a5b", pathname === "/")} fill="none" strokeWidth="2" viewBox="0 0 24 24">
               <path d="M3 10l9-7 9 7" /><path d="M9 21V12h6v9" />
             </svg>
             Inicio
@@ -309,7 +309,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             Tienda Online
           </Link>
           <Link href="/pedidos" style={getItemStyle("/pedidos")} onClick={() => setSidebarAbierto(false)}>
-            <svg style={iconStyle("#38bdf8", pathname.startsWith("/pedidos"))} fill="none" strokeWidth="2" viewBox="0 0 24 24">
+            <svg style={iconStyle("#8a9a5b", pathname.startsWith("/pedidos"))} fill="none" strokeWidth="2" viewBox="0 0 24 24">
               <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
               <rect x="9" y="3" width="6" height="4" rx="1" />
               <path d="M9 12h6M9 16h4" />

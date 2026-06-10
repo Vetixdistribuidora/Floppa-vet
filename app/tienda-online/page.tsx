@@ -53,7 +53,7 @@ const pDireccion = (p: Pedido) => p.cliente_direccion ?? p.direccion ?? null
 const ESTADOS = ["pendiente", "confirmado", "en preparación", "enviado", "entregado", "procesado", "cancelado"]
 const ESTADO_COLOR: Record<string, { bg: string; color: string; border: string }> = {
   pendiente:        { bg: "#fffbeb", color: "#92400e", border: "#fde68a" },
-  confirmado:       { bg: "#eff6ff", color: "#1d4ed8", border: "#bfdbfe" },
+  confirmado:       { bg: "#f4f2e6", color: "#55692f", border: "#cdd6a8" },
   "en preparación": { bg: "#faf5ff", color: "#7c3aed", border: "#ddd6fe" },
   enviado:          { bg: "#fff7ed", color: "#c2410c", border: "#fed7aa" },
   entregado:        { bg: "#f0fdf4", color: "#15803d", border: "#bbf7d0" },
@@ -379,9 +379,9 @@ export default function TiendaOnline() {
           <button key={e} onClick={() => setFiltroEstado(e)}
             style={{
               padding: "5px 14px", borderRadius: 20, fontSize: 12, fontWeight: filtroEstado === e ? 800 : 600,
-              border: `1.5px solid ${filtroEstado === e ? "#1d4ed8" : "#e2e8f0"}`,
-              background: filtroEstado === e ? "#eff6ff" : "white",
-              color: filtroEstado === e ? "#1d4ed8" : "#64748b",
+              border: `1.5px solid ${filtroEstado === e ? "#55692f" : "#e2e8f0"}`,
+              background: filtroEstado === e ? "#f4f2e6" : "white",
+              color: filtroEstado === e ? "#55692f" : "#64748b",
               cursor: "pointer",
             }}>
             {e === "todos" ? "Todos" : e}
@@ -397,7 +397,7 @@ export default function TiendaOnline() {
       {/* Lista de pedidos */}
       {loading ? (
         <div style={{ textAlign: "center", padding: 60, color: "#64748b" }}>
-          <div style={{ width: 36, height: 36, borderRadius: "50%", border: "3px solid #1d4ed8", borderTopColor: "transparent", margin: "0 auto 12px", animation: "spin 0.8s linear infinite" }} />
+          <div style={{ width: 36, height: 36, borderRadius: "50%", border: "3px solid #55692f", borderTopColor: "transparent", margin: "0 auto 12px", animation: "spin 0.8s linear infinite" }} />
           Cargando pedidos...
         </div>
       ) : pedidosFiltrados.length === 0 ? (
@@ -460,7 +460,7 @@ export default function TiendaOnline() {
                     <div onClick={e => e.stopPropagation()}>
                       <button
                         onClick={() => abrirModal(p)}
-                        style={{ padding: "5px 12px", background: "#1d4ed8", color: "white", border: "none", borderRadius: 7, fontSize: 11, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}
+                        style={{ padding: "5px 12px", background: "#55692f", color: "white", border: "none", borderRadius: 7, fontSize: 11, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}
                       >
                         Pasar a venta →
                       </button>
@@ -580,7 +580,7 @@ export default function TiendaOnline() {
                   </p>
                   <div style={{ display: "flex", gap: 10 }}>
                     <button onClick={cerrarModal} style={{ flex: 1, padding: "10px", background: "#f1f5f9", color: "#475569", border: "none", borderRadius: 9, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>Cerrar</button>
-                    <a href="/ventas" style={{ flex: 1, padding: "10px", background: "#1d4ed8", color: "white", borderRadius: 9, fontSize: 13, fontWeight: 700, textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <a href="/ventas" style={{ flex: 1, padding: "10px", background: "#55692f", color: "white", borderRadius: 9, fontSize: 13, fontWeight: 700, textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center" }}>
                       Ver en Ventas →
                     </a>
                   </div>
@@ -670,7 +670,7 @@ export default function TiendaOnline() {
                           <button
                             onClick={() => crearClienteDesde(modalVenta)}
                             disabled={creandoCliente}
-                            style={{ flex: 1, padding: "8px 12px", background: "#1d4ed8", color: "white", border: "none", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer" }}
+                            style={{ flex: 1, padding: "8px 12px", background: "#55692f", color: "white", border: "none", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer" }}
                           >
                             {creandoCliente ? "Creando..." : "✦ Crear cliente con estos datos"}
                           </button>
@@ -698,7 +698,7 @@ export default function TiendaOnline() {
                           value={busqCliente}
                           onChange={e => { setBusqCliente(e.target.value); setClienteSelId(null) }}
                           style={{ width: "100%", padding: "9px 12px", border: "1.5px solid #e2e8f0", borderRadius: 8, fontSize: 13, outline: "none", boxSizing: "border-box", marginBottom: 6 }}
-                          onFocus={e => (e.target.style.borderColor = "#1d4ed8")}
+                          onFocus={e => (e.target.style.borderColor = "#55692f")}
                           onBlur={e => (e.target.style.borderColor = "#e2e8f0")}
                         />
                         {busqCliente && (
@@ -709,7 +709,7 @@ export default function TiendaOnline() {
                               <button key={c.id}
                                 onClick={() => { setClienteSelId(c.id); setBusqCliente(`${c.nombre} ${c.apellido}`); setMatchEstado("encontrado") }}
                                 style={{ display: "block", width: "100%", padding: "8px 12px", textAlign: "left", background: "white", border: "none", borderBottom: "1px solid #f1f5f9", cursor: "pointer", fontSize: 13 }}
-                                onMouseEnter={e => (e.currentTarget.style.background = "#eff6ff")}
+                                onMouseEnter={e => (e.currentTarget.style.background = "#f4f2e6")}
                                 onMouseLeave={e => (e.currentTarget.style.background = "white")}
                               >
                                 <span style={{ fontWeight: 600, color: "#0f172a" }}>{c.nombre} {c.apellido}</span>
@@ -729,10 +729,10 @@ export default function TiendaOnline() {
                     </label>
                     <div style={{ display: "flex", gap: 8 }}>
                       <button onClick={() => setEsCuentaCorriente(false)}
-                        style={{ flex: 1, padding: "9px", borderRadius: 8, border: `2px solid ${!esCuentaCorriente ? "#1d4ed8" : "#e2e8f0"}`, background: !esCuentaCorriente ? "#eff6ff" : "white", color: !esCuentaCorriente ? "#1d4ed8" : "#64748b", fontWeight: 700, fontSize: 13, cursor: "pointer" }}
+                        style={{ flex: 1, padding: "9px", borderRadius: 8, border: `2px solid ${!esCuentaCorriente ? "#55692f" : "#e2e8f0"}`, background: !esCuentaCorriente ? "#f4f2e6" : "white", color: !esCuentaCorriente ? "#55692f" : "#64748b", fontWeight: 700, fontSize: 13, cursor: "pointer" }}
                       >Cobrado</button>
                       <button onClick={() => setEsCuentaCorriente(true)}
-                        style={{ flex: 1, padding: "9px", borderRadius: 8, border: `2px solid ${esCuentaCorriente ? "#1d4ed8" : "#e2e8f0"}`, background: esCuentaCorriente ? "#eff6ff" : "white", color: esCuentaCorriente ? "#1d4ed8" : "#64748b", fontWeight: 700, fontSize: 13, cursor: "pointer" }}
+                        style={{ flex: 1, padding: "9px", borderRadius: 8, border: `2px solid ${esCuentaCorriente ? "#55692f" : "#e2e8f0"}`, background: esCuentaCorriente ? "#f4f2e6" : "white", color: esCuentaCorriente ? "#55692f" : "#64748b", fontWeight: 700, fontSize: 13, cursor: "pointer" }}
                       >Cuenta corriente</button>
                     </div>
                     {!esCuentaCorriente && (
@@ -763,7 +763,7 @@ export default function TiendaOnline() {
                       disabled={creandoVenta || !clienteSelId || modalItems.length === 0}
                       style={{
                         flex: 2, padding: "11px",
-                        background: creandoVenta || !clienteSelId || modalItems.length === 0 ? "#93c5fd" : "#1d4ed8",
+                        background: creandoVenta || !clienteSelId || modalItems.length === 0 ? "#a8b67d" : "#55692f",
                         color: "white", border: "none", borderRadius: 10, fontSize: 13, fontWeight: 900,
                         cursor: creandoVenta || !clienteSelId || modalItems.length === 0 ? "not-allowed" : "pointer"
                       }}

@@ -275,7 +275,7 @@ export default function CuentasCorrientes() {
         {[
           { label: "Deuda total", valor: fmt(deudaTotal), color: "#f87171", icon: "💰" },
           { label: "Clientes deudores", valor: Object.keys(resumen).length, color: "#fbbf24", icon: "👥" },
-          { label: "Total clientes", valor: clientes.length, color: "#3b82f6", icon: "📋" },
+          { label: "Total clientes", valor: clientes.length, color: "#6f7d49", icon: "📋" },
         ].map((k, i) => (
           <div key={i} style={{
             background: "white", border: "1px solid #e2e8f0",
@@ -336,8 +336,8 @@ export default function CuentasCorrientes() {
                 <div key={c.id} onClick={() => seleccionarCliente(c)} style={{
                   padding: "12px 14px", cursor: "pointer",
                   borderBottom: "1px solid #f8fafc",
-                  background: activo ? "#eff6ff" : "white",
-                  borderLeft: activo ? "3px solid #3b82f6" : "3px solid transparent",
+                  background: activo ? "#f4f2e6" : "white",
+                  borderLeft: activo ? "3px solid #6f7d49" : "3px solid transparent",
                 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <div>
@@ -408,8 +408,8 @@ export default function CuentasCorrientes() {
                   <button key={t.key} onClick={() => setTab(t.key)} style={{
                     padding: "14px 16px", border: "none", background: "none", cursor: "pointer",
                     fontSize: 13, fontWeight: 600,
-                    color: tab === t.key ? "#3b82f6" : "#6b7280",
-                    borderBottom: tab === t.key ? "2px solid #3b82f6" : "2px solid transparent",
+                    color: tab === t.key ? "#6f7d49" : "#6b7280",
+                    borderBottom: tab === t.key ? "2px solid #6f7d49" : "2px solid transparent",
                     marginBottom: -1, whiteSpace: "nowrap"
                   }}>{t.label}</button>
                 ))}
@@ -461,7 +461,7 @@ export default function CuentasCorrientes() {
                                   {v.pagos.map((p: any, i: number) => (
                                     <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 12, padding: "4px 0", borderBottom: i < v.pagos.length - 1 ? "1px solid rgba(255,255,255,0.06)" : "none" }}>
                                       <span style={{ color: "#d1d5db", flex: 1, minWidth: 0 }}>{fechaCorta(p.fecha)} — <b style={{ color: "#4ade80" }}>{fmt(p.monto)}</b>{p.nota ? <span style={{ color: "#6b7280" }}> ({p.nota})</span> : ""}</span>
-                                      <button onClick={() => imprimirRecibo(p, v)} style={{ background: "rgba(59,130,246,0.15)", color: "#3b82f6", border: "none", borderRadius: 6, padding: "3px 10px", cursor: "pointer", fontSize: 11, fontWeight: 600, flexShrink: 0, marginLeft: 8 }}>Recibo</button>
+                                      <button onClick={() => imprimirRecibo(p, v)} style={{ background: "rgba(111,125,73,0.15)", color: "#6f7d49", border: "none", borderRadius: 6, padding: "3px 10px", cursor: "pointer", fontSize: 11, fontWeight: 600, flexShrink: 0, marginLeft: 8 }}>Recibo</button>
                                     </div>
                                   ))}
                                 </div>
@@ -508,7 +508,7 @@ export default function CuentasCorrientes() {
                                   {v.pagos.map((p: any, i: number) => (
                                     <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 12, padding: "3px 0", flexWrap: "wrap", gap: 4 }}>
                                       <span style={{ color: "#9ca3af" }}>{fechaCorta(p.fecha)} — <b style={{ color: "#4ade80" }}>{fmt(p.monto)}</b>{p.nota ? <span style={{ color: "#6b7280" }}> ({p.nota})</span> : ""}</span>
-                                      <button onClick={() => imprimirRecibo(p, v)} style={{ background: "rgba(59,130,246,0.15)", color: "#3b82f6", border: "none", borderRadius: 6, padding: "3px 10px", cursor: "pointer", fontSize: 11 }}>Recibo</button>
+                                      <button onClick={() => imprimirRecibo(p, v)} style={{ background: "rgba(111,125,73,0.15)", color: "#6f7d49", border: "none", borderRadius: 6, padding: "3px 10px", cursor: "pointer", fontSize: 11 }}>Recibo</button>
                                     </div>
                                   ))}
                                 </div>
@@ -553,7 +553,7 @@ export default function CuentasCorrientes() {
                 return (
                   <button key={pct} onClick={() => setMontoPago(String(val))} style={{
                     flex: 1, padding: "7px 0", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8,
-                    background: montoInput === val ? "#3b82f6" : "rgba(255,255,255,0.05)",
+                    background: montoInput === val ? "#6f7d49" : "rgba(255,255,255,0.05)",
                     color: montoInput === val ? "white" : "#9ca3af",
                     fontSize: 12, fontWeight: 600, cursor: "pointer"
                   }}>{pct}%</button>

@@ -262,16 +262,16 @@ export default function Dashboard() {
   if (errorCarga) return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 300, gap: 16 }}>
       <p style={{ color: "#f87171", fontWeight: 700, fontSize: 15 }}>{errorCarga}</p>
-      <button onClick={iniciar} style={{ background: "#3b82f6", color: "white", border: "none", borderRadius: 8, padding: "10px 20px", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
+      <button onClick={iniciar} style={{ background: "#6f7d49", color: "white", border: "none", borderRadius: 8, padding: "10px 20px", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
         Reintentar
       </button>
     </div>
   )
 
   const kpiCards = [
-    { titulo: "Ventas hoy", valor: fmt(kpis.totalHoy), sub: `${kpis.cantidadHoy} venta${kpis.cantidadHoy !== 1 ? "s" : ""}`, icon: "☀️", color: "#3b82f6", onClick: () => abrirModal("ventasHoy") },
+    { titulo: "Ventas hoy", valor: fmt(kpis.totalHoy), sub: `${kpis.cantidadHoy} venta${kpis.cantidadHoy !== 1 ? "s" : ""}`, icon: "☀️", color: "#6f7d49", onClick: () => abrirModal("ventasHoy") },
     { titulo: "Ingresos hoy", valor: fmt(kpis.cobradoHoy ?? 0), sub: "Cobrado + pagos CC recibidos", icon: "💵", color: "#10b981", onClick: undefined },
-    { titulo: "Ventas del mes", valor: fmt(kpis.totalMes), sub: `${kpis.cantidadVentas} ventas`, icon: "📅", color: "#6366f1", onClick: () => abrirModal("ventasMes") },
+    { titulo: "Ventas del mes", valor: fmt(kpis.totalMes), sub: `${kpis.cantidadVentas} ventas`, icon: "📅", color: "#647a3e", onClick: () => abrirModal("ventasMes") },
     { titulo: "Ingresos del mes", valor: fmt(kpis.cobradoMes ?? 0), sub: "Cobrado + pagos CC recibidos", icon: "🏦", color: "#059669", onClick: undefined },
     { titulo: "Compras del mes", valor: fmt(kpis.totalComprasMes), sub: "Total gastado en compras", icon: "🛒", color: "#f59e0b", onClick: undefined },
     { titulo: "Ganancia", valor: fmt(kpis.ganancia), sub: `Margen ${kpis.margen?.toFixed(1)}%`, icon: "💰", color: "#22c55e", onClick: undefined },
@@ -347,7 +347,7 @@ export default function Dashboard() {
                 </div>
                 <div style={{ fontSize: 13, fontWeight: 700, color: hayProblema ? "white" : "#374151" }}>{a.titulo}</div>
                 <div style={{ fontSize: 11, color: hayProblema ? "#6b7280" : "#94a3b8", marginTop: 2 }}>{a.sub}</div>
-                <div style={{ fontSize: 11, color: hayProblema ? "#3b82f6" : "#94a3b8", marginTop: 6, fontWeight: 600 }}>
+                <div style={{ fontSize: 11, color: hayProblema ? "#6f7d49" : "#94a3b8", marginTop: 6, fontWeight: 600 }}>
                   {hayProblema ? "Ver detalle →" : "Sin problemas ✓"}
                 </div>
               </button>
@@ -382,14 +382,14 @@ export default function Dashboard() {
                 </div>
                 {/* Cantidad */}
                 <div style={{ textAlign: "right", flexShrink: 0 }}>
-                  <div style={{ fontSize: 16, fontWeight: 800, color: "#3b82f6" }}>{p.cantidad}</div>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: "#6f7d49" }}>{p.cantidad}</div>
                   <div style={{ fontSize: 10, color: "#94a3b8" }}>unidades</div>
                 </div>
                 {/* Barra */}
                 <div style={{ width: 80, flexShrink: 0 }}>
                   <div style={{ height: 6, borderRadius: 3, background: "#f1f5f9", overflow: "hidden" }}>
                     <div style={{
-                      height: "100%", borderRadius: 3, background: "#3b82f6",
+                      height: "100%", borderRadius: 3, background: "#6f7d49",
                       width: `${Math.round((p.cantidad / topProductosMes[0].cantidad) * 100)}%`
                     }} />
                   </div>
@@ -410,12 +410,12 @@ export default function Dashboard() {
             <div style={{ display: "flex", borderRadius: 8, overflow: "hidden", border: "1px solid #e2e8f0" }}>
               <button
                 onClick={() => setPeriodoGrafico("7dias")}
-                style={{ padding: "5px 12px", border: "none", cursor: "pointer", fontSize: 12, fontWeight: 700, background: periodoGrafico === "7dias" ? "#3b82f6" : "white", color: periodoGrafico === "7dias" ? "white" : "#6b7280" }}>
+                style={{ padding: "5px 12px", border: "none", cursor: "pointer", fontSize: 12, fontWeight: 700, background: periodoGrafico === "7dias" ? "#6f7d49" : "white", color: periodoGrafico === "7dias" ? "white" : "#6b7280" }}>
                 7 días
               </button>
               <button
                 onClick={() => setPeriodoGrafico("6meses")}
-                style={{ padding: "5px 12px", border: "none", cursor: "pointer", fontSize: 12, fontWeight: 700, background: periodoGrafico === "6meses" ? "#3b82f6" : "white", color: periodoGrafico === "6meses" ? "white" : "#6b7280" }}>
+                style={{ padding: "5px 12px", border: "none", cursor: "pointer", fontSize: 12, fontWeight: 700, background: periodoGrafico === "6meses" ? "#6f7d49" : "white", color: periodoGrafico === "6meses" ? "white" : "#6b7280" }}>
                 6 meses
               </button>
             </div>
@@ -427,7 +427,7 @@ export default function Dashboard() {
                 <XAxis dataKey="fecha" tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} tickFormatter={v => "$" + (v >= 1000000 ? (v / 1000000).toFixed(1) + "M" : v >= 1000 ? (v / 1000).toFixed(0) + "k" : v)} />
                 <Tooltip formatter={(v: any) => [fmt(v), "Ventas"]} labelStyle={{ color: "#374151" }} contentStyle={{ borderRadius: 8, border: "1px solid #e2e8f0", fontSize: 12 }} />
-                <Line type="monotone" dataKey="total" stroke="#3b82f6" strokeWidth={2.5} dot={{ fill: "#3b82f6", r: 4 }} activeDot={{ r: 6 }} name="Ventas" />
+                <Line type="monotone" dataKey="total" stroke="#6f7d49" strokeWidth={2.5} dot={{ fill: "#6f7d49", r: 4 }} activeDot={{ r: 6 }} name="Ventas" />
               </LineChart>
             ) : (
               <LineChart data={ventasMensual}>
@@ -440,7 +440,7 @@ export default function Dashboard() {
                   contentStyle={{ borderRadius: 8, border: "1px solid #e2e8f0", fontSize: 12 }}
                 />
                 <Legend formatter={(value) => value === "ventas" ? "Ventas" : "Compras"} wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
-                <Line type="monotone" dataKey="ventas" stroke="#3b82f6" strokeWidth={2.5} dot={{ fill: "#3b82f6", r: 4 }} activeDot={{ r: 6 }} name="ventas" />
+                <Line type="monotone" dataKey="ventas" stroke="#6f7d49" strokeWidth={2.5} dot={{ fill: "#6f7d49", r: 4 }} activeDot={{ r: 6 }} name="ventas" />
                 <Line type="monotone" dataKey="compras" stroke="#f59e0b" strokeWidth={2.5} dot={{ fill: "#f59e0b", r: 4 }} activeDot={{ r: 6 }} name="compras" strokeDasharray="5 3" />
               </LineChart>
             )}
@@ -451,7 +451,7 @@ export default function Dashboard() {
           <div style={{ background: "#0f172a", borderRadius: 16, padding: 24, border: "1px solid rgba(255,255,255,0.06)", boxShadow: "0 4px 16px rgba(0,0,0,0.2)" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
               <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "white" }}>📅 Próximos vencimientos</h3>
-              <button onClick={() => abrirModal("lotes")} style={{ background: "rgba(59,130,246,0.15)", border: "none", color: "#3b82f6", fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 6, cursor: "pointer" }}>
+              <button onClick={() => abrirModal("lotes")} style={{ background: "rgba(111,125,73,0.15)", border: "none", color: "#6f7d49", fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 6, cursor: "pointer" }}>
                 Ver todos
               </button>
             </div>
@@ -496,7 +496,7 @@ export default function Dashboard() {
                   <div key={v.id}
                     onClick={() => verDetalleVenta(v)}
                     style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 12px", background: "rgba(255,255,255,0.04)", borderRadius: 8, marginBottom: 6, border: "1px solid rgba(255,255,255,0.06)", cursor: "pointer" }}
-                    onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.background = "rgba(59,130,246,0.1)"}
+                    onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.background = "rgba(111,125,73,0.1)"}
                     onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.04)"}
                   >
                     <div>
@@ -509,7 +509,7 @@ export default function Dashboard() {
                     </div>
                     <div style={{ textAlign: "right" }}>
                       <div style={{ color: "#f87171", fontWeight: 700, fontSize: 14 }}>{fmtExacto(v.total)}</div>
-                      <div style={{ color: "#3b82f6", fontSize: 10, marginTop: 2 }}>Ver detalle →</div>
+                      <div style={{ color: "#6f7d49", fontSize: 10, marginTop: 2 }}>Ver detalle →</div>
                     </div>
                   </div>
                 ))}
@@ -632,7 +632,7 @@ export default function Dashboard() {
                   <div key={v.id}
                     onClick={() => verDetalleVenta(v)}
                     style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 12px", background: "rgba(255,255,255,0.04)", borderRadius: 8, marginBottom: 6, border: "1px solid rgba(255,255,255,0.06)", cursor: "pointer" }}
-                    onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.background = "rgba(59,130,246,0.1)"}
+                    onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.background = "rgba(111,125,73,0.1)"}
                     onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.04)"}
                   >
                     <div>
@@ -645,7 +645,7 @@ export default function Dashboard() {
                     </div>
                     <div style={{ textAlign: "right" }}>
                       <div style={{ color: "#4ade80", fontWeight: 700, fontSize: 14 }}>{fmtExacto(v.total)}</div>
-                      <div style={{ color: "#3b82f6", fontSize: 10, marginTop: 2 }}>Ver detalle →</div>
+                      <div style={{ color: "#6f7d49", fontSize: 10, marginTop: 2 }}>Ver detalle →</div>
                     </div>
                   </div>
                 ))}
@@ -665,7 +665,7 @@ export default function Dashboard() {
                   <div key={v.id}
                     onClick={() => verDetalleVenta(v)}
                     style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 12px", background: "rgba(255,255,255,0.04)", borderRadius: 8, marginBottom: 6, border: "1px solid rgba(255,255,255,0.06)", cursor: "pointer" }}
-                    onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.background = "rgba(59,130,246,0.1)"}
+                    onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.background = "rgba(111,125,73,0.1)"}
                     onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.04)"}
                   >
                     <div>
@@ -678,7 +678,7 @@ export default function Dashboard() {
                     </div>
                     <div style={{ textAlign: "right" }}>
                       <div style={{ color: "#4ade80", fontWeight: 700, fontSize: 14 }}>{fmtExacto(v.total)}</div>
-                      <div style={{ color: "#3b82f6", fontSize: 10, marginTop: 2 }}>Ver detalle →</div>
+                      <div style={{ color: "#6f7d49", fontSize: 10, marginTop: 2 }}>Ver detalle →</div>
                     </div>
                   </div>
                 ))}

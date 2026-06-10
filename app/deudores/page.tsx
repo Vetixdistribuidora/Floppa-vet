@@ -601,8 +601,8 @@ export default function Deudores() {
                     return (
                       <button key={pct} onClick={() => setMontoCobro(String(val))} style={{
                         flex: 1, padding: "6px 0", borderRadius: 8,
-                        border: activo ? "1px solid #3b82f6" : "1px solid rgba(255,255,255,0.1)",
-                        background: activo ? "#3b82f6" : "rgba(255,255,255,0.05)",
+                        border: activo ? "1px solid #6f7d49" : "1px solid rgba(255,255,255,0.1)",
+                        background: activo ? "#6f7d49" : "rgba(255,255,255,0.05)",
                         color: activo ? "white" : "#9ca3af",
                         fontSize: 11, fontWeight: 600, cursor: "pointer"
                       }}>{pct}%</button>
@@ -667,16 +667,16 @@ export default function Deudores() {
                           style={{
                             display: "flex", justifyContent: "space-between", alignItems: "center",
                             padding: "9px 12px", borderRadius: 8, cursor: "pointer",
-                            background: sel ? "rgba(59,130,246,0.18)" : est.bg,
-                            border: `1px solid ${sel ? "rgba(59,130,246,0.5)" : est.border}`,
+                            background: sel ? "rgba(111,125,73,0.18)" : est.bg,
+                            border: `1px solid ${sel ? "rgba(111,125,73,0.5)" : est.border}`,
                             transition: "all 0.12s",
                           }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                             {/* Checkbox visual */}
                             <div style={{
                               width: 18, height: 18, borderRadius: 5, flexShrink: 0,
-                              border: `2px solid ${sel ? "#3b82f6" : "rgba(255,255,255,0.2)"}`,
-                              background: sel ? "#3b82f6" : "transparent",
+                              border: `2px solid ${sel ? "#6f7d49" : "rgba(255,255,255,0.2)"}`,
+                              background: sel ? "#6f7d49" : "transparent",
                               display: "flex", alignItems: "center", justifyContent: "center",
                             }}>
                               {sel && <span style={{ color: "white", fontSize: 11, fontWeight: 900, lineHeight: 1 }}>✓</span>}

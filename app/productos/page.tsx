@@ -39,10 +39,10 @@ const labelStyle: React.CSSProperties = {
   color: "#9ca3af", letterSpacing: "0.5px", marginBottom: "6px", textTransform: "uppercase",
 }
 const btnPrimario: React.CSSProperties = {
-  background: "linear-gradient(135deg, #2563eb, #3b82f6)",
+  background: "linear-gradient(135deg, #5b6b34, #6f7d49)",
   color: "white", border: "none", borderRadius: 8,
   padding: "9px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer",
-  boxShadow: "0 2px 8px rgba(59,130,246,0.3)"
+  boxShadow: "0 2px 8px rgba(111,125,73,0.3)"
 }
 const btnSecundario: React.CSSProperties = {
   background: "#f1f5f9", color: "#374151",
@@ -1002,7 +1002,7 @@ export default function Productos() {
                 <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 10, flexWrap: "wrap" }}>
                   <span style={{ fontSize: 12, color: "#6b7280" }}>
                     <b style={{ color: "#4ade80" }}>{mapped.length}</b> válidos ·{" "}
-                    <b style={{ color: "#60a5fa" }}>{existentesCount}</b> actualizaciones ·{" "}
+                    <b style={{ color: "#8a9a5b" }}>{existentesCount}</b> actualizaciones ·{" "}
                     <b style={{ color: "#fbbf24" }}>{nuevosCount}</b> nuevos
                     {descartados > 0 && (
                       <span title={`${sinNombre} sin nombre · ${sinCosto} sin precio válido`}>
@@ -1037,7 +1037,7 @@ export default function Productos() {
                           {colLaboratorio && <span style={{ fontSize: 11, color: "#9ca3af", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.laboratorio || <span style={{ color: "#374151" }}>—</span>}</span>}
                           <span style={{ fontSize: 12, color: "#4ade80", width: 90, textAlign: "right", fontWeight: 600 }}>${r.costo.toLocaleString("es-AR")}</span>
                           <span style={{ width: 50, textAlign: "center" }}>
-                            <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 5, background: esExistente ? "rgba(59,130,246,0.15)" : "rgba(251,191,36,0.15)", color: esExistente ? "#60a5fa" : "#fbbf24" }}>
+                            <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 5, background: esExistente ? "rgba(111,125,73,0.15)" : "rgba(251,191,36,0.15)", color: esExistente ? "#8a9a5b" : "#fbbf24" }}>
                               {esExistente ? "ACT." : "NUEVO"}
                             </span>
                           </span>
@@ -1120,12 +1120,12 @@ export default function Productos() {
                     </div>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 14, flexWrap: "wrap", gap: 10 }}>
-                    <span style={{ color: "#93c5fd", fontSize: 13 }}>
+                    <span style={{ color: "#a8b67d", fontSize: 13 }}>
                       💵 Precio estimado: <b style={{ color: "white" }}>{formatearPrecio(precioEstimado)}</b>
                       <span style={{ color: "#6b7280", fontSize: 11 }}> = Neto × (1+IVA{margenNum > 0 ? " " + margenNum + "%" : ""}) × (1+Flete{fleteEditNum > 0 ? " " + fleteEditNum + "%" : ""}) × (1+Pérd.{perdidaEditNum > 0 ? " " + perdidaEditNum + "%" : ""})</span>
                     </span>
                     <div style={{ display: "flex", gap: 8 }}>
-                      <button onClick={() => guardarEdicion(p.id)} disabled={guardandoEdicion === p.id} style={{ background: "linear-gradient(135deg, #2563eb, #3b82f6)", color: "white", border: "none", borderRadius: 8, padding: "8px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer", opacity: guardandoEdicion === p.id ? 0.6 : 1 }}>💾 Guardar</button>
+                      <button onClick={() => guardarEdicion(p.id)} disabled={guardandoEdicion === p.id} style={{ background: "linear-gradient(135deg, #5b6b34, #6f7d49)", color: "white", border: "none", borderRadius: 8, padding: "8px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer", opacity: guardandoEdicion === p.id ? 0.6 : 1 }}>💾 Guardar</button>
                       <button onClick={() => setEditando(prev => { const n = { ...prev }; delete n[p.id]; return n })} style={{ background: "rgba(255,255,255,0.07)", color: "#9ca3af", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, padding: "8px 16px", fontSize: 13, cursor: "pointer" }}>Cancelar</button>
                     </div>
                   </div>
@@ -1158,7 +1158,7 @@ export default function Productos() {
                           </span>
                         )}
                         {p.categoria && (
-                          <span style={{ background: "#eff6ff", color: "#3b82f6", fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 5, border: "1px solid #bfdbfe" }}>
+                          <span style={{ background: "#f4f2e6", color: "#6f7d49", fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 5, border: "1px solid #cdd6a8" }}>
                             {p.categoria}
                           </span>
                         )}
@@ -1170,8 +1170,8 @@ export default function Productos() {
                         {badgeLote}
                       </div>
                       <div style={{ fontSize: 11, color: "#6b7280", marginTop: 2, flexWrap: "wrap", display: "flex", gap: 8, alignItems: "center" }}>
-                        <span style={{ background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 6, padding: "2px 8px" }}>
-                          🏥 Vet. <b style={{ color: "#1d4ed8" }}>{formatearPrecio(Math.round(p.precio_venta * 1.30 * 100) / 100)}</b>
+                        <span style={{ background: "#f4f2e6", border: "1px solid #cdd6a8", borderRadius: 6, padding: "2px 8px" }}>
+                          🏥 Vet. <b style={{ color: "#55692f" }}>{formatearPrecio(Math.round(p.precio_venta * 1.30 * 100) / 100)}</b>
                         </span>
                         <span style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 6, padding: "2px 8px" }}>
                           🌾 Prod. <b style={{ color: "#15803d" }}>{formatearPrecio(Math.round(p.precio_venta * 1.58 * 100) / 100)}</b>
@@ -1184,16 +1184,16 @@ export default function Productos() {
                     {/* Acciones */}
                     <div className="producto-item-acciones" style={{ display: "flex", gap: 6, flexShrink: 0 }}>
                       <button onClick={() => toggleLotes(p.id)} style={{
-                        background: lotes.length > 0 ? "#eff6ff" : "#f9fafb",
-                        color: lotes.length > 0 ? "#2563eb" : "#9ca3af",
-                        border: `1px solid ${lotes.length > 0 ? "#bfdbfe" : "#e5e7eb"}`,
+                        background: lotes.length > 0 ? "#f4f2e6" : "#f9fafb",
+                        color: lotes.length > 0 ? "#5b6b34" : "#9ca3af",
+                        border: `1px solid ${lotes.length > 0 ? "#cdd6a8" : "#e5e7eb"}`,
                         borderRadius: 7, padding: "5px 10px", fontSize: 11, cursor: "pointer", fontWeight: 600
                       }}>📅 {lotes.length}</button>
                       <button onClick={() => setModalLote({ productoId: p.id, productoNombre: p.nombre })} style={{
                         background: "#f0fdf4", color: "#16a34a", border: "1px solid #bbf7d0",
                         borderRadius: 7, padding: "5px 10px", fontSize: 11, cursor: "pointer", fontWeight: 600
                       }}>+ Lote</button>
-                      <button onClick={() => setEditando(prev => ({ ...prev, [p.id]: { ...p } }))} style={{ background: p.id in editando ? "#eff6ff" : "#f1f5f9", color: p.id in editando ? "#2563eb" : "#374151", border: `1px solid ${p.id in editando ? "#bfdbfe" : "#e2e8f0"}`, borderRadius: 7, padding: "5px 10px", fontSize: 11, cursor: "pointer", fontWeight: 600 }}>✏️</button>
+                      <button onClick={() => setEditando(prev => ({ ...prev, [p.id]: { ...p } }))} style={{ background: p.id in editando ? "#f4f2e6" : "#f1f5f9", color: p.id in editando ? "#5b6b34" : "#374151", border: `1px solid ${p.id in editando ? "#cdd6a8" : "#e2e8f0"}`, borderRadius: 7, padding: "5px 10px", fontSize: 11, cursor: "pointer", fontWeight: 600 }}>✏️</button>
                       <button onClick={() => setConfirmEliminar(p)} style={{ background: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca", borderRadius: 7, padding: "5px 10px", fontSize: 11, cursor: "pointer", fontWeight: 600 }}>🗑️</button>
                     </div>
                   </div>
@@ -1240,7 +1240,7 @@ export default function Productos() {
                                             }}
                                             onBlur={() => { const val = editandoCantidadLote?.valor ?? ""; guardarCantidadLote(l, val) }}
                                             disabled={guardandoCantidadLote}
-                                            style={{ width: 64, padding: "3px 6px", borderRadius: 6, border: "1px solid #3b82f6", fontSize: 12, outline: "none", textAlign: "center" }}
+                                            style={{ width: 64, padding: "3px 6px", borderRadius: 6, border: "1px solid #6f7d49", fontSize: 12, outline: "none", textAlign: "center" }}
                                           />
                                         </div>
                                       ) : (
@@ -1322,7 +1322,7 @@ export default function Productos() {
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                   {([["porcentaje", "% Porcentaje"], ["pesos", "$ Pesos fijos"], ["recalcular", "🔄 Recalcular"]] as const).map(([val, label]) => (
                     <button key={val} onClick={() => setAjusteTipo(val)}
-                      style={{ flex: 1, minWidth: 90, padding: "10px", borderRadius: 10, border: "1px solid " + (ajusteTipo === val ? (val === "recalcular" ? "#22c55e" : "#3b82f6") : "rgba(255,255,255,0.1)"), background: ajusteTipo === val ? (val === "recalcular" ? "rgba(34,197,94,0.2)" : "rgba(59,130,246,0.2)") : "transparent", color: ajusteTipo === val ? (val === "recalcular" ? "#4ade80" : "#93c5fd") : "#9ca3af", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+                      style={{ flex: 1, minWidth: 90, padding: "10px", borderRadius: 10, border: "1px solid " + (ajusteTipo === val ? (val === "recalcular" ? "#22c55e" : "#6f7d49") : "rgba(255,255,255,0.1)"), background: ajusteTipo === val ? (val === "recalcular" ? "rgba(34,197,94,0.2)" : "rgba(111,125,73,0.2)") : "transparent", color: ajusteTipo === val ? (val === "recalcular" ? "#4ade80" : "#a8b67d") : "#9ca3af", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
                       {label}
                     </button>
                   ))}

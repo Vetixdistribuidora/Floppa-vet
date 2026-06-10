@@ -185,7 +185,7 @@ export default function ConfiguracionPage() {
               <button
                 onClick={guardarNombre}
                 disabled={guardandoNombre}
-                style={{ padding: "9px 16px", background: "#3b82f6", border: "none", borderRadius: 8, color: "white", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+                style={{ padding: "9px 16px", background: "#6f7d49", border: "none", borderRadius: 8, color: "white", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
                 {guardandoNombre ? "..." : "Guardar"}
               </button>
               <button
@@ -279,10 +279,10 @@ export default function ConfiguracionPage() {
               disabled={creandoLink}
               style={{
                 width: "100%", padding: "13px",
-                background: creandoLink ? "rgba(59,130,246,0.5)" : "linear-gradient(135deg, #2563eb, #3b82f6)",
+                background: creandoLink ? "rgba(111,125,73,0.5)" : "linear-gradient(135deg, #5b6b34, #6f7d49)",
                 border: "none", borderRadius: 10, color: "white",
                 fontSize: 14, fontWeight: 700, cursor: creandoLink ? "not-allowed" : "pointer",
-                boxShadow: creandoLink ? "none" : "0 4px 16px rgba(59,130,246,0.35)",
+                boxShadow: creandoLink ? "none" : "0 4px 16px rgba(111,125,73,0.35)",
                 transition: "all 0.2s",
               }}>
               {creandoLink ? "Generando link de pago..." : "💳 Activar suscripción con MercadoPago"}

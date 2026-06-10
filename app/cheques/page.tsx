@@ -39,12 +39,12 @@ function fmt(n: number) {
 function chipColor(name: string) {
   const palette = [
     { bg: "#dcfce7", color: "#15803d", border: "#bbf7d0" },
-    { bg: "#dbeafe", color: "#1d4ed8", border: "#bfdbfe" },
+    { bg: "#e6e8cf", color: "#55692f", border: "#cdd6a8" },
     { bg: "#fef9c3", color: "#a16207", border: "#fde68a" },
     { bg: "#fce7f3", color: "#be185d", border: "#fbcfe8" },
     { bg: "#ede9fe", color: "#6d28d9", border: "#ddd6fe" },
     { bg: "#ffedd5", color: "#c2410c", border: "#fed7aa" },
-    { bg: "#e0f2fe", color: "#0369a1", border: "#bae6fd" },
+    { bg: "#e9ecd6", color: "#0369a1", border: "#bae6fd" },
     { bg: "#f0fdf4", color: "#166534", border: "#bbf7d0" },
   ];
   let h = 0;
@@ -282,10 +282,10 @@ export default function ChequesPage() {
           )}
         </p>
         <button onClick={abrirCrear} style={{
-          background: "linear-gradient(135deg, #2563eb, #3b82f6)", color: "white",
+          background: "linear-gradient(135deg, #5b6b34, #6f7d49)", color: "white",
           border: "none", borderRadius: 10, padding: "10px 18px",
           fontSize: 13, fontWeight: 700, cursor: "pointer",
-          boxShadow: "0 2px 8px rgba(59,130,246,0.3)",
+          boxShadow: "0 2px 8px rgba(111,125,73,0.3)",
         }}>+ Nuevo cheque</button>
       </div>
 
@@ -294,7 +294,7 @@ export default function ChequesPage() {
         {[
           { label: "Total ingresado", value: fmt(totalIng),  color: "#15803d", bg: "#f0fdf4", border: "#bbf7d0" },
           { label: "Total egresado",  value: fmt(totalEgr),  color: "#dc2626", bg: "#fef2f2", border: "#fecaca" },
-          { label: "Saldo neto",      value: fmt(saldoNeto), color: saldoNeto >= 0 ? "#1d4ed8" : "#dc2626", bg: "#eff6ff", border: "#bfdbfe" },
+          { label: "Saldo neto",      value: fmt(saldoNeto), color: saldoNeto >= 0 ? "#55692f" : "#dc2626", bg: "#f4f2e6", border: "#cdd6a8" },
           { label: "Pendientes",      value: String(pendientes),   color: "#d97706", bg: "#fffbeb", border: "#fde68a" },
           { label: "Rechazados",      value: String(rechazadosCt), color: "#dc2626", bg: "#fef2f2", border: "#fecaca" },
         ].map(s => (
@@ -341,7 +341,7 @@ export default function ChequesPage() {
                 padding: "5px 11px", borderRadius: 7, border: "none", cursor: "pointer",
                 fontSize: 12, fontWeight: 600,
                 background: active ? "white" : "transparent",
-                color: active ? "#1d4ed8" : "#6b7280",
+                color: active ? "#55692f" : "#6b7280",
                 boxShadow: active ? "0 1px 3px rgba(0,0,0,0.1)" : "none",
               }}>{labels[t]}</button>
             );
@@ -351,7 +351,7 @@ export default function ChequesPage() {
         {/* Estado */}
         <div style={{ display: "flex", gap: 3, background: "#f1f5f9", borderRadius: 10, padding: 3, border: "1px solid #e2e8f0" }}>
           {[
-            { v: "todos",     l: "Todos",     c: "#1d4ed8" },
+            { v: "todos",     l: "Todos",     c: "#55692f" },
             { v: "pendiente", l: "Pendiente", c: "#d97706" },
             { v: "pagado",    l: "Pagado",    c: "#15803d" },
             { v: "rechazado", l: "Rechazado", c: "#dc2626" },
@@ -473,7 +473,7 @@ export default function ChequesPage() {
                       </td>
 
                       {/* Saldo acumulado */}
-                      <td style={{ padding: "7px 10px", textAlign: "right", fontSize: 12, fontWeight: 800, whiteSpace: "nowrap", color: (saldoMap[c.id] ?? 0) >= 0 ? "#1d4ed8" : "#dc2626" }}>
+                      <td style={{ padding: "7px 10px", textAlign: "right", fontSize: 12, fontWeight: 800, whiteSpace: "nowrap", color: (saldoMap[c.id] ?? 0) >= 0 ? "#55692f" : "#dc2626" }}>
                         {fmt(saldoMap[c.id] ?? 0)}
                       </td>
 
@@ -562,7 +562,7 @@ export default function ChequesPage() {
                   <td style={{ padding: "8px 10px", textAlign: "right", fontWeight: 800, fontSize: 12, color: "#15803d", whiteSpace: "nowrap" }}>
                     {fmt(filtIng)}
                   </td>
-                  <td style={{ padding: "8px 10px", textAlign: "right", fontWeight: 800, fontSize: 13, color: (filtIng - filtEgr) >= 0 ? "#1d4ed8" : "#dc2626", whiteSpace: "nowrap" }}>
+                  <td style={{ padding: "8px 10px", textAlign: "right", fontWeight: 800, fontSize: 13, color: (filtIng - filtEgr) >= 0 ? "#55692f" : "#dc2626", whiteSpace: "nowrap" }}>
                     {fmt(filtIng - filtEgr)}
                   </td>
                   <td colSpan={2} />
@@ -680,7 +680,7 @@ export default function ChequesPage() {
               }}>Cancelar</button>
               <button onClick={guardar} disabled={guardando} style={{
                 flex: 2, padding: "11px",
-                background: "linear-gradient(135deg, #2563eb, #3b82f6)",
+                background: "linear-gradient(135deg, #5b6b34, #6f7d49)",
                 border: "none", borderRadius: 10, color: "white",
                 fontSize: 13, fontWeight: 700, cursor: "pointer", opacity: guardando ? 0.5 : 1,
               }}>{guardando ? "Guardando..." : editando ? "Guardar cambios" : "Registrar cheque"}</button>
