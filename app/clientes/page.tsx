@@ -1,0 +1,783 @@
+"use client"
+
+import { useEffect, useState } from "react"
+import { supabase } from "@/lib/supabase"
+import { generarHTMLEImprimir, imprimirReciboCC } from "@/lib/impresion"
+import { getSaldoCliente } from "@/lib/saldo"
+
+function fmt(num: number) {
+  return "$" + Number(num).toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+function fechaCorta(f: string) {
+  if (!f) return "-"
+  const d = f.includes("T") ? new Date(f) : new Date(f + "T00:00:00")
+  return d.toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric" })
+}
+
+function Toast({ mensaje, tipo }: { mensaje: string; tipo: "ok" | "error" }) {
+  return (
+    <div style={{
+      position: "fixed", bottom: 30, right: 30,
+      background: tipo === "ok" ? "#2f9e44" : "#e03131",
+      color: "white", padding: "12px 22px", borderRadius: 10,
+      fontWeight: "bold", zIndex: 9999, boxShadow: "0 4px 20px rgba(0,0,0,0.2)", fontSize: 15
+    }}>
+      {tipo === "ok" ? "✓ " : "✕ "}{mensaje}
+    </div>
+  )
+}
+
+const labelStyle: React.CSSProperties = {
+  display: "block", fontSize: 11, fontWeight: 700,
+  color: "#9ca3af", letterSpacing: 0.5, marginBottom: 6, textTransform: "uppercase"
+}
+const inputDarkStyle: React.CSSProperties = {
+  width: "100%", padding: "10px 14px",
+  background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
+  borderRadius: 10, color: "white", fontSize: 14, outline: "none", boxSizing: "border-box"
+}
+const inputLightStyle: React.CSSProperties = {
+  width: "100%", padding: "10px 14px", border: "1px solid #e2e8f0",
+  borderRadius: 10, fontSize: 14, color: "#111827", outline: "none",
+  boxSizing: "border-box", background: "white"
+}
+
+const responsiveStyles = `
+  @media (max-width: 768px) {
+    .clientes-header { flex-direction: column !important; align-items: flex-start !important; gap: 10px !important; }
+    .clientes-header-btn { width: 100% !important; text-align: center !important; }
+    .clientes-card { flex-direction: column !important; align-items: flex-start !important; gap: 10px !important; }
+    .clientes-card-acciones { width: 100% !important; justify-content: flex-end !important; display: flex !important; gap: 8px !important; }
+    .clientes-modal-grid { grid-template-columns: 1fr !important; }
+    .historial-kpis { grid-template-columns: repeat(2, 1fr) !important; }
+    .historial-kpis > div { border-right: none !important; border-bottom: 1px solid rgba(255,255,255,0.08) !important; }
+    .historial-modal-inner { padding: 16px 18px !important; }
+    .historial-header { padding: 18px 18px !important; }
+    .historial-tabs { padding: 0 16px !important; }
+    .venta-pendiente-row { flex-direction: column !important; align-items: flex-start !important; gap: 6px !important; }
+    .pago-row { flex-wrap: wrap !important; gap: 6px !important; }
+    .pago-row button { flex-shrink: 0 !important; }
+  }
+`
+
+export default function Clientes() {
+  const [clientes, setClientes] = useState<any[]>([])
+  const [cargando, setCargando] = useState(false)
+  const [toast, setToast] = useState<any>(null)
+  const [busqueda, setBusqueda] = useState("")
+  const [modalNuevo, setModalNuevo] = useState(false)
+  const [modalEditar, setModalEditar] = useState<any>(null)
+  const [formNuevo, setFormNuevo] = useState({ nombre: "", apellido: "", cuit: "", telefono: "", localidad: "", porcentaje: "" })
+  const [guardando, setGuardando] = useState(false)
+  const [confirmEliminar, setConfirmEliminar] = useState<any>(null)
+  const [eliminandoId, setEliminandoId] = useState<number | null>(null)
+  const [deudasPorCliente, setDeudasPorCliente] = useState<Record<number, number>>({})
+
+  const [modalHistorial, setModalHistorial] = useState<any>(null)
+  const [ventas, setVentas] = useState<any[]>([])
+  const [tabActiva, setTabActiva] = useState<"historial" | "cuentaCorriente">("historial")
+  const [totalGastado, setTotalGastado] = useState(0)
+  const [cantidadCompras, setCantidadCompras] = useState(0)
+  const [promedioCompra, setPromedioCompra] = useState(0)
+  const [productoTop, setProductoTop] = useState("")
+  const [deudaTotal, setDeudaTotal] = useState(0)
+
+  const [modalPago, setModalPago] = useState(false)
+  const [ventaParaPagar, setVentaParaPagar] = useState<any>(null)
+  const [montoPago, setMontoPago] = useState("")
+  const [notaPago, setNotaPago] = useState("")
+  const [metodoPago, setMetodoPago] = useState("efectivo")
+  const [guardandoPago, setGuardandoPago] = useState(false)
+
+  function mostrarToast(mensaje: string, tipo: "ok" | "error") {
+    setToast({ mensaje, tipo }); setTimeout(() => setToast(null), 3000)
+  }
+
+  async function cargar() {
+    setCargando(true)
+    try {
+      const { data } = await supabase.from("clientes").select("*").order("nombre")
+      setClientes(data || [])
+      await cargarDeudas(data || [])
+    } catch (e) {
+      console.error("Error cargando clientes:", e)
+    } finally {
+      setCargando(false)
+    }
+  }
+
+  async function cargarDeudas(lista: any[]) {
+    if (!lista.length) return
+    const clienteIds = lista.map((c: any) => c.id)
+    // 2 queries en lugar de N×M: ventas CC + todos sus pagos
+    const { data: ventasCC } = await supabase
+      .from("ventas").select("id, total, cliente_id").in("cliente_id", clienteIds).eq("estado", "cuenta_corriente")
+    if (!ventasCC?.length) return
+    const ventaIds = ventasCC.map((v: any) => v.id)
+    const { data: pagos } = await supabase
+      .from("pagos_cuenta_corriente").select("venta_id, monto").in("venta_id", ventaIds)
+    const pagosMap: Record<number, number> = {}
+    pagos?.forEach((p: any) => { pagosMap[p.venta_id] = (pagosMap[p.venta_id] || 0) + Number(p.monto) })
+    const mapa: Record<number, number> = {}
+    ventasCC.forEach((v: any) => {
+      // ventas.total ya refleja descuentos de NCs aplicadas
+      const saldo = Number(v.total) - (pagosMap[v.id] || 0)
+      if (saldo > 0) mapa[v.cliente_id] = (mapa[v.cliente_id] || 0) + saldo
+    })
+    setDeudasPorCliente(mapa)
+  }
+
+  useEffect(() => { cargar() }, [])
+
+  // Avisar al layout cuando hay un modal de edición/alta abierto
+  useEffect(() => {
+    if (modalNuevo || modalEditar) {
+      sessionStorage.setItem("floppa_wip", "clientes")
+    } else {
+      sessionStorage.removeItem("floppa_wip")
+    }
+    return () => { sessionStorage.removeItem("floppa_wip") }
+  }, [modalNuevo, modalEditar])
+
+  async function agregarCliente() {
+    if (!formNuevo.nombre.trim() || !formNuevo.apellido.trim()) { mostrarToast("Nombre y apellido obligatorios", "error"); return }
+    setGuardando(true)
+    try {
+      const { data: nuevoCliente, error } = await supabase.from("clientes").insert([{
+        nombre: formNuevo.nombre.trim(), apellido: formNuevo.apellido.trim(),
+        cuit: formNuevo.cuit.trim(), telefono: formNuevo.telefono.trim(),
+        localidad: formNuevo.localidad.trim(), porcentaje: Number(formNuevo.porcentaje || 0)
+      }]).select().single()
+      if (error) { mostrarToast("Error: " + error.message, "error"); return }
+      mostrarToast("✅ Cliente agregado", "ok")
+      // Actualización local instantánea — sin recargar toda la lista
+      if (nuevoCliente) {
+        setClientes(prev => [...prev, nuevoCliente].sort((a, b) => a.nombre.localeCompare(b.nombre, "es")))
+      }
+      setFormNuevo({ nombre: "", apellido: "", cuit: "", telefono: "", localidad: "", porcentaje: "" })
+      setModalNuevo(false)
+    } catch (e: any) {
+      mostrarToast("Error: " + (e?.message || "error desconocido"), "error")
+    } finally {
+      setGuardando(false)
+    }
+  }
+
+  async function guardarEdicion() {
+    if (!modalEditar?.nombre?.trim() || !modalEditar?.apellido?.trim()) { mostrarToast("Nombre y apellido obligatorios", "error"); return }
+    setGuardando(true)
+    try {
+      const { error } = await supabase.from("clientes").update({
+        nombre: modalEditar.nombre, apellido: modalEditar.apellido,
+        cuit: modalEditar.cuit, telefono: modalEditar.telefono,
+        localidad: modalEditar.localidad, porcentaje: Number(modalEditar.porcentaje || 0)
+      }).eq("id", modalEditar.id)
+      if (error) { mostrarToast("Error: " + error.message, "error"); return }
+      mostrarToast("✅ Cliente actualizado", "ok")
+      // Actualización local instantánea — sin recargar toda la lista
+      setClientes(prev => prev.map(c => c.id === modalEditar.id
+        ? { ...c, nombre: modalEditar.nombre, apellido: modalEditar.apellido, cuit: modalEditar.cuit, telefono: modalEditar.telefono, localidad: modalEditar.localidad, porcentaje: Number(modalEditar.porcentaje || 0) }
+        : c
+      ))
+      setModalEditar(null)
+    } catch (e: any) {
+      mostrarToast("Error: " + (e?.message || "error desconocido"), "error")
+    } finally {
+      setGuardando(false)
+    }
+  }
+
+  async function eliminar(id: number) {
+    setEliminandoId(id)
+    try {
+      const { error } = await supabase.from("clientes").delete().eq("id", id)
+      if (error) { mostrarToast("Error: " + error.message, "error"); return }
+      mostrarToast("🗑️ Cliente eliminado", "ok")
+      // Actualización local instantánea — sin recargar toda la lista
+      setClientes(prev => prev.filter(c => c.id !== id))
+      setDeudasPorCliente(prev => { const copia = { ...prev }; delete copia[id]; return copia })
+      setConfirmEliminar(null)
+    } catch (e: any) {
+      mostrarToast("Error: " + (e?.message || "error desconocido"), "error")
+    } finally {
+      setEliminandoId(null)
+    }
+  }
+
+  async function abrirHistorial(cliente: any) {
+    setModalHistorial(cliente); setTabActiva("historial")
+    await cargarVentasCliente(cliente.id)
+  }
+
+  async function cargarVentasCliente(clienteId: number) {
+    const { data: vv } = await supabase.from("ventas").select("id, total, estado, nro_factura, fecha").eq("cliente_id", clienteId).order("id", { ascending: false })
+    if (!vv) { setVentas([]); return }
+    const ventaIds = vv.map((v: any) => v.id)
+    // 2 queries batch en lugar de N×2 (two-step para detalle: sin FK declarada)
+    const [detallesRaw, pagosRes] = await Promise.all([
+      ventaIds.length ? supabase.from("detalle_ventas").select("venta_id, producto_id, cantidad, precio, bonificacion").in("venta_id", ventaIds) : { data: [] },
+      ventaIds.length ? supabase.from("pagos_cuenta_corriente").select("id, venta_id, monto, fecha, nota, nro_recibo").in("venta_id", ventaIds).order("fecha", { ascending: true }) : { data: [] }
+    ])
+    // Resolver nombres de productos en un solo query adicional
+    const prodIds = [...new Set((detallesRaw.data || []).map((d: any) => d.producto_id))]
+    const { data: prodsData } = prodIds.length
+      ? await supabase.from("productos").select("id, nombre").in("id", prodIds)
+      : { data: [] }
+    const prodsMap: Record<number, string> = {}
+    ;(prodsData || []).forEach((p: any) => { prodsMap[p.id] = p.nombre })
+    const detallesConNombre = (detallesRaw.data || []).map((d: any) => ({
+      ...d, productos: { nombre: prodsMap[d.producto_id] || "" }
+    }))
+    const detallesMap: Record<number, any[]> = {}
+    detallesConNombre.forEach((d: any) => { if (!detallesMap[d.venta_id]) detallesMap[d.venta_id] = []; detallesMap[d.venta_id].push(d) })
+    const pagosMap: Record<number, any[]> = {}
+    pagosRes.data?.forEach((p: any) => { if (!pagosMap[p.venta_id]) pagosMap[p.venta_id] = []; pagosMap[p.venta_id].push(p) })
+    const conDetalle = vv.map((v: any) => {
+      const detalles = detallesMap[v.id] || []
+      const pagos = pagosMap[v.id] || []
+      const totalPagado = pagos.reduce((s: number, p: any) => s + Number(p.monto), 0)
+      const saldo = Math.max(0, Number(v.total) - totalPagado)
+      return { ...v, detalle_ventas: detalles, pagos, totalPagado, saldo }
+    })
+    setVentas(conDetalle)
+    const total = conDetalle.reduce((s, v) => s + Number(v.total), 0)
+    setTotalGastado(total); setCantidadCompras(conDetalle.length)
+    setPromedioCompra(conDetalle.length ? total / conDetalle.length : 0)
+    setDeudaTotal(conDetalle.filter(v => v.estado === "cuenta_corriente").reduce((s, v) => s + v.saldo, 0))
+    const contador: any = {}
+    conDetalle.forEach(v => v.detalle_ventas?.forEach((d: any) => {
+      const n = d.productos?.nombre || "Sin nombre"
+      contador[n] = (contador[n] || 0) + d.cantidad
+    }))
+    const top = Object.entries(contador).sort((a: any, b: any) => b[1] - a[1])[0]
+    setProductoTop(top ? top[0] as string : "Ninguno")
+  }
+
+  function abrirPago(venta: any) {
+    setVentaParaPagar(venta); setMontoPago(String(venta.saldo)); setNotaPago(""); setMetodoPago("efectivo"); setModalPago(true)
+  }
+
+  async function registrarPago() {
+    if (!montoPago || Number(montoPago) <= 0) { mostrarToast("Ingresá un monto válido", "error"); return }
+    const monto = Number(montoPago)
+    if (monto > ventaParaPagar.saldo) { mostrarToast("El monto supera el saldo pendiente", "error"); return }
+    setGuardandoPago(true)
+    try {
+      // Generar nro_recibo usando la secuencia atómica
+      let nroRecibo: string
+      const { data: nroData, error: nroError } = await supabase.rpc('get_next_nro_recibo')
+      if (nroError || nroData === null || nroData === undefined) {
+        // Fallback: buscar el último recibo y sumar 1
+        const { data: ultimoRecibo } = await supabase.from("pagos_cuenta_corriente").select("nro_recibo")
+          .not("nro_recibo", "is", null).order("id", { ascending: false }).limit(1).maybeSingle()
+        let nextNum = 6520
+        if (ultimoRecibo?.nro_recibo) {
+          const m = ultimoRecibo.nro_recibo.match(/(\d+)$/)
+          if (m) nextNum = parseInt(m[1], 10) + 1
+        }
+        nroRecibo = "001-" + String(nextNum).padStart(6, "0")
+      } else {
+        nroRecibo = "001-" + String(Number(nroData)).padStart(6, "0")
+      }
+      const { error } = await supabase.from("pagos_cuenta_corriente").insert([{
+        cliente_id: modalHistorial.id, venta_id: ventaParaPagar.id, monto, metodo_pago: metodoPago || null, nota: notaPago || null, nro_recibo: nroRecibo
+      }])
+      if (error) { mostrarToast("Error: " + error.message, "error"); return }
+      // Registrar movimiento en cuentas_corrientes para mantener el saldo sincronizado
+      const { data: ultimoCC } = await supabase.from("cuentas_corrientes").select("saldo").eq("cliente_id", modalHistorial.id).order("id", { ascending: false }).limit(1).maybeSingle()
+      let saldoBase = Number(ultimoCC?.saldo || 0)
+      if (!ultimoCC) {
+        // Sin historial en CC: calcular deuda total desde ventas CC del cliente
+        const { data: vcc } = await supabase.from("ventas").select("total").eq("cliente_id", modalHistorial.id).eq("estado", "cuenta_corriente")
+        saldoBase = (vcc || []).reduce((s: number, v: any) => s + Number(v.total), 0)
+      }
+      const nuevoSaldoCC = Math.max(0, saldoBase - monto)
+      await supabase.from("cuentas_corrientes").insert({ cliente_id: modalHistorial.id, tipo: "pago", monto: -monto, saldo: nuevoSaldoCC, venta_id: ventaParaPagar.id, fecha: new Date() })
+      if (monto >= ventaParaPagar.saldo) {
+        await supabase.from("ventas").update({ estado: "cobrada" }).eq("id", ventaParaPagar.id)
+      }
+      mostrarToast("✅ Pago registrado — Recibo " + nroRecibo, "ok")
+      // Imprimir recibo automáticamente
+      const saldoTotalClientePago = await getSaldoCliente(modalHistorial.id)
+      imprimirReciboCC(
+        { monto, nota: notaPago || null, nro_recibo: nroRecibo, fecha: new Date().toISOString() },
+        ventaParaPagar,
+        modalHistorial,
+        ventaParaPagar.saldo,
+        saldoTotalClientePago
+      )
+      setModalPago(false); setVentaParaPagar(null)
+      // Recargar solo el historial del cliente y recalcular deudas (sin refetch de toda la lista)
+      await cargarVentasCliente(modalHistorial.id)
+      await cargarDeudas(clientes)
+    } catch (e: any) {
+      mostrarToast("Error: " + (e?.message || "error desconocido"), "error")
+    } finally {
+      setGuardandoPago(false)
+    }
+  }
+
+  async function imprimirRecibo(pago: any, venta: any) {
+    const saldoAnterior = Number(venta.total) - (Number(venta.totalPagado) - Number(pago.monto))
+    const saldoTotalCliente = modalHistorial ? await getSaldoCliente(modalHistorial.id) : 0
+    imprimirReciboCC(pago, venta, modalHistorial, saldoAnterior, saldoTotalCliente)
+  }
+
+  async function reimprimirFactura(venta: any) {
+    let { data } = await supabase.from("facturas_impresion").select("datos").eq("venta_id", venta.id).maybeSingle()
+    if (!data) {
+      const res = await supabase.from("facturas_impresion").select("datos").eq("nro_factura", venta.nro_factura).order("id", { ascending: false }).limit(1).maybeSingle()
+      data = res.data
+    }
+    if (!data) { mostrarToast("Presupuesto no encontrado", "error"); return }
+    const factura = data.datos
+    // Normalizar nro_factura igual que en ventas
+    const nroParaImprimir = factura.nroFactura
+      ? (isNaN(parseInt(factura.nroFactura, 10)) ? factura.nroFactura : String(parseInt(factura.nroFactura, 10)).padStart(5, "0"))
+      : ""
+    // Obtener fecha: intentar desde datos guardados, luego desde la venta
+    const fechaVenta = venta.fecha
+      ? new Date(venta.fecha).toLocaleDateString("es-AR")
+      : new Date().toLocaleDateString("es-AR")
+    const subtotalCalc = (factura.carrito || []).reduce((acc: number, item: any) => {
+      const pagan = Math.max(0, item.cantidad - (item.bonificacion || 0))
+      return acc + pagan * item.precio
+    }, 0)
+    const saldoCliente = venta.cliente_id ? await getSaldoCliente(venta.cliente_id) : (modalHistorial ? await getSaldoCliente(modalHistorial.id) : 0)
+    generarHTMLEImprimir({
+      nroFactura: nroParaImprimir,
+      clienteSeleccionado: factura.clienteSeleccionado || {},
+      carrito: factura.carrito || [],
+      subtotal: subtotalCalc,
+      ivaNum: factura.ivaNum ?? 21,
+      total: factura.total ?? subtotalCalc,
+      esCuentaCorriente: factura.esCuentaCorriente ?? false,
+      metodoCobro: factura.metodoCobro,
+      fecha: fechaVenta,
+      saldoCliente,
+    }, "presupuesto")
+  }
+
+  const clientesFiltrados = clientes.filter(c =>
+    (c.nombre + " " + c.apellido).toLowerCase().includes(busqueda.toLowerCase())
+  )
+  const ventasPendientes = ventas.filter(v => v.estado === "cuenta_corriente" && v.saldo > 0)
+  const ventasCobradas = ventas.filter(v => v.estado === "cobrada" || v.saldo === 0)
+
+  if (cargando) return <p style={{ padding: 30, color: "#9ca3af" }}>⏳ Cargando clientes...</p>
+
+  return (
+    <div>
+      <style>{responsiveStyles}</style>
+      {toast && <Toast mensaje={toast.mensaje} tipo={toast.tipo} />}
+
+      {/* Header */}
+      <div className="clientes-header" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+        <p style={{ fontSize: 13, color: "#6b7280", margin: 0 }}>
+          <span style={{ fontWeight: 700, color: "#374151" }}>{clientes.length}</span> clientes
+          {Object.keys(deudasPorCliente).length > 0 && (
+            <span style={{ marginLeft: 8, color: "#dc2626", fontWeight: 600 }}>· {Object.keys(deudasPorCliente).length} con deuda</span>
+          )}
+        </p>
+        <button className="clientes-header-btn" onClick={() => setModalNuevo(true)} style={{
+          background: "linear-gradient(135deg, #2563eb, #3b82f6)", color: "white",
+          border: "none", borderRadius: 10, padding: "10px 18px",
+          fontSize: 13, fontWeight: 700, cursor: "pointer", boxShadow: "0 2px 8px rgba(59,130,246,0.3)"
+        }}>+ Nuevo cliente</button>
+      </div>
+
+      {/* Buscador */}
+      <input placeholder="🔍 Buscar cliente por nombre o apellido..."
+        value={busqueda} onChange={e => setBusqueda(e.target.value)}
+        style={{ ...inputLightStyle, marginBottom: 16 }} />
+
+      {/* Lista */}
+      {clientesFiltrados.length === 0 ? (
+        <div style={{ textAlign: "center", padding: 60, color: "#94a3b8" }}>
+          <div style={{ fontSize: 32, marginBottom: 8 }}>👥</div>
+          <div style={{ fontWeight: 600 }}>No hay clientes</div>
+        </div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {clientesFiltrados.map(c => (
+            <div key={c.id} className="clientes-card" style={{
+              background: "white", borderRadius: 14, padding: "16px 20px",
+              border: deudasPorCliente[c.id] ? "1px solid #fecaca" : "1px solid #e2e8f0",
+              boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
+              display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap"
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 14, flex: 1, minWidth: 0 }}>
+                <div style={{
+                  width: 44, height: 44, borderRadius: "50%", flexShrink: 0,
+                  background: deudasPorCliente[c.id]
+                    ? "linear-gradient(135deg, #dc2626, #ef4444)"
+                    : "linear-gradient(135deg, #1e40af, #3b82f6)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 16, fontWeight: 800, color: "white"
+                }}>
+                  {c.nombre.charAt(0).toUpperCase()}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 3 }}>
+                    <span style={{ fontWeight: 700, fontSize: 15, color: "#111827" }}>{c.nombre} {c.apellido}</span>
+                    {deudasPorCliente[c.id] && (
+                      <span style={{ background: "#fef2f2", color: "#dc2626", fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 20, border: "1px solid #fecaca" }}>
+                        Debe {fmt(deudasPorCliente[c.id])}
+                      </span>
+                    )}
+                  </div>
+                  <div style={{ display: "flex", gap: 14, flexWrap: "wrap", fontSize: 12, color: "#6b7280" }}>
+                    {c.cuit && <span>CUIT: {c.cuit}</span>}
+                    {c.telefono && <span>📞 {c.telefono}</span>}
+                    {c.localidad && <span>📍 {c.localidad}</span>}
+                  </div>
+                </div>
+              </div>
+              <div className="clientes-card-acciones" style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+                <button onClick={() => abrirHistorial(c)} style={{
+                  background: "linear-gradient(135deg, #2563eb, #3b82f6)", color: "white",
+                  border: "none", borderRadius: 8, padding: "7px 14px", fontSize: 12, fontWeight: 700, cursor: "pointer"
+                }}>Historial</button>
+                <button onClick={() => setModalEditar({ ...c, porcentaje: String(c.porcentaje || "") })} style={{
+                  background: "#f1f5f9", color: "#374151", border: "1px solid #e2e8f0",
+                  borderRadius: 8, padding: "7px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer"
+                }}>✏️</button>
+                <button onClick={() => setConfirmEliminar(c)} disabled={eliminandoId === c.id} style={{
+                  background: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca",
+                  borderRadius: 8, padding: "7px 14px", fontSize: 12, fontWeight: 600, cursor: eliminandoId === c.id ? "not-allowed" : "pointer",
+                  opacity: eliminandoId === c.id ? 0.5 : 1
+                }}>🗑️</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ── MODAL NUEVO CLIENTE ── */}
+      {modalNuevo && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 16 }}
+          onClick={() => setModalNuevo(false)}>
+          <div style={{ background: "#0f172a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "36px 32px", width: "100%", maxWidth: 480, boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}
+            onClick={e => e.stopPropagation()}>
+            <h2 style={{ color: "white", fontSize: 18, fontWeight: 700, margin: "0 0 24px" }}>Nuevo cliente</h2>
+            <div className="clientes-modal-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+              {[
+                { label: "Nombre *",  key: "nombre",     type: "text" },
+                { label: "Apellido *",key: "apellido",   type: "text" },
+                { label: "CUIT",      key: "cuit",       type: "text" },
+                { label: "Teléfono",  key: "telefono",   type: "text" },
+                { label: "Localidad", key: "localidad",  type: "text" },
+                { label: "% Margen",  key: "porcentaje", type: "number" },
+              ].map(f => (
+                <div key={f.key}>
+                  <label style={labelStyle}>{f.label}</label>
+                  <input type={f.type} value={(formNuevo as any)[f.key]}
+                    onChange={e => setFormNuevo({ ...formNuevo, [f.key]: e.target.value })}
+                    style={inputDarkStyle} />
+                </div>
+              ))}
+            </div>
+            <div style={{ display: "flex", gap: 10, marginTop: 24 }}>
+              <button onClick={() => setModalNuevo(false)} style={{ flex: 1, padding: "11px", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, color: "#9ca3af", fontSize: 13, cursor: "pointer", fontWeight: 600 }}>Cancelar</button>
+              <button onClick={agregarCliente} disabled={guardando} style={{ flex: 1, padding: "11px", background: "linear-gradient(135deg, #16a34a, #22c55e)", border: "none", borderRadius: 10, color: "white", fontSize: 13, fontWeight: 700, cursor: "pointer", opacity: guardando ? 0.5 : 1 }}>
+                {guardando ? "Guardando..." : "Crear cliente"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL EDITAR CLIENTE ── */}
+      {modalEditar && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 16 }}
+          onClick={() => setModalEditar(null)}>
+          <div style={{ background: "#0f172a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "36px 32px", width: "100%", maxWidth: 480, boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}
+            onClick={e => e.stopPropagation()}>
+            <h2 style={{ color: "white", fontSize: 18, fontWeight: 700, margin: "0 0 24px" }}>Editar cliente</h2>
+            <div className="clientes-modal-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+              {[
+                { label: "Nombre *",  key: "nombre",     type: "text" },
+                { label: "Apellido *",key: "apellido",   type: "text" },
+                { label: "CUIT",      key: "cuit",       type: "text" },
+                { label: "Teléfono",  key: "telefono",   type: "text" },
+                { label: "Localidad", key: "localidad",  type: "text" },
+                { label: "% Margen",  key: "porcentaje", type: "number" },
+              ].map(f => (
+                <div key={f.key}>
+                  <label style={labelStyle}>{f.label}</label>
+                  <input type={f.type} value={modalEditar[f.key] ?? ""}
+                    onChange={e => setModalEditar({ ...modalEditar, [f.key]: e.target.value })}
+                    style={inputDarkStyle} />
+                </div>
+              ))}
+            </div>
+            <div style={{ display: "flex", gap: 10, marginTop: 24 }}>
+              <button onClick={() => setModalEditar(null)} style={{ flex: 1, padding: "11px", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, color: "#9ca3af", fontSize: 13, cursor: "pointer", fontWeight: 600 }}>Cancelar</button>
+              <button onClick={guardarEdicion} disabled={guardando} style={{ flex: 1, padding: "11px", background: "linear-gradient(135deg, #2563eb, #3b82f6)", border: "none", borderRadius: 10, color: "white", fontSize: 13, fontWeight: 700, cursor: "pointer", opacity: guardando ? 0.5 : 1 }}>
+                {guardando ? "Guardando..." : "Guardar cambios"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL HISTORIAL ── */}
+      {modalHistorial && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 16 }} onClick={() => { setModalHistorial(null); setVentas([]) }}>
+          <div style={{ background: "#0f172a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, width: "100%", maxWidth: 660, maxHeight: "88vh", overflow: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }} onClick={e => e.stopPropagation()}>
+
+            <div className="historial-header" style={{ padding: "24px 28px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 20, fontWeight: 800, color: "white" }}>{modalHistorial.nombre} {modalHistorial.apellido}</div>
+                  <div style={{ fontSize: 12, color: "#6b7280", marginTop: 4, display: "flex", flexWrap: "wrap", gap: 8 }}>
+                    {modalHistorial.cuit && <span>CUIT: {modalHistorial.cuit}</span>}
+                    {modalHistorial.telefono && <span>📞 {modalHistorial.telefono}</span>}
+                    {modalHistorial.localidad && <span>📍 {modalHistorial.localidad}</span>}
+                  </div>
+                </div>
+                <button onClick={() => { setModalHistorial(null); setVentas([]) }}
+                  style={{ background: "rgba(255,255,255,0.08)", border: "none", color: "white", borderRadius: 8, padding: "6px 14px", cursor: "pointer", fontWeight: 700, fontSize: 16, flexShrink: 0 }}>✕</button>
+              </div>
+            </div>
+
+            {/* KPIs */}
+            <div className="historial-kpis" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+              {[
+                { label: "Total comprado", valor: fmt(totalGastado) },
+                { label: "Compras",        valor: cantidadCompras },
+                { label: "Promedio",       valor: fmt(promedioCompra) },
+                { label: "Producto top",   valor: productoTop },
+              ].map((k, i) => (
+                <div key={i} style={{ padding: "14px 16px", textAlign: "center", borderRight: i < 3 ? "1px solid rgba(255,255,255,0.08)" : "none" }}>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: "white", wordBreak: "break-word" }}>{k.valor}</div>
+                  <div style={{ fontSize: 11, color: "#6b7280", marginTop: 2 }}>{k.label}</div>
+                </div>
+              ))}
+            </div>
+
+            {deudaTotal > 0 && (
+              <div style={{ background: "rgba(251,191,36,0.08)", borderBottom: "1px solid rgba(251,191,36,0.2)", padding: "10px 24px" }}>
+                <span style={{ fontSize: 13, color: "#fbbf24", fontWeight: 700 }}>⚠️ Deuda pendiente: {fmt(deudaTotal)}</span>
+              </div>
+            )}
+
+            {/* Tabs */}
+            <div className="historial-tabs" style={{ display: "flex", borderBottom: "1px solid rgba(255,255,255,0.08)", padding: "0 24px" }}>
+              {[
+                { key: "historial",       label: "Todas las ventas" },
+                { key: "cuentaCorriente", label: `Cuenta corriente${ventasPendientes.length > 0 ? ` (${ventasPendientes.length})` : ""}` },
+              ].map((t: any) => (
+                <button key={t.key} onClick={() => setTabActiva(t.key)} style={{
+                  padding: "14px 16px", border: "none", background: "none", cursor: "pointer",
+                  fontSize: 13, fontWeight: 600,
+                  color: tabActiva === t.key ? "#3b82f6" : "#6b7280",
+                  borderBottom: tabActiva === t.key ? "2px solid #3b82f6" : "2px solid transparent",
+                  marginBottom: -1, whiteSpace: "nowrap"
+                }}>{t.label}</button>
+              ))}
+            </div>
+
+            <div className="historial-modal-inner" style={{ padding: "20px 24px" }}>
+              {/* Tab historial */}
+              {tabActiva === "historial" && (
+                <div>
+                  {ventas.length === 0 && <div style={{ textAlign: "center", padding: 40, color: "#6b7280" }}>Sin ventas registradas</div>}
+                  {ventas.map(v => (
+                    <div key={v.id} style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 10, padding: 14, marginBottom: 8 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8, flexWrap: "wrap", gap: 6 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <b style={{ fontSize: 14, color: "white" }}>#{v.nro_factura || v.id}</b>
+                          <span style={{
+                            background: v.estado === "cobrada" ? "rgba(74,222,128,0.15)" : "rgba(251,191,36,0.15)",
+                            color: v.estado === "cobrada" ? "#4ade80" : "#fbbf24",
+                            fontSize: 11, padding: "2px 8px", borderRadius: 10, fontWeight: 700
+                          }}>{v.estado === "cobrada" ? "Cobrada" : "CC"}</span>
+                        </div>
+                        <b style={{ fontSize: 14, color: "white" }}>{fmt(Number(v.total))}</b>
+                      </div>
+                      {(v.detalle_ventas || []).map((d: any, i: number) => (
+                        <div key={i} style={{ fontSize: 12, color: "#9ca3af" }}>· {d.productos?.nombre} × {d.cantidad}</div>
+                      ))}
+                      {v.pagos && v.pagos.length > 0 && (
+                        <div style={{ marginTop: 8, background: "rgba(255,255,255,0.03)", borderRadius: 8, padding: "6px 10px", border: "1px solid rgba(255,255,255,0.06)" }}>
+                          <div style={{ fontSize: 10, fontWeight: 700, color: "#6b7280", marginBottom: 5, textTransform: "uppercase", letterSpacing: 0.4 }}>Recibos de pago:</div>
+                          {v.pagos.map((p: any, i: number) => (
+                            <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 12, padding: "3px 0", borderBottom: i < v.pagos.length - 1 ? "1px solid rgba(255,255,255,0.05)" : "none" }}>
+                              <span style={{ color: "#9ca3af", flex: 1, minWidth: 0 }}>
+                                {fechaCorta(p.fecha)} — <b style={{ color: "#4ade80" }}>{fmt(p.monto)}</b>
+                                {p.nro_recibo && <span style={{ color: "#6b7280" }}> · {p.nro_recibo}</span>}
+                                {p.nota ? <span style={{ color: "#6b7280" }}> ({p.nota})</span> : ""}
+                              </span>
+                              <button onClick={() => imprimirRecibo(p, v)} style={{ background: "rgba(59,130,246,0.15)", color: "#3b82f6", border: "none", borderRadius: 6, padding: "3px 10px", cursor: "pointer", fontSize: 11, fontWeight: 600, flexShrink: 0, marginLeft: 8 }}>🖨️ Recibo</button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {/* Fallback para ventas cobradas sin registro de pago (ventas anteriores al sistema de recibos) */}
+                      {v.estado === "cobrada" && (!v.pagos || v.pagos.length === 0) && (
+                        <button onClick={async () => imprimirReciboCC(
+                          { monto: Number(v.total), nota: null, nro_recibo: undefined, fecha: v.fecha },
+                          v, modalHistorial, Number(v.total), modalHistorial ? await getSaldoCliente(modalHistorial.id) : 0
+                        )} style={{ marginTop: 8, background: "rgba(74,222,128,0.1)", color: "#4ade80", border: "1px solid rgba(74,222,128,0.2)", borderRadius: 6, padding: "4px 12px", cursor: "pointer", fontSize: 11, fontWeight: 600 }}>
+                          🖨️ Recibo
+                        </button>
+                      )}
+                      <button onClick={() => reimprimirFactura(v)} style={{ marginTop: 10, marginLeft: v.estado === "cobrada" && (!v.pagos || v.pagos.length === 0) ? 6 : 0, background: "rgba(59,130,246,0.15)", color: "#3b82f6", border: "none", borderRadius: 7, padding: "5px 12px", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>
+                        🖨️ Presupuesto
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Tab cuenta corriente */}
+              {tabActiva === "cuentaCorriente" && (
+                <div>
+                  {ventasPendientes.length === 0 && ventasCobradas.filter(v => v.pagos?.length > 0).length === 0 && (
+                    <div style={{ textAlign: "center", padding: 40, background: "rgba(74,222,128,0.05)", borderRadius: 12, border: "1px solid rgba(74,222,128,0.15)" }}>
+                      <div style={{ fontSize: 32, marginBottom: 8 }}>✅</div>
+                      <div style={{ fontWeight: 600, color: "#4ade80" }}>Sin deudas pendientes</div>
+                    </div>
+                  )}
+                  {ventasPendientes.map(v => {
+                    const progreso = v.total > 0 ? (v.totalPagado / v.total) * 100 : 0
+                    return (
+                      <div key={v.id} style={{ background: "rgba(251,191,36,0.05)", border: "1px solid rgba(251,191,36,0.2)", borderRadius: 12, padding: 16, marginBottom: 12 }}>
+                        <div className="venta-pendiente-row" style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
+                          <b style={{ color: "white", fontSize: 14 }}>#{v.nro_factura || v.id}</b>
+                          <div style={{ textAlign: "right" }}>
+                            <div style={{ fontSize: 11, color: "#6b7280" }}>Total: {fmt(v.total)}</div>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: "#fbbf24" }}>Saldo: {fmt(v.saldo)}</div>
+                          </div>
+                        </div>
+                        <div style={{ marginBottom: 10 }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#6b7280", marginBottom: 4 }}>
+                            <span>Pagado: {fmt(v.totalPagado)}</span>
+                            <span>{Math.round(progreso)}%</span>
+                          </div>
+                          <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 100, height: 5 }}>
+                            <div style={{ width: `${progreso}%`, height: "100%", background: "linear-gradient(90deg, #f59f00, #e67700)", borderRadius: 100 }} />
+                          </div>
+                        </div>
+                        {(v.detalle_ventas || []).map((d: any, i: number) => (
+                          <div key={i} style={{ fontSize: 12, color: "#9ca3af" }}>· {d.productos?.nombre} × {d.cantidad}</div>
+                        ))}
+                        {v.pagos.length > 0 && (
+                          <div style={{ marginTop: 10, background: "rgba(255,255,255,0.04)", borderRadius: 8, padding: "8px 12px" }}>
+                            <div style={{ fontSize: 11, fontWeight: 700, marginBottom: 6, color: "#9ca3af" }}>Pagos registrados:</div>
+                            {v.pagos.map((p: any, i: number) => (
+                              <div key={i} className="pago-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 12, padding: "4px 0", borderBottom: i < v.pagos.length - 1 ? "1px solid rgba(255,255,255,0.06)" : "none" }}>
+                                <span style={{ color: "#d1d5db", flex: 1, minWidth: 0 }}>{fechaCorta(p.fecha)} — <b style={{ color: "#4ade80" }}>{fmt(p.monto)}</b>{p.nota ? <span style={{ color: "#6b7280" }}> ({p.nota})</span> : ""}</span>
+                                <button onClick={() => imprimirRecibo(p, v)} style={{ background: "rgba(59,130,246,0.15)", color: "#3b82f6", border: "none", borderRadius: 6, padding: "3px 10px", cursor: "pointer", fontSize: 11, fontWeight: 600, flexShrink: 0, marginLeft: 8 }}>Recibo</button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+                          <button onClick={() => abrirPago(v)} style={{ flex: 1, padding: "9px", background: "linear-gradient(135deg, #16a34a, #22c55e)", border: "none", borderRadius: 8, color: "white", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>+ Registrar pago</button>
+                          <button onClick={() => reimprimirFactura(v)} style={{ padding: "9px 14px", background: "rgba(59,130,246,0.15)", border: "none", borderRadius: 8, color: "#3b82f6", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>🖨️</button>
+                        </div>
+                      </div>
+                    )
+                  })}
+                  {ventasCobradas.filter(v => v.pagos?.length > 0).map(v => (
+                    <div key={v.id} style={{ background: "rgba(74,222,128,0.04)", border: "1px solid rgba(74,222,128,0.12)", borderRadius: 10, padding: 12, marginBottom: 8, opacity: 0.85 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6, flexWrap: "wrap", gap: 6 }}>
+                        <b style={{ color: "white", fontSize: 13 }}>#{v.nro_factura || v.id}</b>
+                        <span style={{ background: "rgba(74,222,128,0.15)", color: "#4ade80", fontSize: 11, padding: "2px 8px", borderRadius: 10, fontWeight: 700 }}>Saldada</span>
+                      </div>
+                      <div style={{ fontSize: 12, color: "#6b7280", marginBottom: 6 }}>Total: {fmt(Number(v.total))}</div>
+                      {v.pagos.map((p: any, i: number) => (
+                        <div key={i} className="pago-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 12, padding: "3px 0", flexWrap: "wrap", gap: 4 }}>
+                          <span style={{ color: "#9ca3af", flex: 1, minWidth: 0 }}>{fechaCorta(p.fecha)} — <b style={{ color: "#4ade80" }}>{fmt(p.monto)}</b>{p.nota ? <span> ({p.nota})</span> : ""}</span>
+                          <button onClick={() => imprimirRecibo(p, v)} style={{ background: "rgba(59,130,246,0.15)", color: "#3b82f6", border: "none", borderRadius: 6, padding: "3px 10px", cursor: "pointer", fontSize: 11, flexShrink: 0 }}>Recibo</button>
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL PAGO ── */}
+      {modalPago && ventaParaPagar && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 60, padding: 16 }}>
+          <div style={{ background: "#0f172a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "32px 28px", width: "100%", maxWidth: 400, boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}>
+            <h2 style={{ color: "white", fontSize: 17, fontWeight: 700, margin: "0 0 4px" }}>Registrar pago</h2>
+            <p style={{ color: "#6b7280", fontSize: 12, marginBottom: 20 }}>Factura #{ventaParaPagar.nro_factura || ventaParaPagar.id}</p>
+            <div style={{ display: "flex", justifyContent: "space-between", background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.2)", borderRadius: 10, padding: "12px 16px", marginBottom: 16 }}>
+              <div><div style={{ fontSize: 11, color: "#6b7280" }}>Total</div><div style={{ fontSize: 16, fontWeight: 800, color: "white" }}>{fmt(ventaParaPagar.total)}</div></div>
+              <div style={{ textAlign: "right" }}><div style={{ fontSize: 11, color: "#6b7280" }}>Saldo</div><div style={{ fontSize: 16, fontWeight: 800, color: "#fbbf24" }}>{fmt(ventaParaPagar.saldo)}</div></div>
+            </div>
+            <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
+              {[25, 50, 75, 100].map(pct => {
+                const val = Math.round(ventaParaPagar.saldo * pct / 100)
+                return (
+                  <button key={pct} onClick={() => setMontoPago(String(val))} style={{
+                    flex: 1, padding: "7px 0", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8,
+                    background: Number(montoPago) === val ? "#3b82f6" : "rgba(255,255,255,0.05)",
+                    color: Number(montoPago) === val ? "white" : "#9ca3af",
+                    fontSize: 12, fontWeight: 600, cursor: "pointer"
+                  }}>{pct}%</button>
+                )
+              })}
+            </div>
+            <div style={{ marginBottom: 12 }}>
+              <label style={labelStyle}>Monto</label>
+              <input type="number" value={montoPago} onChange={e => setMontoPago(e.target.value)} style={inputDarkStyle} />
+              {Number(montoPago) > 0 && (
+                <div style={{ fontSize: 11, marginTop: 4, fontWeight: 600, color: Number(montoPago) >= ventaParaPagar.saldo ? "#4ade80" : "#fbbf24" }}>
+                  {Number(montoPago) >= ventaParaPagar.saldo ? "✓ Salda la deuda completa" : `Quedarán ${fmt(ventaParaPagar.saldo - Number(montoPago))} pendientes`}
+                </div>
+              )}
+            </div>
+            <div style={{ marginBottom: 12 }}>
+              <label style={labelStyle}>Método de pago</label>
+              <select value={metodoPago} onChange={e => setMetodoPago(e.target.value)} style={{ ...inputDarkStyle, cursor: "pointer", background: "#1e293b" }}>
+                <option value="efectivo" style={{ color: "#000" }}>Efectivo</option>
+                <option value="transferencia" style={{ color: "#000" }}>Transferencia</option>
+                <option value="cheque" style={{ color: "#000" }}>Cheque</option>
+                <option value="echeq" style={{ color: "#000" }}>E-Cheq</option>
+                <option value="tarjeta" style={{ color: "#000" }}>Tarjeta</option>
+                <option value="otro" style={{ color: "#000" }}>Otro</option>
+              </select>
+            </div>
+            <div style={{ marginBottom: 20 }}>
+              <label style={labelStyle}>Nota (opcional)</label>
+              <input type="text" value={notaPago} onChange={e => setNotaPago(e.target.value)} placeholder="Ej: transferencia mayo, banco Galicia..." style={inputDarkStyle} />
+            </div>
+            <div style={{ display: "flex", gap: 10 }}>
+              <button onClick={() => { setModalPago(false); setVentaParaPagar(null) }} style={{ flex: 1, padding: "11px", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, color: "#9ca3af", fontSize: 13, cursor: "pointer", fontWeight: 600 }}>Cancelar</button>
+              <button onClick={registrarPago} disabled={guardandoPago || !montoPago || Number(montoPago) <= 0} style={{ flex: 2, padding: "11px", background: "linear-gradient(135deg, #16a34a, #22c55e)", border: "none", borderRadius: 10, color: "white", fontSize: 13, fontWeight: 700, cursor: "pointer", opacity: guardandoPago || !montoPago || Number(montoPago) <= 0 ? 0.5 : 1 }}>
+                {guardandoPago ? "Guardando..." : "Confirmar pago"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL ELIMINAR ── */}
+      {confirmEliminar && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 16 }}
+          onClick={() => setConfirmEliminar(null)}>
+          <div style={{ background: "#0f172a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "36px 32px", width: "100%", maxWidth: 360, boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}
+            onClick={e => e.stopPropagation()}>
+            <div style={{ fontSize: 32, marginBottom: 8 }}>🗑️</div>
+            <h2 style={{ color: "white", fontSize: 18, fontWeight: 700, margin: "0 0 8px" }}>¿Eliminar cliente?</h2>
+            <p style={{ color: "#9ca3af", fontSize: 13, marginBottom: 24 }}>
+              Vas a eliminar a <span style={{ color: "white", fontWeight: 600 }}>{confirmEliminar.nombre} {confirmEliminar.apellido}</span>. Esta acción no se puede deshacer.
+            </p>
+            <div style={{ display: "flex", gap: 10 }}>
+              <button onClick={() => setConfirmEliminar(null)} style={{ flex: 1, padding: "11px", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, color: "#9ca3af", fontSize: 13, cursor: "pointer", fontWeight: 600 }}>Cancelar</button>
+              <button onClick={() => eliminar(confirmEliminar.id)} style={{ flex: 1, padding: "11px", background: "#dc2626", border: "none", borderRadius: 10, color: "white", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>Eliminar</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
