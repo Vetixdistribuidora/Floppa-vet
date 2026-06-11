@@ -697,7 +697,7 @@ thead th:last-child{text-align:right}
       if (ultima?.nro_factura) {
         const num = parseInt(ultima.nro_factura, 10)
         if (!isNaN(num)) setNroFactura(String(num + 1).padStart(5, "0"))
-      } else { setNroFactura("10047") }
+      } else { setNroFactura("") } // sin ventas todavía → el presupuesto va sin número
     } catch (e) {
       console.error("Error cargando datos de venta:", e)
     }
@@ -1106,7 +1106,7 @@ thead th:last-child{text-align:right}
         const n = parseInt(ultimaV.nro_factura, 10)
         nroFacturaSave = String(isNaN(n) ? 1 : n + 1).padStart(5, "0")
       } else {
-        nroFacturaSave = "10047"
+        nroFacturaSave = "00001" // primera venta del negocio
       }
     } else {
       // nroData es bigint → usar como string (ej: "10128")

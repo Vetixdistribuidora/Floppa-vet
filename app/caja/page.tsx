@@ -32,15 +32,10 @@ const ORDEN_METODOS = ["efectivo", "transferencia", "cheque", "echeq", "tarjeta"
 
 // Categorías de egreso ───────────────────────────────────────────────────────
 const CAT_EGRESO: Record<string, { label: string; icon: string; color: string; auto?: boolean }> = {
-  proveedores:         { label: "Proveedores",        icon: "🚚", color: "#f59e0b", auto: true },
-  retiro:              { label: "Retiros",            icon: "🏧", color: "#ef4444" },
-  flete:               { label: "Fletes",             icon: "🚛", color: "#d97706" },
-  gasto_distribuidora: { label: "Gasto Distribuidora",icon: "🏢", color: "#6f7d49" },
-  gasto_casa:          { label: "Gasto Casa",         icon: "🏠", color: "#a855f7" },
-  gasto_camioneta:     { label: "Gasto Camioneta",    icon: "🚐", color: "#14b8a6" },
-  otro_egreso:         { label: "Otros egresos",      icon: "📤", color: "#64748b" },
+  proveedores: { label: "Proveedores",   icon: "🚚", color: "#f59e0b", auto: true },  // automática (pagos a proveedores)
+  otro_egreso: { label: "Otros egresos", icon: "📤", color: "#64748b" },              // fallback si no se escribe categoría
 }
-const ORDEN_CAT_EGRESO = ["proveedores", "retiro", "flete", "gasto_distribuidora", "gasto_casa", "gasto_camioneta", "otro_egreso"]
+const ORDEN_CAT_EGRESO = ["proveedores", "otro_egreso"]
 
 // Metadata de una categoría de egreso — si es custom (escrita por el usuario) usa un default
 const metaCatEgreso = (k: string) => CAT_EGRESO[k] || { label: k, icon: "📝", color: "#64748b" }
@@ -96,15 +91,11 @@ const selectClaro: React.CSSProperties = {
 }
 
 // Bloques separados del detalle (cada uno es como una planilla aparte)
+// Bloques fijos de la planilla. Las categorías que escribe el usuario aparecen
+// como bloques propios dinámicamente (ver bloquesCustom).
 const BLOQUES: { key: string; label: string; icon: string; color: string; modo: "ingreso" | "egreso" }[] = [
-  { key: "ingresos",            label: "Ingresos",             icon: "💵", color: "#16a34a", modo: "ingreso" },
-  { key: "proveedores",         label: "Pagos a proveedores",  icon: "🚚", color: "#f59e0b", modo: "egreso" },
-  { key: "gasto_distribuidora", label: "Gastos Distribuidora", icon: "🏢", color: "#6f7d49", modo: "egreso" },
-  { key: "gasto_casa",          label: "Gastos Casa",          icon: "🏠", color: "#a855f7", modo: "egreso" },
-  { key: "gasto_camioneta",     label: "Gastos Camioneta",     icon: "🚐", color: "#14b8a6", modo: "egreso" },
-  { key: "retiro",              label: "Retiros",              icon: "🏧", color: "#ef4444", modo: "egreso" },
-  { key: "flete",               label: "Fletes",               icon: "🚛", color: "#d97706", modo: "egreso" },
-  { key: "otro_egreso",         label: "Otros egresos",        icon: "📤", color: "#64748b", modo: "egreso" },
+  { key: "ingresos",    label: "Ingresos",            icon: "💵", color: "#16a34a", modo: "ingreso" },
+  { key: "proveedores", label: "Pagos a proveedores", icon: "🚚", color: "#f59e0b", modo: "egreso" },
 ]
 
 export default function CajaPage() {
@@ -135,10 +126,19 @@ export default function CajaPage() {
   const [filas, setFilas] = useState<FilaCaja[]>([])
   const [ingresosPorMetodo, setIngresosPorMetodo] = useState<Record<string, { total: number; ventas: number; cc: number; manual: number }>>({})
   const [egresosPorCat, setEgresosPorCat] = useState<Record<string, number>>({})
+  // Categorías de egreso que el usuario ya creó (se ofrecen como chips para reusar)
+  const [categoriasGuardadas, setCategoriasGuardadas] = useState<string[]>([])
+  async function cargarCategorias() {
+    const { data } = await supabase.from("movimientos_caja").select("categoria").eq("tipo", "egreso")
+    const set = new Set<string>()
+    ;(data || []).forEach((m: any) => { if (m.categoria && m.categoria !== "proveedores" && m.categoria !== "otro_egreso") set.add(m.categoria) })
+    setCategoriasGuardadas([...set].sort((a, b) => a.localeCompare(b, "es")))
+  }
+  useEffect(() => { cargarCategorias() }, [])
 
   // Modales
   const [modalMov, setModalMov] = useState<null | "nuevo" | "editar">(null)
-  const [movForm, setMovForm] = useState<any>({ id: null, tipo: "egreso", categoria: "retiro", categoriaTexto: "Retiros", metodo_pago: "efectivo", monto: "", fecha: "", descripcion: "" })
+  const [movForm, setMovForm] = useState<any>({ id: null, tipo: "egreso", categoria: "otro_egreso", categoriaTexto: "", metodo_pago: "efectivo", monto: "", fecha: "", descripcion: "" })
   const [guardandoMov, setGuardandoMov] = useState(false)
   const [confirmDel, setConfirmDel] = useState<any>(null)
 
@@ -371,7 +371,7 @@ export default function CajaPage() {
   // ── Guardar movimiento manual ──
   function abrirNuevoMov() {
     setMovForm({
-      id: null, tipo: "egreso", categoria: "retiro", categoriaTexto: "Retiros", metodo_pago: "efectivo", monto: "",
+      id: null, tipo: "egreso", categoria: "otro_egreso", categoriaTexto: "", metodo_pago: "efectivo", monto: "",
       fecha: new Date(anio, mes, Math.min(hoy.getDate(), 28)).toLocaleDateString("sv-SE"),
       descripcion: "",
     })
@@ -396,16 +396,8 @@ export default function CajaPage() {
       let categoriaFinal = movForm.categoria
       let descripcionFinal = (movForm.descripcion || "").trim()
       if (movForm.tipo === "egreso") {
-        const txt = (movForm.categoriaTexto || "").trim()
-        const conocida = ORDEN_CAT_EGRESO.find(k => k !== "proveedores" && CAT_EGRESO[k].label.toLowerCase() === txt.toLowerCase())
-        if (conocida) {
-          categoriaFinal = conocida
-        } else if (txt) {
-          // Egreso nuevo escrito por el usuario → categoría propia con ese nombre
-          categoriaFinal = txt
-        } else {
-          categoriaFinal = "otro_egreso"
-        }
+        // La categoría es exactamente lo que escribe el usuario (o "otro_egreso" si lo deja vacío)
+        categoriaFinal = (movForm.categoriaTexto || "").trim() || "otro_egreso"
       }
       const payload = {
         fecha: movForm.fecha, tipo: movForm.tipo, categoria: categoriaFinal,
@@ -423,6 +415,7 @@ export default function CajaPage() {
       }
       setModalMov(null)
       await cargar()
+      cargarCategorias() // refrescar los chips por si se creó una categoría nueva
     } catch (e: any) {
       mostrarToast("Error: " + (e?.message || "desconocido"), "error")
     } finally {
@@ -724,7 +717,7 @@ export default function CajaPage() {
           {/* Tipo */}
           <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
             {[["egreso", "Egreso", "#ef4444"], ["ingreso", "Ingreso", "#16a34a"]].map(([val, lab, col]) => (
-              <button key={val} onClick={() => setMovForm((p: any) => ({ ...p, tipo: val, categoria: val === "ingreso" ? "otro_ingreso" : "retiro", categoriaTexto: val === "egreso" ? "Retiros" : "" }))}
+              <button key={val} onClick={() => setMovForm((p: any) => ({ ...p, tipo: val, categoria: val === "ingreso" ? "otro_ingreso" : "otro_egreso", categoriaTexto: "" }))}
                 style={{ flex: 1, padding: "10px", borderRadius: 10, border: movForm.tipo === val ? `2px solid ${col}` : "1px solid rgba(255,255,255,0.15)", background: movForm.tipo === val ? `${col}22` : "rgba(255,255,255,0.04)", color: movForm.tipo === val ? "white" : "#9ca3af", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
                 {lab}
               </button>
@@ -732,31 +725,29 @@ export default function CajaPage() {
           </div>
           {movForm.tipo === "egreso" && (
             <Campo label="Categoría (elegí una o escribí una nueva)">
-              {/* Categorías existentes (fijas + las custom ya usadas) — tocá una para elegirla */}
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
-                {[
-                  ...ORDEN_CAT_EGRESO.filter(k => k !== "proveedores"),
-                  ...Object.keys(egresosPorCat).filter(k => egresosPorCat[k] && !ORDEN_CAT_EGRESO.includes(k)),
-                ].map(k => {
-                  const meta = metaCatEgreso(k)
-                  const activa = (movForm.categoriaTexto || "").trim().toLowerCase() === meta.label.toLowerCase()
-                  return (
-                    <button
-                      key={k}
-                      type="button"
-                      onClick={() => setMovForm((p: any) => ({ ...p, categoriaTexto: meta.label }))}
-                      style={{
-                        display: "inline-flex", alignItems: "center", gap: 5,
-                        padding: "6px 10px", borderRadius: 999, cursor: "pointer", fontSize: 12, fontWeight: 700,
-                        border: activa ? `2px solid ${meta.color}` : "1px solid rgba(255,255,255,0.15)",
-                        background: activa ? `${meta.color}22` : "rgba(255,255,255,0.04)",
-                        color: activa ? "white" : "#cbd5e1",
-                      }}>
-                      <span>{meta.icon}</span> {meta.label}
-                    </button>
-                  )
-                })}
-              </div>
+              {/* Categorías que ya creaste — tocá una para reusarla */}
+              {categoriasGuardadas.length > 0 && (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
+                  {categoriasGuardadas.map(k => {
+                    const activa = (movForm.categoriaTexto || "").trim().toLowerCase() === k.toLowerCase()
+                    return (
+                      <button
+                        key={k}
+                        type="button"
+                        onClick={() => setMovForm((p: any) => ({ ...p, categoriaTexto: k }))}
+                        style={{
+                          display: "inline-flex", alignItems: "center", gap: 5,
+                          padding: "6px 10px", borderRadius: 999, cursor: "pointer", fontSize: 12, fontWeight: 700,
+                          border: activa ? "2px solid #6f7d49" : "1px solid rgba(255,255,255,0.15)",
+                          background: activa ? "rgba(111,125,73,0.18)" : "rgba(255,255,255,0.04)",
+                          color: activa ? "white" : "#cbd5e1",
+                        }}>
+                        <span>📝</span> {k}
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
               <input
                 value={movForm.categoriaTexto ?? ""}
                 onChange={e => setMovForm((p: any) => ({ ...p, categoriaTexto: e.target.value }))}

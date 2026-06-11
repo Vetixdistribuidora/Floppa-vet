@@ -33,6 +33,7 @@ export default function ConsultasPage() {
   const [consultas, setConsultas] = useState<any[]>([])
   const [pacientes, setPacientes] = useState<any[]>([])
   const [filtroPaciente, setFiltroPaciente] = useState("")
+  const [busqueda, setBusqueda] = useState("")
   const [cargando, setCargando] = useState(false)
   const [toast, setToast] = useState<any>(null)
   const [modal, setModal] = useState(false)
@@ -110,7 +111,15 @@ export default function ConsultasPage() {
     setConfirmEliminar(null)
   }
 
-  const filtradas = filtroPaciente ? consultas.filter(c => String(c.paciente_id) === filtroPaciente) : consultas
+  const filtradas = consultas.filter(c => {
+    if (filtroPaciente && String(c.paciente_id) !== filtroPaciente) return false
+    if (!busqueda.trim()) return true
+    const q = busqueda.toLowerCase()
+    const pac = c.pacientes
+    const nombrePac = (pac?.nombre || "").toLowerCase()
+    const tutor = pac?.clientes ? `${pac.clientes.nombre || ""} ${pac.clientes.apellido || ""}`.toLowerCase() : ""
+    return nombrePac.includes(q) || tutor.includes(q) || (c.motivo || "").toLowerCase().includes(q)
+  })
   const pacienteFiltrado = pacientes.find(p => String(p.id) === filtroPaciente)
 
   return (
@@ -119,7 +128,8 @@ export default function ConsultasPage() {
 
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 18, flexWrap: "wrap" }}>
-        <select value={filtroPaciente} onChange={e => setFiltroPaciente(e.target.value)} style={{ ...inputStyle, maxWidth: 320, flex: 1 }}>
+        <input value={busqueda} onChange={e => setBusqueda(e.target.value)} placeholder="Buscar por tutor, paciente o motivo…" style={{ ...inputStyle, maxWidth: 300, flex: 1 }} />
+        <select value={filtroPaciente} onChange={e => setFiltroPaciente(e.target.value)} style={{ ...inputStyle, maxWidth: 240, flex: 1 }}>
           <option value="">Todos los pacientes</option>
           {pacientes.map(p => <option key={p.id} value={p.id}>{p.nombre}{p.especie ? ` (${p.especie})` : ""}</option>)}
         </select>
