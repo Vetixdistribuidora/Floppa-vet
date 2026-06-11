@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { supabase } from "@/lib/supabase"
+import ComboBox from "@/components/ComboBox"
 
 const ESPECIES = ["Perro", "Gato", "Ave", "Conejo", "Roedor", "Reptil", "Equino", "Otro"]
 const OLIVA = "#6f7d49"
@@ -165,7 +166,7 @@ export default function PacientesPage() {
                 {p.peso != null && <span><b style={{ color: "#64748b", fontWeight: 600 }}>Peso:</b> {p.peso} kg</span>}
               </div>
               <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid #f1f5f9", fontSize: 12.5, color: "#475569" }}>
-                <b style={{ color: "#64748b", fontWeight: 600 }}>Dueño:</b>{" "}
+                <b style={{ color: "#64748b", fontWeight: 600 }}>Tutor:</b>{" "}
                 {p.clientes ? `${p.clientes.nombre || ""} ${p.clientes.apellido || ""}`.trim() : <span style={{ color: "#94a3b8", fontStyle: "italic" }}>sin asignar</span>}
               </div>
             </div>
@@ -212,11 +213,13 @@ export default function PacientesPage() {
                 <input value={form.color} onChange={e => setForm({ ...form, color: e.target.value })} placeholder="Ej: Marrón" style={inputStyle} />
               </div>
               <div style={{ gridColumn: "1 / -1" }}>
-                <label style={labelStyle}>Dueño (cliente)</label>
-                <select value={form.cliente_id} onChange={e => setForm({ ...form, cliente_id: e.target.value })} style={inputStyle}>
-                  <option value="">— Sin asignar —</option>
-                  {clientes.map(c => <option key={c.id} value={c.id}>{`${c.nombre || ""} ${c.apellido || ""}`.trim()}</option>)}
-                </select>
+                <label style={labelStyle}>Tutor</label>
+                <ComboBox
+                  options={clientes.map(c => ({ value: String(c.id), label: `${c.nombre || ""} ${c.apellido || ""}`.trim() }))}
+                  value={form.cliente_id}
+                  onChange={v => setForm({ ...form, cliente_id: v })}
+                  placeholder="Buscar tutor…"
+                />
               </div>
               <div style={{ gridColumn: "1 / -1" }}>
                 <label style={labelStyle}>Notas</label>

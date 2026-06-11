@@ -19,6 +19,8 @@ export const MODULOS: Modulo[] = [
     icon: <><path d="M20 7l-8-4-8 4 8 4 8-4z" /><path d="M4 7v10l8 4 8-4V7" /></> },
   { key: "clientes", label: "Clientes", path: "/clientes", color: "#a78bfa",
     icon: <><circle cx="12" cy="7" r="4" /><path d="M5.5 21a6.5 6.5 0 0 1 13 0" /></> },
+  { key: "tutores", label: "Tutores", path: "/tutores", color: "#c084fc",
+    icon: <><circle cx="9" cy="7" r="3.2" /><path d="M3.5 20a5.5 5.5 0 0 1 11 0" /><path d="M16 7.7a3 3 0 0 1 0 5.6" /><path d="M17.5 20a5 5 0 0 0-3-4.4" /></> },
   { key: "pacientes", label: "Pacientes", path: "/pacientes", color: "#5ec5c0",
     icon: <><circle cx="5.5" cy="12.5" r="1.7" /><circle cx="9.5" cy="8" r="1.7" /><circle cx="14.5" cy="8" r="1.7" /><circle cx="18.5" cy="12.5" r="1.7" /><path d="M12 14c-2.4 0-4.3 1.6-4.3 3.5 0 1.3 1 2.3 2.4 2.3 1 0 1.4-.4 1.9-.4s.9.4 1.9.4c1.4 0 2.4-1 2.4-2.3 0-1.9-1.9-3.5-4.3-3.5z" /></> },
   { key: "consultas", label: "Consultas", path: "/consultas", color: "#f9a8d4",
@@ -56,7 +58,7 @@ export const MODULOS_TOGGLEABLES = MODULOS.filter(m => !m.core)
 export const PRESETS_RUBRO: Record<string, string[]> = {
   distribuidora: ["productos", "clientes", "ventas", "proveedores", "compras", "cuentas", "caja", "reportes", "deudores", "cheques", "mermas", "pedidos", "tienda-online"],
   general:       ["productos", "clientes", "ventas", "caja", "reportes", "cuentas", "deudores"],
-  veterinaria:   ["productos", "clientes", "pacientes", "consultas", "recordatorios", "ventas", "caja", "reportes", "cuentas", "deudores"],
+  veterinaria:   ["productos", "tutores", "pacientes", "consultas", "recordatorios", "ventas", "caja", "reportes", "cuentas", "deudores"],
 }
 
 export const DEFAULT_MODULOS = PRESETS_RUBRO.distribuidora
