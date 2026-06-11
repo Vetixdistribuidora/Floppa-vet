@@ -23,6 +23,8 @@ export const MODULOS: Modulo[] = [
     icon: <><circle cx="5.5" cy="12.5" r="1.7" /><circle cx="9.5" cy="8" r="1.7" /><circle cx="14.5" cy="8" r="1.7" /><circle cx="18.5" cy="12.5" r="1.7" /><path d="M12 14c-2.4 0-4.3 1.6-4.3 3.5 0 1.3 1 2.3 2.4 2.3 1 0 1.4-.4 1.9-.4s.9.4 1.9.4c1.4 0 2.4-1 2.4-2.3 0-1.9-1.9-3.5-4.3-3.5z" /></> },
   { key: "consultas", label: "Consultas", path: "/consultas", color: "#f9a8d4",
     icon: <><rect x="6" y="4" width="12" height="17" rx="2" /><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1" /><path d="M12 10.5v5M9.5 13h5" /></> },
+  { key: "recordatorios", label: "Recordatorios", path: "/recordatorios", color: "#f59e0b",
+    icon: <><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.7 21a2 2 0 0 1-3.4 0" /></> },
   { key: "ventas", label: "Ventas", path: "/ventas", color: "#fbbf24",
     icon: <><path d="M3 3h2l.4 2M7 13h10l4-8H5.4" /><circle cx="9" cy="19" r="1" /><circle cx="17" cy="19" r="1" /></> },
   { key: "proveedores", label: "Proveedores", path: "/proveedores", color: "#f87171",
@@ -54,7 +56,7 @@ export const MODULOS_TOGGLEABLES = MODULOS.filter(m => !m.core)
 export const PRESETS_RUBRO: Record<string, string[]> = {
   distribuidora: ["productos", "clientes", "ventas", "proveedores", "compras", "cuentas", "caja", "reportes", "deudores", "cheques", "mermas", "pedidos", "tienda-online"],
   general:       ["productos", "clientes", "ventas", "caja", "reportes", "cuentas", "deudores"],
-  veterinaria:   ["productos", "clientes", "pacientes", "consultas", "ventas", "caja", "reportes", "cuentas", "deudores"],
+  veterinaria:   ["productos", "clientes", "pacientes", "consultas", "recordatorios", "ventas", "caja", "reportes", "cuentas", "deudores"],
 }
 
 export const DEFAULT_MODULOS = PRESETS_RUBRO.distribuidora
