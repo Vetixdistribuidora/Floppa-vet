@@ -170,6 +170,11 @@ const responsiveStyles = `
 
 export default function Ventas() {
   const [tab, setTab] = useState<"nueva" | "historial" | "borradores" | "notascredito">("nueva")
+  // Rubro de la organización: en veterinaria se simplifican las pestañas de ventas
+  const [rubroOrg, setRubroOrg] = useState<string | null>(null)
+  useEffect(() => {
+    supabase.from("organizaciones").select("rubro").maybeSingle().then(({ data }) => setRubroOrg(data?.rubro ?? null))
+  }, [])
 
   const [clientes, setClientes] = useState<any[]>([])
   const [productos, setProductos] = useState<any[]>([])
@@ -1238,7 +1243,9 @@ thead th:last-child{text-align:right}
 
       {/* Tabs */}
       <div style={{ display: "flex", gap: 4, marginBottom: 24, background: "white", padding: 4, borderRadius: 12, border: "1px solid #e2e8f0", width: "fit-content", boxShadow: "0 1px 4px rgba(0,0,0,0.05)" }}>
-        {([{ key: "nueva", label: "➕ Nueva venta" }, { key: "historial", label: "📋 Historial" }, { key: "borradores", label: "📝 Borradores" }, { key: "notascredito", label: "↩️ Notas de Crédito" }] as const).map(t => (
+        {([{ key: "nueva", label: "➕ Nueva venta" }, { key: "historial", label: "📋 Historial" }, { key: "borradores", label: "📝 Borradores" }, { key: "notascredito", label: "↩️ Notas de Crédito" }] as const)
+          .filter(t => rubroOrg !== "veterinaria" || t.key === "nueva" || t.key === "historial")
+          .map(t => (
           <button key={t.key} onClick={() => setTab(t.key)} style={{
             padding: "8px 20px", borderRadius: 9, border: "none", cursor: "pointer",
             fontSize: 13, fontWeight: 700, transition: "all 0.15s",
