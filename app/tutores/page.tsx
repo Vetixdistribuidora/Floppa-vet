@@ -16,7 +16,7 @@ function Toast({ mensaje, tipo }: { mensaje: string; tipo: "ok" | "error" }) {
 
 const labelStyle: React.CSSProperties = { display: "block", fontSize: 11, fontWeight: 700, color: "#64748b", letterSpacing: 0.4, marginBottom: 5, textTransform: "uppercase" }
 const inputStyle: React.CSSProperties = { width: "100%", padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 9, fontSize: 14, color: "#0f172a", outline: "none", boxSizing: "border-box", background: "white" }
-const FORM_VACIO = { nombre: "", apellido: "", telefono: "", localidad: "" }
+const FORM_VACIO = { nombre: "", apellido: "", telefono: "", email: "", localidad: "" }
 
 export default function TutoresPage() {
   const [tutores, setTutores] = useState<any[]>([])
@@ -33,7 +33,7 @@ export default function TutoresPage() {
 
   async function cargar() {
     setCargando(true)
-    const { data } = await supabase.from("clientes").select("id, nombre, apellido, telefono, localidad, pacientes(nombre)").order("nombre")
+    const { data } = await supabase.from("clientes").select("id, nombre, apellido, telefono, email, localidad, pacientes(nombre)").order("nombre")
     setTutores(data || [])
     setCargando(false)
   }
@@ -42,14 +42,14 @@ export default function TutoresPage() {
   function abrirNuevo() { setEditId(null); setForm(FORM_VACIO); setModal(true) }
   function abrirEditar(t: any) {
     setEditId(t.id)
-    setForm({ nombre: t.nombre || "", apellido: t.apellido || "", telefono: t.telefono || "", localidad: t.localidad || "" })
+    setForm({ nombre: t.nombre || "", apellido: t.apellido || "", telefono: t.telefono || "", email: t.email || "", localidad: t.localidad || "" })
     setModal(true)
   }
 
   async function guardar() {
     if (!form.nombre.trim()) { mostrar("El nombre es obligatorio", "error"); return }
     setGuardando(true)
-    const payload = { nombre: form.nombre.trim(), apellido: form.apellido.trim(), telefono: form.telefono.trim(), localidad: form.localidad.trim() }
+    const payload = { nombre: form.nombre.trim(), apellido: form.apellido.trim(), telefono: form.telefono.trim(), email: form.email.trim() || null, localidad: form.localidad.trim() }
     try {
       if (editId) {
         const { error } = await supabase.from("clientes").update(payload).eq("id", editId); if (error) throw error
@@ -109,6 +109,7 @@ export default function TutoresPage() {
                     </div>
                     <div style={{ fontSize: 12.5, color: "#64748b", marginTop: 4, display: "flex", gap: 14, flexWrap: "wrap" }}>
                       {t.telefono && <span>📞 {t.telefono}</span>}
+                      {t.email && <span>📧 {t.email}</span>}
                       {t.localidad && <span>📍 {t.localidad}</span>}
                     </div>
                   </div>
@@ -145,6 +146,10 @@ export default function TutoresPage() {
               <div>
                 <label style={labelStyle}>Dirección</label>
                 <input value={form.localidad} onChange={e => setForm({ ...form, localidad: e.target.value })} placeholder="Ej: Av. San Martín 1234" style={inputStyle} />
+              </div>
+              <div style={{ gridColumn: "1 / -1" }}>
+                <label style={labelStyle}>Email <span style={{ color: "#94a3b8", fontWeight: 500, textTransform: "none" }}>(para recordatorios)</span></label>
+                <input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="Ej: tutor@email.com" style={inputStyle} />
               </div>
             </div>
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 22 }}>

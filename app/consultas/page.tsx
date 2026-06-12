@@ -34,6 +34,7 @@ export default function ConsultasPage() {
   const [pacientes, setPacientes] = useState<any[]>([])
   const [filtroPaciente, setFiltroPaciente] = useState("")
   const [busqueda, setBusqueda] = useState("")
+  const [filtroFecha, setFiltroFecha] = useState(hoyISO()) // por defecto, las consultas de hoy
   const [cargando, setCargando] = useState(false)
   const [toast, setToast] = useState<any>(null)
   const [modal, setModal] = useState(false)
@@ -112,6 +113,7 @@ export default function ConsultasPage() {
   }
 
   const filtradas = consultas.filter(c => {
+    if (filtroFecha && c.fecha !== filtroFecha) return false
     if (filtroPaciente && String(c.paciente_id) !== filtroPaciente) return false
     if (!busqueda.trim()) return true
     const q = busqueda.toLowerCase()
@@ -128,7 +130,15 @@ export default function ConsultasPage() {
 
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 18, flexWrap: "wrap" }}>
-        <input value={busqueda} onChange={e => setBusqueda(e.target.value)} placeholder="Buscar por tutor, paciente o motivo…" style={{ ...inputStyle, maxWidth: 300, flex: 1 }} />
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <input type="date" value={filtroFecha} onChange={e => setFiltroFecha(e.target.value)} style={{ ...inputStyle, maxWidth: 165 }} />
+          <button
+            onClick={() => setFiltroFecha(filtroFecha ? "" : hoyISO())}
+            style={{ background: filtroFecha ? "#f1f5f9" : "#6f7d49", color: filtroFecha ? "#475569" : "white", border: filtroFecha ? "1px solid #e2e8f0" : "none", borderRadius: 9, padding: "10px 14px", fontSize: 13, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>
+            {filtroFecha ? "Ver todas" : "Hoy"}
+          </button>
+        </div>
+        <input value={busqueda} onChange={e => setBusqueda(e.target.value)} placeholder="Buscar por tutor, paciente o motivo…" style={{ ...inputStyle, maxWidth: 260, flex: 1 }} />
         <select value={filtroPaciente} onChange={e => setFiltroPaciente(e.target.value)} style={{ ...inputStyle, maxWidth: 240, flex: 1 }}>
           <option value="">Todos los pacientes</option>
           {pacientes.map(p => <option key={p.id} value={p.id}>{p.nombre}{p.especie ? ` (${p.especie})` : ""}</option>)}
