@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase"
+import ComboBox from "@/components/ComboBox"
 
 const OLIVA = "#6f7d49"
-const TIPOS = ["Vacuna", "Control", "Turno", "Desparasitación", "Cirugía", "Otro"]
+const TIPOS = ["Vacuna", "Desparasitación", "Suministro", "Control", "Turno", "Cirugía", "Otro"]
 const hoyISO = () => new Date().toISOString().split("T")[0]
 
 function Toast({ mensaje, tipo }: { mensaje: string; tipo: "ok" | "error" }) {
@@ -25,7 +26,7 @@ function fechaCorta(f: string) {
 
 const labelStyle: React.CSSProperties = { display: "block", fontSize: 11, fontWeight: 700, color: "#64748b", letterSpacing: 0.4, marginBottom: 5, textTransform: "uppercase" }
 const inputStyle: React.CSSProperties = { width: "100%", padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 9, fontSize: 14, color: "#0f172a", outline: "none", boxSizing: "border-box", background: "white" }
-const formVacio = () => ({ paciente_id: "", fecha: hoyISO(), tipo: "Vacuna", descripcion: "", notas: "" })
+const formVacio = () => ({ paciente_id: "", fecha_aplicacion: hoyISO(), fecha: "", tipo: "Vacuna", descripcion: "", notas: "" })
 
 export default function RecordatoriosPage() {
   const [items, setItems] = useState<any[]>([])
@@ -57,16 +58,16 @@ export default function RecordatoriosPage() {
   function abrirNuevo() { setEditId(null); setForm(formVacio()); setModal(true) }
   function abrirEditar(r: any) {
     setEditId(r.id)
-    setForm({ paciente_id: r.paciente_id ? String(r.paciente_id) : "", fecha: r.fecha || hoyISO(), tipo: r.tipo || "Otro", descripcion: r.descripcion || "", notas: r.notas || "" })
+    setForm({ paciente_id: r.paciente_id ? String(r.paciente_id) : "", fecha_aplicacion: r.fecha_aplicacion || "", fecha: r.fecha || hoyISO(), tipo: r.tipo || "Otro", descripcion: r.descripcion || "", notas: r.notas || "" })
     setModal(true)
   }
 
   async function guardar() {
-    if (!form.fecha) { mostrar("Elegí la fecha", "error"); return }
+    if (!form.fecha) { mostrar("Elegí la fecha de la próxima dosis / recordatorio", "error"); return }
     setGuardando(true)
     const payload = {
       paciente_id: form.paciente_id ? Number(form.paciente_id) : null,
-      fecha: form.fecha, tipo: form.tipo || null,
+      fecha: form.fecha, fecha_aplicacion: form.fecha_aplicacion || null, tipo: form.tipo || null,
       descripcion: form.descripcion.trim() || null, notas: form.notas.trim() || null,
     }
     try {
@@ -155,15 +156,15 @@ export default function RecordatoriosPage() {
             </button>
           ))}
         </div>
-        <button onClick={abrirNuevo} style={{ background: OLIVA, color: "white", border: "none", borderRadius: 10, padding: "11px 18px", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>+ Nuevo recordatorio</button>
+        <button onClick={abrirNuevo} style={{ background: OLIVA, color: "white", border: "none", borderRadius: 10, padding: "11px 18px", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>+ Nuevo registro</button>
       </div>
 
       {cargando ? (
         <p style={{ color: "#94a3b8", textAlign: "center", padding: 40 }}>Cargando…</p>
       ) : filtrados.length === 0 ? (
         <div style={{ textAlign: "center", padding: "60px 20px", color: "#94a3b8" }}>
-          <div style={{ fontSize: 40, marginBottom: 12 }}>⏰</div>
-          <p style={{ fontWeight: 600, color: "#475569" }}>{filtro === "pendientes" ? "No hay recordatorios pendientes" : "Todavía no hay recordatorios"}</p>
+          <div style={{ fontSize: 40, marginBottom: 12 }}>💉</div>
+          <p style={{ fontWeight: 600, color: "#475569" }}>{filtro === "pendientes" ? "No hay registros pendientes" : "Todavía no hay registros de sanidad"}</p>
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -177,6 +178,7 @@ export default function RecordatoriosPage() {
                     {r.tipo || "Recordatorio"}{r.pacientes && <span style={{ fontWeight: 500, color: "#64748b" }}> · {r.pacientes.nombre}</span>}
                   </div>
                   {r.descripcion && <div style={{ fontSize: 12.5, color: "#64748b", marginTop: 2 }}>{r.descripcion}</div>}
+                  {r.fecha_aplicacion && <div style={{ fontSize: 11.5, color: "#94a3b8", marginTop: 2 }}>💉 Aplicada el {new Date(r.fecha_aplicacion + "T00:00:00").toLocaleDateString("es-AR")}</div>}
                 </div>
                 <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
                   {r.pacientes?.clientes?.email && (
@@ -200,28 +202,36 @@ export default function RecordatoriosPage() {
       {modal && (
         <div onClick={() => setModal(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 }}>
           <div onClick={e => e.stopPropagation()} style={{ background: "white", borderRadius: 18, padding: "26px 28px", width: "100%", maxWidth: 480, maxHeight: "90vh", overflowY: "auto" }}>
-            <h2 style={{ margin: "0 0 18px", fontSize: 19, fontWeight: 800, color: "#0f172a" }}>{editId ? "Editar recordatorio" : "Nuevo recordatorio"}</h2>
+            <h2 style={{ margin: "0 0 18px", fontSize: 19, fontWeight: 800, color: "#0f172a" }}>{editId ? "Editar registro" : "Nuevo registro de sanidad"}</h2>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-              <div>
-                <label style={labelStyle}>Fecha *</label>
-                <input type="date" value={form.fecha} onChange={e => setForm({ ...form, fecha: e.target.value })} style={inputStyle} />
-              </div>
               <div>
                 <label style={labelStyle}>Tipo</label>
                 <select value={form.tipo} onChange={e => setForm({ ...form, tipo: e.target.value })} style={inputStyle}>
                   {TIPOS.map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
               </div>
+              <div>
+                <label style={labelStyle}>Fecha aplicada</label>
+                <input type="date" value={form.fecha_aplicacion} onChange={e => setForm({ ...form, fecha_aplicacion: e.target.value })} style={inputStyle} />
+              </div>
               <div style={{ gridColumn: "1 / -1" }}>
                 <label style={labelStyle}>Paciente</label>
-                <select value={form.paciente_id} onChange={e => setForm({ ...form, paciente_id: e.target.value })} style={inputStyle}>
-                  <option value="">— Sin paciente (general) —</option>
-                  {pacientes.map(p => <option key={p.id} value={p.id}>{p.nombre}{p.especie ? ` (${p.especie})` : ""}</option>)}
-                </select>
+                <ComboBox
+                  options={pacientes.map(p => ({ value: String(p.id), label: `${p.nombre}${p.especie ? ` (${p.especie})` : ""}` }))}
+                  value={form.paciente_id}
+                  onChange={v => setForm({ ...form, paciente_id: v })}
+                  placeholder="Buscar paciente…"
+                  emptyLabel="— Sin paciente (general) —"
+                />
+              </div>
+              <div style={{ gridColumn: "1 / -1" }}>
+                <label style={labelStyle}>Próxima dosis / fecha del recordatorio *</label>
+                <input type="date" value={form.fecha} onChange={e => setForm({ ...form, fecha: e.target.value })} style={inputStyle} />
+                <div style={{ fontSize: 11.5, color: "#94a3b8", marginTop: 5 }}>En esta fecha aparece como recordatorio y se le avisa al tutor.</div>
               </div>
               <div style={{ gridColumn: "1 / -1" }}>
                 <label style={labelStyle}>Descripción</label>
-                <input value={form.descripcion} onChange={e => setForm({ ...form, descripcion: e.target.value })} placeholder="Ej: 2da dosis antirrábica" style={inputStyle} />
+                <input value={form.descripcion} onChange={e => setForm({ ...form, descripcion: e.target.value })} placeholder="Ej: Antirrábica, pipeta antipulgas…" style={inputStyle} />
               </div>
               <div style={{ gridColumn: "1 / -1" }}>
                 <label style={labelStyle}>Notas</label>
@@ -241,7 +251,7 @@ export default function RecordatoriosPage() {
         <div onClick={() => setConfirmEliminar(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 }}>
           <div onClick={e => e.stopPropagation()} style={{ background: "white", borderRadius: 16, padding: "26px 28px", width: "100%", maxWidth: 360, textAlign: "center" }}>
             <div style={{ fontSize: 34, marginBottom: 10 }}>🗑</div>
-            <p style={{ fontWeight: 700, color: "#0f172a", marginBottom: 20 }}>¿Eliminar este recordatorio?</p>
+            <p style={{ fontWeight: 700, color: "#0f172a", marginBottom: 20 }}>¿Eliminar este registro?</p>
             <div style={{ display: "flex", justifyContent: "center", gap: 10 }}>
               <button onClick={() => setConfirmEliminar(null)} style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 9, padding: "9px 18px", fontWeight: 600, color: "#475569", cursor: "pointer" }}>Cancelar</button>
               <button onClick={eliminar} style={{ background: "#dc2626", border: "none", borderRadius: 9, padding: "9px 20px", fontWeight: 700, color: "white", cursor: "pointer" }}>Eliminar</button>
