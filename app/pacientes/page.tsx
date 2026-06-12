@@ -156,6 +156,7 @@ export default function PacientesPage() {
                 </div>
                 <div style={{ display: "flex", gap: 6 }}>
                   <Link href={`/consultas?paciente=${p.id}`} title="Historia clínica" style={{ background: "#f4f2e6", border: "1px solid #e6e8cf", borderRadius: 7, padding: "4px 9px", cursor: "pointer", fontSize: 12, color: "#6f7d49", textDecoration: "none" }}>📋</Link>
+                  <Link href={`/estudios?paciente=${p.id}`} title="Estudios" style={{ background: "#ecfeff", border: "1px solid #a5f3fc", borderRadius: 7, padding: "4px 9px", cursor: "pointer", fontSize: 12, color: "#0891b2", textDecoration: "none" }}>📎</Link>
                   <button onClick={() => abrirEditar(p)} title="Editar" style={{ background: "#f1f5f9", border: "1px solid #e2e8f0", borderRadius: 7, padding: "4px 9px", cursor: "pointer", fontSize: 12, color: "#475569" }}>✎</button>
                   <button onClick={() => setConfirmEliminar(p)} title="Eliminar" style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 7, padding: "4px 9px", cursor: "pointer", fontSize: 12, color: "#dc2626" }}>🗑</button>
                 </div>
