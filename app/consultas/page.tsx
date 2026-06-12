@@ -184,17 +184,22 @@ export default function ConsultasPage() {
                     <button onClick={() => setConfirmEliminar(c)} style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 7, padding: "4px 9px", cursor: "pointer", fontSize: 12, color: "#dc2626" }}>🗑</button>
                   </div>
                 </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 5, fontSize: 13.5, color: "#334155" }}>
-                  {c.motivo && <div><b style={{ color: "#64748b", fontWeight: 600 }}>Motivo:</b> {c.motivo}</div>}
-                  {c.diagnostico && <div><b style={{ color: "#64748b", fontWeight: 600 }}>Diagnóstico:</b> {c.diagnostico}</div>}
-                  {c.tratamiento && <div><b style={{ color: "#64748b", fontWeight: 600 }}>Tratamiento:</b> {c.tratamiento}</div>}
+                <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 13.5, color: "#334155" }}>
+                  {c.motivo && <div style={{ whiteSpace: "pre-wrap" }}><b style={{ color: "#4b5a2c", fontWeight: 800 }}>Motivo:</b> {c.motivo}</div>}
+                  {c.diagnostico && <div style={{ whiteSpace: "pre-wrap" }}><b style={{ color: "#4b5a2c", fontWeight: 800 }}>Diagnóstico:</b> {c.diagnostico}</div>}
+                  {c.tratamiento && <div style={{ whiteSpace: "pre-wrap" }}><b style={{ color: "#4b5a2c", fontWeight: 800 }}>Tratamiento:</b> {c.tratamiento}</div>}
                   {(c.peso != null || c.temperatura != null) && (
                     <div style={{ display: "flex", gap: 16, color: "#475569" }}>
-                      {c.peso != null && <span><b style={{ color: "#64748b", fontWeight: 600 }}>Peso:</b> {c.peso} kg</span>}
-                      {c.temperatura != null && <span><b style={{ color: "#64748b", fontWeight: 600 }}>Temp:</b> {c.temperatura}°</span>}
+                      {c.peso != null && <span><b style={{ color: "#4b5a2c", fontWeight: 800 }}>Peso:</b> {c.peso} kg</span>}
+                      {c.temperatura != null && <span><b style={{ color: "#4b5a2c", fontWeight: 800 }}>Temp:</b> {c.temperatura}°</span>}
                     </div>
                   )}
-                  {c.notas && <div style={{ color: "#64748b", fontStyle: "italic" }}>{c.notas}</div>}
+                  {c.notas && (
+                    <div style={{ background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 8, padding: "8px 12px", marginTop: 2 }}>
+                      <b style={{ color: "#4b5a2c", fontWeight: 800 }}>Notas:</b>{" "}
+                      <span style={{ fontWeight: 700, color: "#0f172a", whiteSpace: "pre-wrap" }}>{c.notas}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             )
@@ -221,7 +226,7 @@ export default function ConsultasPage() {
               </div>
               <div style={{ gridColumn: "1 / -1" }}>
                 <label style={labelStyle}>Motivo de consulta</label>
-                <input value={form.motivo} onChange={e => setForm({ ...form, motivo: e.target.value })} placeholder="Ej: Control, vacunación, herida…" style={inputStyle} />
+                <textarea value={form.motivo} onChange={e => setForm({ ...form, motivo: e.target.value })} rows={3} placeholder="Ej: Control, vacunación, herida…" style={{ ...inputStyle, resize: "vertical" }} />
               </div>
               <div style={{ gridColumn: "1 / -1" }}>
                 <label style={labelStyle}>Diagnóstico</label>
