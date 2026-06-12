@@ -190,6 +190,18 @@ export default function Ventas() {
   const [busquedaProducto, setBusquedaProducto] = useState("")
   const [productoIndice, setProductoIndice] = useState(-1)
   const [busquedaCliente, setBusquedaCliente] = useState("")
+  // Pre-seleccionar tutor + nota "a cobrar" cuando se llega desde una consulta (?cliente=&cobrar=)
+  const [cobrarNota, setCobrarNota] = useState("")
+  const preselCobroRef = useRef(false)
+  useEffect(() => {
+    if (preselCobroRef.current || clientes.length === 0) return
+    const params = new URLSearchParams(window.location.search)
+    const cid = params.get("cliente"); const cobrar = params.get("cobrar")
+    if (cid) { const c = clientes.find((x: any) => String(x.id) === cid); if (c) { seleccionarCliente(c); setTab("nueva") } }
+    if (cobrar) setCobrarNota(cobrar)
+    if (cid || cobrar) preselCobroRef.current = true
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clientes])
   const [clienteDropdown, setClienteDropdown] = useState(false)
   const [clienteIndice, setClienteIndice] = useState(-1)
   const inputProductoRef = useRef<HTMLInputElement>(null)
@@ -1259,6 +1271,12 @@ thead th:last-child{text-align:right}
       </div>
 
       {/* ══ TAB NUEVA VENTA ══ */}
+      {tab === "nueva" && cobrarNota && (
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#fff7ed", border: "1px solid #fed7aa", borderRadius: 10, padding: "10px 16px", marginBottom: 16, fontSize: 13 }}>
+          <span style={{ color: "#9a3412" }}>💲 <b>A cobrar (de la consulta):</b> {cobrarNota}</span>
+          <button onClick={() => setCobrarNota("")} style={{ background: "none", border: "none", color: "#c2410c", cursor: "pointer", fontWeight: 700, fontSize: 15 }}>×</button>
+        </div>
+      )}
       {tab === "nueva" && carrito.length > 0 && clienteSeleccionado && (
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 10, padding: "10px 16px", marginBottom: 16, fontSize: 13 }}>
           <span style={{ color: "#92400e" }}>📋 Borrador restaurado — {carrito.length} producto{carrito.length !== 1 ? "s" : ""} para <b>{clienteSeleccionado.nombre} {clienteSeleccionado.apellido}</b></span>

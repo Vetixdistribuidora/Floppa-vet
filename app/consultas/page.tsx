@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Link from "next/link"
 import { supabase } from "@/lib/supabase"
 
 const OLIVA = "#6f7d49"
@@ -48,7 +49,7 @@ export default function ConsultasPage() {
   async function cargar() {
     setCargando(true)
     const [{ data: con }, { data: pac }] = await Promise.all([
-      supabase.from("consultas").select("*, pacientes(nombre, especie, clientes(nombre, apellido))").order("fecha", { ascending: false }),
+      supabase.from("consultas").select("*, pacientes(nombre, especie, cliente_id, clientes(nombre, apellido))").order("fecha", { ascending: false }),
       supabase.from("pacientes").select("id, nombre, especie").order("nombre"),
     ])
     setConsultas(con || [])
@@ -198,9 +199,14 @@ export default function ConsultasPage() {
                         <b style={{ color: c.cobrado ? "#16a34a" : "#c2410c", fontWeight: 800 }}>{c.cobrado ? "✓ Cobrado:" : "💲 A cobrar:"}</b>{" "}
                         <span style={{ fontWeight: 700, color: "#0f172a", textDecoration: c.cobrado ? "line-through" : "none" }}>{c.para_cobrar}</span>
                       </div>
-                      <button onClick={() => marcarCobrado(c, !c.cobrado)} style={{ flexShrink: 0, background: c.cobrado ? "#f1f5f9" : "#16a34a", color: c.cobrado ? "#64748b" : "white", border: "none", borderRadius: 7, padding: "5px 12px", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
-                        {c.cobrado ? "Reabrir" : "Marcar cobrado"}
-                      </button>
+                      <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                        {!c.cobrado && c.pacientes?.cliente_id && (
+                          <Link href={`/ventas?cliente=${c.pacientes.cliente_id}&cobrar=${encodeURIComponent(c.para_cobrar)}`}
+                            title="Cobrar en Ventas (abre con el tutor cargado)"
+                            style={{ background: "#0f172a", color: "white", borderRadius: 7, padding: "5px 12px", fontSize: 12, fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap" }}>Cobrar →</Link>
+                        )}
+                        <button onClick={() => marcarCobrado(c, !c.cobrado)} style={{ background: c.cobrado ? "#f1f5f9" : "#16a34a", color: c.cobrado ? "#64748b" : "white", border: "none", borderRadius: 7, padding: "5px 12px", fontSize: 12, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>{c.cobrado ? "Reabrir" : "Cobrado"}</button>
+                      </div>
                     </div>
                   )}
                   {c.motivo && <div style={{ whiteSpace: "pre-wrap" }}><b style={{ color: "#4b5a2c", fontWeight: 800 }}>Motivo:</b> {c.motivo}</div>}

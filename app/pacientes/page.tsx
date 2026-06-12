@@ -167,7 +167,7 @@ export default function PacientesPage() {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
                 <div style={{ minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                    <div style={{ fontWeight: 700, fontSize: 16, color: "#0f172a" }}>{p.nombre}</div>
+                    <Link href={`/pacientes/${p.id}`} title="Ver ficha completa" style={{ fontWeight: 700, fontSize: 16, color: "#4b5a2c", textDecoration: "none" }}>{p.nombre}</Link>
                     {conCobro.has(p.id) && <span style={{ background: "#fff7ed", border: "1px solid #fed7aa", color: "#c2410c", fontSize: 10.5, fontWeight: 800, padding: "2px 7px", borderRadius: 999 }}>💲 A cobrar</span>}
                   </div>
                   <div style={{ fontSize: 12.5, color: "#64748b", marginTop: 2 }}>
