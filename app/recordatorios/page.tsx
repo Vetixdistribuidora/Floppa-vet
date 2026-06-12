@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabase"
 import ComboBox from "@/components/ComboBox"
 
 const OLIVA = "#6f7d49"
-const TIPOS = ["Vacuna", "Desparasitación", "Suministro", "Control", "Turno", "Cirugía", "Otro"]
+const TIPOS = ["Vacuna Antirrábica", "Vacuna Quíntuple", "Vacuna Triple", "Desparasitación", "Suministro", "Control", "Turno", "Cirugía", "Otro"]
 const hoyISO = () => new Date().toISOString().split("T")[0]
 
 function Toast({ mensaje, tipo }: { mensaje: string; tipo: "ok" | "error" }) {
@@ -26,7 +26,7 @@ function fechaCorta(f: string) {
 
 const labelStyle: React.CSSProperties = { display: "block", fontSize: 11, fontWeight: 700, color: "#64748b", letterSpacing: 0.4, marginBottom: 5, textTransform: "uppercase" }
 const inputStyle: React.CSSProperties = { width: "100%", padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 9, fontSize: 14, color: "#0f172a", outline: "none", boxSizing: "border-box", background: "white" }
-const formVacio = () => ({ paciente_id: "", fecha_aplicacion: hoyISO(), fecha: "", tipo: "Vacuna", descripcion: "", notas: "" })
+const formVacio = () => ({ paciente_id: "", fecha_aplicacion: hoyISO(), fecha: "", tipo: "Vacuna Antirrábica", descripcion: "", notas: "" })
 
 export default function RecordatoriosPage() {
   const [items, setItems] = useState<any[]>([])
@@ -179,6 +179,7 @@ export default function RecordatoriosPage() {
                   </div>
                   {r.descripcion && <div style={{ fontSize: 12.5, color: "#64748b", marginTop: 2 }}>{r.descripcion}</div>}
                   {r.fecha_aplicacion && <div style={{ fontSize: 11.5, color: "#94a3b8", marginTop: 2 }}>💉 Aplicada el {new Date(r.fecha_aplicacion + "T00:00:00").toLocaleDateString("es-AR")}</div>}
+                  {r.fecha && <div style={{ fontSize: 12, color: "#0891b2", fontWeight: 700, marginTop: 2 }}>📅 Próxima: {new Date(r.fecha + "T00:00:00").toLocaleDateString("es-AR")}</div>}
                 </div>
                 <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
                   {r.pacientes?.clientes?.email && (
