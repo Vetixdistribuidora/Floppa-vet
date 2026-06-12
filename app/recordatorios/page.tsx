@@ -38,13 +38,14 @@ export default function RecordatoriosPage() {
   const [form, setForm] = useState<any>(formVacio())
   const [guardando, setGuardando] = useState(false)
   const [confirmEliminar, setConfirmEliminar] = useState<any>(null)
+  const [enviando, setEnviando] = useState<number | null>(null)
 
   function mostrar(m: string, t: "ok" | "error") { setToast({ mensaje: m, tipo: t }); setTimeout(() => setToast(null), 3000) }
 
   async function cargar() {
     setCargando(true)
     const [{ data: rec }, { data: pac }] = await Promise.all([
-      supabase.from("recordatorios").select("*, pacientes(nombre, especie)").order("fecha", { ascending: true }),
+      supabase.from("recordatorios").select("*, pacientes(nombre, especie, clientes(nombre, apellido, email))").order("fecha", { ascending: true }),
       supabase.from("pacientes").select("id, nombre, especie").order("nombre"),
     ])
     setItems(rec || [])
@@ -84,6 +85,24 @@ export default function RecordatoriosPage() {
     const { error } = await supabase.from("recordatorios").update({ estado: hecho ? "hecho" : "pendiente" }).eq("id", r.id)
     if (error) { mostrar("Error", "error"); return }
     setItems(prev => prev.map(x => x.id === r.id ? { ...x, estado: hecho ? "hecho" : "pendiente" } : x))
+  }
+
+  async function enviarEmailTutor(r: any) {
+    setEnviando(r.id)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const res = await fetch("/api/recordatorio-email", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session?.access_token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ id: r.id }),
+      })
+      const j = await res.json()
+      if (res.ok) {
+        mostrar("📧 Email enviado al tutor", "ok")
+        setItems(prev => prev.map(x => x.id === r.id ? { ...x, email_enviado_at: new Date().toISOString() } : x))
+      } else mostrar(j.error || "No se pudo enviar", "error")
+    } catch (e: any) { mostrar("Error: " + (e?.message || "desconocido"), "error") }
+    finally { setEnviando(null) }
   }
 
   async function eliminar() {
@@ -160,6 +179,13 @@ export default function RecordatoriosPage() {
                   {r.descripcion && <div style={{ fontSize: 12.5, color: "#64748b", marginTop: 2 }}>{r.descripcion}</div>}
                 </div>
                 <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                  {r.pacientes?.clientes?.email && (
+                    <button onClick={() => enviarEmailTutor(r)} disabled={enviando === r.id}
+                      title={r.email_enviado_at ? "Reenviar email al tutor" : "Enviar email al tutor"}
+                      style={{ background: r.email_enviado_at ? "#f4f2e6" : "#eef0e0", border: "1px solid #e6e8cf", borderRadius: 7, padding: "5px 10px", cursor: enviando === r.id ? "wait" : "pointer", fontSize: 13, color: "#6f7d49", fontWeight: 700 }}>
+                      {enviando === r.id ? "…" : r.email_enviado_at ? "📧✓" : "📧"}
+                    </button>
+                  )}
                   <button onClick={() => marcarHecho(r, !hecho)} title={hecho ? "Marcar pendiente" : "Marcar hecho"} style={{ background: hecho ? "#f1f5f9" : "#ecfdf3", border: `1px solid ${hecho ? "#e2e8f0" : "#a7f3d0"}`, borderRadius: 7, padding: "5px 10px", cursor: "pointer", fontSize: 13, color: hecho ? "#64748b" : "#16a34a", fontWeight: 700 }}>{hecho ? "↩" : "✓"}</button>
                   <button onClick={() => abrirEditar(r)} style={{ background: "#f1f5f9", border: "1px solid #e2e8f0", borderRadius: 7, padding: "5px 10px", cursor: "pointer", fontSize: 12, color: "#475569" }}>✎</button>
                   <button onClick={() => setConfirmEliminar(r)} style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 7, padding: "5px 10px", cursor: "pointer", fontSize: 12, color: "#dc2626" }}>🗑</button>
