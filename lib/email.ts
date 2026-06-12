@@ -3,25 +3,31 @@
 
 const RESEND_URL = "https://api.resend.com/emails"
 
-export async function enviarEmail(opts: { to: string; subject: string; html: string; fromName?: string }) {
+export async function enviarEmail(opts: { to: string; subject: string; html: string; fromName?: string; replyTo?: string }) {
   const key = process.env.RESEND_API_KEY
   if (!key) throw new Error("Falta configurar RESEND_API_KEY")
   // RESEND_FROM puede ser "algo@dominio.com" o "Nombre <algo@dominio.com>"
   const fromBase = process.env.RESEND_FROM || "onboarding@resend.dev"
   const addr = fromBase.match(/<(.+)>/)?.[1] || fromBase
+  // El nombre visible es el del negocio (ej. "Veterinaria Toly")
   const from = `${(opts.fromName || "Floppa").replace(/[<>]/g, "")} <${addr}>`
 
   const res = await fetch(RESEND_URL, {
     method: "POST",
     headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from, to: [opts.to], subject: opts.subject, html: opts.html }),
+    body: JSON.stringify({
+      from, to: [opts.to], subject: opts.subject, html: opts.html,
+      ...(opts.replyTo ? { reply_to: opts.replyTo } : {}),  // las respuestas van al mail del negocio
+    }),
   })
   if (!res.ok) throw new Error("Resend " + res.status + ": " + (await res.text()))
   return res.json()
 }
 
 // Arma y envía el email de un recordatorio a su tutor.
-export async function enviarRecordatorio(r: any, tutor: any, orgNombre: string) {
+// org = { nombre, email } del negocio: nombre = remitente visible, email = reply-to.
+export async function enviarRecordatorio(r: any, tutor: any, org: { nombre?: string | null; email?: string | null }) {
+  const orgNombre = org?.nombre || "Veterinaria"
   const fechaTxt = r.fecha
     ? new Date(r.fecha + "T00:00:00").toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "long" })
     : ""
@@ -40,5 +46,5 @@ export async function enviarRecordatorio(r: any, tutor: any, orgNombre: string) 
         <p style="color:#64748b;font-size:13px;margin:18px 0 0">— ${orgNombre}</p>
       </div>
     </div>`
-  return enviarEmail({ to: tutor.email, subject, html, fromName: orgNombre })
+  return enviarEmail({ to: tutor.email, subject, html, fromName: orgNombre, replyTo: org?.email || undefined })
 }

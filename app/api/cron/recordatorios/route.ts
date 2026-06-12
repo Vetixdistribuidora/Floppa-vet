@@ -26,8 +26,8 @@ export async function GET(req: Request) {
     const tutor = (r as any).pacientes?.clientes
     if (!tutor?.email) { sinEmail++; continue }
     try {
-      const { data: org } = await admin.from("organizaciones").select("nombre").eq("id", (r as any).organizacion_id).maybeSingle()
-      await enviarRecordatorio(r, tutor, org?.nombre || "Veterinaria")
+      const { data: org } = await admin.from("organizaciones").select("nombre, email").eq("id", (r as any).organizacion_id).maybeSingle()
+      await enviarRecordatorio(r, tutor, org || {})
       await admin.from("recordatorios").update({ email_enviado_at: new Date().toISOString() }).eq("id", (r as any).id)
       enviados++
     } catch (e) { console.error("cron recordatorio", (r as any).id, e) }

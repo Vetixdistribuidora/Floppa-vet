@@ -25,8 +25,8 @@ export async function POST(req: Request) {
     const tutor = r.pacientes?.clientes
     if (!tutor?.email) return Response.json({ error: "El tutor no tiene email cargado" }, { status: 400 })
 
-    const { data: org } = await supa.from("organizaciones").select("nombre").maybeSingle()
-    await enviarRecordatorio(r, tutor, org?.nombre || "Veterinaria")
+    const { data: org } = await supa.from("organizaciones").select("nombre, email").maybeSingle()
+    await enviarRecordatorio(r, tutor, org || {})
     await supa.from("recordatorios").update({ email_enviado_at: new Date().toISOString() }).eq("id", id)
 
     return Response.json({ ok: true })
