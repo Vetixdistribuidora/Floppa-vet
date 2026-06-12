@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js"
-import { enviarRecordatorio } from "@/lib/email"
+import { enviarRecordatorio, enviarCumpleanos } from "@/lib/email"
 
 const SB_URL = (process.env.NEXT_PUBLIC_SUPABASE_URL || "").trim().replace(/\/+$/, "").replace(/\/rest\/v1$/i, "")
 
@@ -32,5 +32,27 @@ export async function GET(req: Request) {
       enviados++
     } catch (e) { console.error("cron recordatorio", (r as any).id, e) }
   }
-  return Response.json({ ok: true, fecha: hoy, total: recs?.length || 0, enviados, sinEmail })
+  // ── Cumpleaños del día: avisar al tutor ──
+  const ahora = new Date()
+  const mmdd = `${String(ahora.getMonth() + 1).padStart(2, "0")}-${String(ahora.getDate()).padStart(2, "0")}`
+  const year = ahora.getFullYear()
+  const { data: pacs } = await admin
+    .from("pacientes")
+    .select("id, nombre, fecha_nacimiento, cumple_email_year, organizacion_id, clientes(nombre, apellido, email)")
+    .not("fecha_nacimiento", "is", null)
+  let cumples = 0
+  for (const p of pacs || []) {
+    if (((p as any).fecha_nacimiento || "").slice(5) !== mmdd) continue
+    if ((p as any).cumple_email_year === year) continue
+    const tutor = (p as any).clientes
+    if (!tutor?.email) continue
+    try {
+      const { data: org } = await admin.from("organizaciones").select("nombre, email").eq("id", (p as any).organizacion_id).maybeSingle()
+      await enviarCumpleanos(p, tutor, org || {})
+      await admin.from("pacientes").update({ cumple_email_year: year }).eq("id", (p as any).id)
+      cumples++
+    } catch (e) { console.error("cron cumple", (p as any).id, e) }
+  }
+
+  return Response.json({ ok: true, fecha: hoy, recordatorios: enviados, sinEmail, cumples })
 }

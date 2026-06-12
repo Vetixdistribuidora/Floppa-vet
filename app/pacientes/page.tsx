@@ -34,7 +34,20 @@ function edadDe(fecha: string | null): string {
   return `${años} año${años !== 1 ? "s" : ""}${m ? ` ${m}m` : ""}`
 }
 
-const FORM_VACIO = { nombre: "", especie: "Perro", raza: "", sexo: "", fecha_nacimiento: "", peso: "", color: "", cliente_id: "", notas: "" }
+const ETIQUETAS_SUGERIDAS = ["Reproductor", "Donante", "Castrado/a", "Gestante", "Con crías", "Agresivo"]
+
+// Próximo cumpleaños: día/mes y cuántos días faltan
+function cumpleInfo(fecha: string | null) {
+  if (!fecha) return null
+  const n = new Date(fecha + "T00:00:00")
+  const hoy = new Date(); hoy.setHours(0, 0, 0, 0)
+  let prox = new Date(hoy.getFullYear(), n.getMonth(), n.getDate())
+  if (prox < hoy) prox = new Date(hoy.getFullYear() + 1, n.getMonth(), n.getDate())
+  const dias = Math.round((prox.getTime() - hoy.getTime()) / 86400000)
+  return { dia: `${String(n.getDate()).padStart(2, "0")}/${String(n.getMonth() + 1).padStart(2, "0")}`, dias }
+}
+
+const FORM_VACIO = { nombre: "", especie: "Perro", raza: "", sexo: "", fecha_nacimiento: "", peso: "", color: "", cliente_id: "", notas: "", etiquetas: [] as string[] }
 
 const labelStyle: React.CSSProperties = { display: "block", fontSize: 11, fontWeight: 700, color: "#64748b", letterSpacing: 0.4, marginBottom: 5, textTransform: "uppercase" }
 const inputStyle: React.CSSProperties = { width: "100%", padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 9, fontSize: 14, color: "#0f172a", outline: "none", boxSizing: "border-box", background: "white" }
@@ -50,17 +63,20 @@ export default function PacientesPage() {
   const [form, setForm] = useState<any>(FORM_VACIO)
   const [guardando, setGuardando] = useState(false)
   const [confirmEliminar, setConfirmEliminar] = useState<any>(null)
+  const [conCobro, setConCobro] = useState<Set<number>>(new Set())
 
   function mostrar(m: string, t: "ok" | "error") { setToast({ mensaje: m, tipo: t }); setTimeout(() => setToast(null), 3000) }
 
   async function cargar() {
     setCargando(true)
-    const [{ data: pac }, { data: cli }] = await Promise.all([
+    const [{ data: pac }, { data: cli }, { data: cobros }] = await Promise.all([
       supabase.from("pacientes").select("*, clientes(nombre, apellido)").order("nombre"),
       supabase.from("clientes").select("id, nombre, apellido").order("nombre"),
+      supabase.from("consultas").select("paciente_id").not("para_cobrar", "is", null).eq("cobrado", false),
     ])
     setPacientes(pac || [])
     setClientes(cli || [])
+    setConCobro(new Set((cobros || []).map((c: any) => c.paciente_id)))
     setCargando(false)
   }
   useEffect(() => { cargar() }, [])
@@ -71,7 +87,7 @@ export default function PacientesPage() {
     setForm({
       nombre: p.nombre || "", especie: p.especie || "Perro", raza: p.raza || "", sexo: p.sexo || "",
       fecha_nacimiento: p.fecha_nacimiento || "", peso: p.peso ?? "", color: p.color || "",
-      cliente_id: p.cliente_id ? String(p.cliente_id) : "", notas: p.notas || "",
+      cliente_id: p.cliente_id ? String(p.cliente_id) : "", notas: p.notas || "", etiquetas: p.etiquetas || [],
     })
     setModal(true)
   }
@@ -84,6 +100,7 @@ export default function PacientesPage() {
       sexo: form.sexo || null, fecha_nacimiento: form.fecha_nacimiento || null,
       peso: form.peso === "" ? null : Number(form.peso), color: form.color.trim() || null,
       cliente_id: form.cliente_id ? Number(form.cliente_id) : null, notas: form.notas.trim() || null,
+      etiquetas: form.etiquetas || [],
     }
     try {
       if (editId) {
@@ -148,11 +165,19 @@ export default function PacientesPage() {
           {filtrados.map(p => (
             <div key={p.id} style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 14, padding: "16px 18px", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: 16, color: "#0f172a" }}>{p.nombre}</div>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                    <div style={{ fontWeight: 700, fontSize: 16, color: "#0f172a" }}>{p.nombre}</div>
+                    {conCobro.has(p.id) && <span style={{ background: "#fff7ed", border: "1px solid #fed7aa", color: "#c2410c", fontSize: 10.5, fontWeight: 800, padding: "2px 7px", borderRadius: 999 }}>💲 A cobrar</span>}
+                  </div>
                   <div style={{ fontSize: 12.5, color: "#64748b", marginTop: 2 }}>
                     {[p.especie, p.raza].filter(Boolean).join(" · ") || "—"}
                   </div>
+                  {(p.etiquetas || []).length > 0 && (
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 6 }}>
+                      {p.etiquetas.map((et: string) => <span key={et} style={{ background: "#eef0e0", color: "#4b5a2c", fontSize: 10.5, fontWeight: 700, padding: "2px 8px", borderRadius: 999 }}>{et}</span>)}
+                    </div>
+                  )}
                 </div>
                 <div style={{ display: "flex", gap: 6 }}>
                   <Link href={`/consultas?paciente=${p.id}`} title="Historia clínica" style={{ background: "#f4f2e6", border: "1px solid #e6e8cf", borderRadius: 7, padding: "4px 9px", cursor: "pointer", fontSize: 12, color: "#6f7d49", textDecoration: "none" }}>📋</Link>
@@ -161,15 +186,22 @@ export default function PacientesPage() {
                   <button onClick={() => setConfirmEliminar(p)} title="Eliminar" style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 7, padding: "4px 9px", cursor: "pointer", fontSize: 12, color: "#dc2626" }}>🗑</button>
                 </div>
               </div>
-              <div style={{ display: "flex", gap: 14, flexWrap: "wrap", fontSize: 12.5, color: "#475569", marginTop: 6 }}>
+              <div style={{ display: "flex", gap: 14, flexWrap: "wrap", fontSize: 12.5, color: "#475569", marginTop: 8 }}>
                 <span><b style={{ color: "#64748b", fontWeight: 600 }}>Edad:</b> {edadDe(p.fecha_nacimiento)}</span>
                 {p.sexo && <span><b style={{ color: "#64748b", fontWeight: 600 }}>Sexo:</b> {p.sexo}</span>}
                 {p.peso != null && <span><b style={{ color: "#64748b", fontWeight: 600 }}>Peso:</b> {p.peso} kg</span>}
+                {(() => { const c = cumpleInfo(p.fecha_nacimiento); return c ? <span style={{ color: c.dias === 0 ? "#d97706" : "#475569", fontWeight: c.dias === 0 ? 700 : 400 }}>🎂 {c.dia}{c.dias === 0 ? " ¡hoy!" : c.dias <= 30 ? ` (en ${c.dias}d)` : ""}</span> : null })()}
               </div>
               <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid #f1f5f9", fontSize: 12.5, color: "#475569" }}>
                 <b style={{ color: "#64748b", fontWeight: 600 }}>Tutor:</b>{" "}
                 {p.clientes ? `${p.clientes.nombre || ""} ${p.clientes.apellido || ""}`.trim() : <span style={{ color: "#94a3b8", fontStyle: "italic" }}>sin asignar</span>}
               </div>
+              {p.notas && (
+                <div style={{ marginTop: 8, background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 8, padding: "8px 12px", fontSize: 12.5 }}>
+                  <b style={{ color: "#b45309", fontWeight: 800 }}>Nota:</b>{" "}
+                  <span style={{ fontWeight: 700, color: "#0f172a", whiteSpace: "pre-wrap" }}>{p.notas}</span>
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -223,8 +255,23 @@ export default function PacientesPage() {
                 />
               </div>
               <div style={{ gridColumn: "1 / -1" }}>
-                <label style={labelStyle}>Notas</label>
-                <textarea value={form.notas} onChange={e => setForm({ ...form, notas: e.target.value })} rows={2} placeholder="Alergias, observaciones…" style={{ ...inputStyle, resize: "vertical" }} />
+                <label style={labelStyle}>Nota / patología de base</label>
+                <textarea value={form.notas} onChange={e => setForm({ ...form, notas: e.target.value })} rows={2} placeholder="Alergias, patología de base, observaciones…" style={{ ...inputStyle, resize: "vertical" }} />
+              </div>
+              <div style={{ gridColumn: "1 / -1" }}>
+                <label style={labelStyle}>Etiquetas</label>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {ETIQUETAS_SUGERIDAS.map(et => {
+                    const on = (form.etiquetas || []).includes(et)
+                    return (
+                      <button key={et} type="button"
+                        onClick={() => setForm({ ...form, etiquetas: on ? form.etiquetas.filter((x: string) => x !== et) : [...(form.etiquetas || []), et] })}
+                        style={{ padding: "6px 12px", borderRadius: 999, cursor: "pointer", fontSize: 12.5, fontWeight: 700, border: on ? "1.5px solid #6f7d49" : "1px solid #e2e8f0", background: on ? "#f4f2e6" : "white", color: on ? "#4b5a2c" : "#64748b" }}>
+                        {on ? "✓ " : ""}{et}
+                      </button>
+                    )
+                  })}
+                </div>
               </div>
             </div>
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 22 }}>

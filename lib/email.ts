@@ -48,3 +48,21 @@ export async function enviarRecordatorio(r: any, tutor: any, org: { nombre?: str
     </div>`
   return enviarEmail({ to: tutor.email, subject, html, fromName: orgNombre, replyTo: org?.email || undefined })
 }
+
+// Email de cumpleaños del paciente al tutor.
+export async function enviarCumpleanos(paciente: any, tutor: any, org: { nombre?: string | null; email?: string | null }) {
+  const orgNombre = org?.nombre || "Veterinaria"
+  const subject = `🎂 ¡Feliz cumpleaños, ${paciente.nombre}!`
+  const html = `
+    <div style="font-family:Arial,Helvetica,sans-serif;max-width:520px;margin:0 auto;color:#0f172a;text-align:center">
+      <div style="background:#6f7d49;color:#fff;padding:22px;border-radius:12px 12px 0 0">
+        <div style="font-size:40px">🎂🐾</div>
+        <h2 style="margin:6px 0 0;font-size:20px">¡Feliz cumpleaños, ${paciente.nombre}!</h2>
+      </div>
+      <div style="border:1px solid #e2e8f0;border-top:none;border-radius:0 0 12px 12px;padding:22px;line-height:1.6">
+        <p style="margin:0">Hoy ${paciente.nombre} está de cumpleaños 🎉</p>
+        <p style="margin:10px 0 0;color:#64748b;font-size:14px">Un saludo de <b>${orgNombre}</b> 💚</p>
+      </div>
+    </div>`
+  return enviarEmail({ to: tutor.email, subject, html, fromName: orgNombre, replyTo: org?.email || undefined })
+}

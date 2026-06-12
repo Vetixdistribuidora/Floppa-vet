@@ -27,7 +27,7 @@ function fechaCorta(f: string | null) {
 const labelStyle: React.CSSProperties = { display: "block", fontSize: 11, fontWeight: 700, color: "#64748b", letterSpacing: 0.4, marginBottom: 5, textTransform: "uppercase" }
 const inputStyle: React.CSSProperties = { width: "100%", padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 9, fontSize: 14, color: "#0f172a", outline: "none", boxSizing: "border-box", background: "white" }
 
-const formVacio = () => ({ paciente_id: "", fecha: hoyISO(), motivo: "", diagnostico: "", tratamiento: "", peso: "", temperatura: "", notas: "" })
+const formVacio = () => ({ paciente_id: "", fecha: hoyISO(), motivo: "", diagnostico: "", tratamiento: "", peso: "", temperatura: "", notas: "", para_cobrar: "" })
 
 export default function ConsultasPage() {
   const [consultas, setConsultas] = useState<any[]>([])
@@ -72,7 +72,7 @@ export default function ConsultasPage() {
     setForm({
       paciente_id: String(c.paciente_id), fecha: c.fecha || hoyISO(),
       motivo: c.motivo || "", diagnostico: c.diagnostico || "", tratamiento: c.tratamiento || "",
-      peso: c.peso ?? "", temperatura: c.temperatura ?? "", notas: c.notas || "",
+      peso: c.peso ?? "", temperatura: c.temperatura ?? "", notas: c.notas || "", para_cobrar: c.para_cobrar || "",
     })
     setModal(true)
   }
@@ -87,6 +87,7 @@ export default function ConsultasPage() {
       peso: form.peso === "" ? null : Number(form.peso),
       temperatura: form.temperatura === "" ? null : Number(form.temperatura),
       notas: form.notas.trim() || null,
+      para_cobrar: form.para_cobrar.trim() || null,
     }
     try {
       if (editId) {
@@ -102,6 +103,12 @@ export default function ConsultasPage() {
     } catch (e: any) {
       mostrar("Error: " + (e?.message || "desconocido"), "error")
     } finally { setGuardando(false) }
+  }
+
+  async function marcarCobrado(c: any, cobrado: boolean) {
+    const { error } = await supabase.from("consultas").update({ cobrado }).eq("id", c.id)
+    if (error) { mostrar("Error", "error"); return }
+    setConsultas(prev => prev.map(x => x.id === c.id ? { ...x, cobrado } : x))
   }
 
   async function eliminar() {
@@ -185,6 +192,17 @@ export default function ConsultasPage() {
                   </div>
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 13.5, color: "#334155" }}>
+                  {c.para_cobrar && (
+                    <div style={{ background: c.cobrado ? "#f0fdf4" : "#fff7ed", border: `1px solid ${c.cobrado ? "#bbf7d0" : "#fed7aa"}`, borderRadius: 8, padding: "8px 12px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+                      <div style={{ minWidth: 0 }}>
+                        <b style={{ color: c.cobrado ? "#16a34a" : "#c2410c", fontWeight: 800 }}>{c.cobrado ? "✓ Cobrado:" : "💲 A cobrar:"}</b>{" "}
+                        <span style={{ fontWeight: 700, color: "#0f172a", textDecoration: c.cobrado ? "line-through" : "none" }}>{c.para_cobrar}</span>
+                      </div>
+                      <button onClick={() => marcarCobrado(c, !c.cobrado)} style={{ flexShrink: 0, background: c.cobrado ? "#f1f5f9" : "#16a34a", color: c.cobrado ? "#64748b" : "white", border: "none", borderRadius: 7, padding: "5px 12px", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+                        {c.cobrado ? "Reabrir" : "Marcar cobrado"}
+                      </button>
+                    </div>
+                  )}
                   {c.motivo && <div style={{ whiteSpace: "pre-wrap" }}><b style={{ color: "#4b5a2c", fontWeight: 800 }}>Motivo:</b> {c.motivo}</div>}
                   {c.diagnostico && <div style={{ whiteSpace: "pre-wrap" }}><b style={{ color: "#4b5a2c", fontWeight: 800 }}>Diagnóstico:</b> {c.diagnostico}</div>}
                   {c.tratamiento && <div style={{ whiteSpace: "pre-wrap" }}><b style={{ color: "#4b5a2c", fontWeight: 800 }}>Tratamiento:</b> {c.tratamiento}</div>}
@@ -235,6 +253,10 @@ export default function ConsultasPage() {
               <div style={{ gridColumn: "1 / -1" }}>
                 <label style={labelStyle}>Tratamiento</label>
                 <textarea value={form.tratamiento} onChange={e => setForm({ ...form, tratamiento: e.target.value })} rows={2} style={{ ...inputStyle, resize: "vertical" }} />
+              </div>
+              <div style={{ gridColumn: "1 / -1" }}>
+                <label style={{ ...labelStyle, color: "#b45309" }}>💲 Para cobrar (lo ve recepción)</label>
+                <textarea value={form.para_cobrar} onChange={e => setForm({ ...form, para_cobrar: e.target.value })} rows={2} placeholder="Ej: Consulta + inyectable + medicación X" style={{ ...inputStyle, resize: "vertical", background: "#fffbeb", borderColor: "#fde68a" }} />
               </div>
               <div>
                 <label style={labelStyle}>Peso (kg)</label>
