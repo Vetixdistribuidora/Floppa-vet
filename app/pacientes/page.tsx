@@ -6,6 +6,8 @@ import { supabase } from "@/lib/supabase"
 import ComboBox from "@/components/ComboBox"
 
 const ESPECIES = ["Perro", "Gato", "Ave", "Conejo", "Roedor", "Reptil", "Equino", "Otro"]
+const ESPECIE_EMOJI: Record<string, string> = { Perro: "🐶", Gato: "🐱", Ave: "🐦", Conejo: "🐰", Roedor: "🐹", Reptil: "🦎", Equino: "🐴", Otro: "🐾" }
+const emojiEsp = (e: string | null) => ESPECIE_EMOJI[e || ""] || "🐾"
 const OLIVA = "#6f7d49"
 
 function Toast({ mensaje, tipo }: { mensaje: string; tipo: "ok" | "error" }) {
@@ -167,12 +169,13 @@ export default function PacientesPage() {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
                 <div style={{ minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                    <Link href={`/pacientes/${p.id}`} title="Ver ficha completa" style={{ fontWeight: 700, fontSize: 16, color: "#4b5a2c", textDecoration: "none" }}>{p.nombre}</Link>
+                    <Link href={`/pacientes/${p.id}`} title="Ver ficha completa" style={{ fontWeight: 700, fontSize: 16, color: "#4b5a2c", textDecoration: "none" }}>
+                      <span>{emojiEsp(p.especie)}</span> {p.nombre}
+                      {p.raza && <span style={{ fontWeight: 500, color: "#94a3b8", fontSize: 14 }}> · {p.raza}</span>}
+                    </Link>
                     {conCobro.has(p.id) && <span style={{ background: "#fff7ed", border: "1px solid #fed7aa", color: "#c2410c", fontSize: 10.5, fontWeight: 800, padding: "2px 7px", borderRadius: 999 }}>💲 A cobrar</span>}
                   </div>
-                  <div style={{ fontSize: 12.5, color: "#64748b", marginTop: 2 }}>
-                    {[p.especie, p.raza].filter(Boolean).join(" · ") || "—"}
-                  </div>
+                  <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 2 }}>{p.especie || "—"}</div>
                   {(p.etiquetas || []).length > 0 && (
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 6 }}>
                       {p.etiquetas.map((et: string) => <span key={et} style={{ background: "#eef0e0", color: "#4b5a2c", fontSize: 10.5, fontWeight: 700, padding: "2px 8px", borderRadius: 999 }}>{et}</span>)}
@@ -187,13 +190,13 @@ export default function PacientesPage() {
                 </div>
               </div>
               <div style={{ display: "flex", gap: 14, flexWrap: "wrap", fontSize: 12.5, color: "#475569", marginTop: 8 }}>
-                <span><b style={{ color: "#64748b", fontWeight: 600 }}>Edad:</b> {edadDe(p.fecha_nacimiento)}</span>
-                {p.sexo && <span><b style={{ color: "#64748b", fontWeight: 600 }}>Sexo:</b> {p.sexo}</span>}
-                {p.peso != null && <span><b style={{ color: "#64748b", fontWeight: 600 }}>Peso:</b> {p.peso} kg</span>}
+                <span><b style={{ color: "#4b5a2c", fontWeight: 800 }}>Edad:</b> {edadDe(p.fecha_nacimiento)}</span>
+                {p.sexo && <span><b style={{ color: "#4b5a2c", fontWeight: 800 }}>Sexo:</b> {p.sexo}</span>}
+                {p.peso != null && <span><b style={{ color: "#4b5a2c", fontWeight: 800 }}>Peso:</b> {p.peso} kg</span>}
                 {(() => { const c = cumpleInfo(p.fecha_nacimiento); return c ? <span style={{ color: c.dias === 0 ? "#d97706" : "#475569", fontWeight: c.dias === 0 ? 700 : 400 }}>🎂 {c.dia}{c.dias === 0 ? " ¡hoy!" : c.dias <= 30 ? ` (en ${c.dias}d)` : ""}</span> : null })()}
               </div>
               <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid #f1f5f9", fontSize: 12.5, color: "#475569" }}>
-                <b style={{ color: "#64748b", fontWeight: 600 }}>Tutor:</b>{" "}
+                <b style={{ color: "#4b5a2c", fontWeight: 800 }}>Tutor:</b>{" "}
                 {p.clientes ? `${p.clientes.nombre || ""} ${p.clientes.apellido || ""}`.trim() : <span style={{ color: "#94a3b8", fontStyle: "italic" }}>sin asignar</span>}
               </div>
               {p.notas && (

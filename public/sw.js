@@ -1,5 +1,5 @@
-const CACHE_DYNAMIC = "floppa-v8"
-const CACHE_STATIC  = "floppa-static-v8"
+const CACHE_DYNAMIC = "floppa-v9"
+const CACHE_STATIC  = "floppa-static-v9"
 
 // ── INSTALL ──────────────────────────────────────────────────────────────────
 self.addEventListener("install", (e) => {
