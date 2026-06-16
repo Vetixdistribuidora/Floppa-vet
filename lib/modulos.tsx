@@ -15,10 +15,14 @@ export interface Modulo {
 export const MODULOS: Modulo[] = [
   { key: "inicio", label: "Inicio", path: "/", color: "#8a9a5b", core: true,
     icon: <><path d="M3 10l9-7 9 7" /><path d="M9 21V12h6v9" /></> },
+  { key: "sala", label: "Sala de espera", path: "/sala", color: "#14b8a6",
+    icon: <><circle cx="9" cy="8" r="3" /><path d="M3 20a6 6 0 0 1 12 0" /><path d="M16 5.5a3 3 0 0 1 0 6" /><path d="M21 20a6 6 0 0 0-4-5.7" /></> },
   { key: "productos", label: "Productos", path: "/productos", color: "#34d399",
     icon: <><path d="M20 7l-8-4-8 4 8 4 8-4z" /><path d="M4 7v10l8 4 8-4V7" /></> },
   { key: "clientes", label: "Clientes", path: "/clientes", color: "#a78bfa",
     icon: <><circle cx="12" cy="7" r="4" /><path d="M5.5 21a6.5 6.5 0 0 1 13 0" /></> },
+  { key: "sala", label: "Sala de espera", path: "/sala", color: "#14b8a6",
+    icon: <><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2" /><circle cx="9" cy="7" r="3" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /><path d="M21 21v-2a4 4 0 0 0-3-3.87" /></> },
   { key: "tutores", label: "Tutores", path: "/tutores", color: "#c084fc",
     icon: <><circle cx="9" cy="7" r="3.2" /><path d="M3.5 20a5.5 5.5 0 0 1 11 0" /><path d="M16 7.7a3 3 0 0 1 0 5.6" /><path d="M17.5 20a5 5 0 0 0-3-4.4" /></> },
   { key: "pacientes", label: "Pacientes", path: "/pacientes", color: "#5ec5c0",
@@ -60,7 +64,7 @@ export const MODULOS_TOGGLEABLES = MODULOS.filter(m => !m.core)
 export const PRESETS_RUBRO: Record<string, string[]> = {
   distribuidora: ["productos", "clientes", "ventas", "proveedores", "compras", "cuentas", "caja", "reportes", "deudores", "cheques", "mermas", "pedidos", "tienda-online"],
   general:       ["productos", "clientes", "ventas", "caja", "reportes", "cuentas", "deudores"],
-  veterinaria:   ["productos", "tutores", "pacientes", "consultas", "estudios", "recordatorios", "ventas", "caja", "reportes", "cuentas", "deudores"],
+  veterinaria:   ["sala", "tutores", "pacientes", "consultas", "estudios", "recordatorios", "productos", "ventas", "caja", "reportes", "cuentas", "deudores"],
 }
 
 export const DEFAULT_MODULOS = PRESETS_RUBRO.distribuidora
