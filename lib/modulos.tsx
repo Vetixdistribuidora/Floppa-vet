@@ -21,8 +21,6 @@ export const MODULOS: Modulo[] = [
     icon: <><path d="M20 7l-8-4-8 4 8 4 8-4z" /><path d="M4 7v10l8 4 8-4V7" /></> },
   { key: "clientes", label: "Clientes", path: "/clientes", color: "#a78bfa",
     icon: <><circle cx="12" cy="7" r="4" /><path d="M5.5 21a6.5 6.5 0 0 1 13 0" /></> },
-  { key: "sala", label: "Sala de espera", path: "/sala", color: "#14b8a6",
-    icon: <><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2" /><circle cx="9" cy="7" r="3" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /><path d="M21 21v-2a4 4 0 0 0-3-3.87" /></> },
   { key: "tutores", label: "Tutores", path: "/tutores", color: "#c084fc",
     icon: <><circle cx="9" cy="7" r="3.2" /><path d="M3.5 20a5.5 5.5 0 0 1 11 0" /><path d="M16 7.7a3 3 0 0 1 0 5.6" /><path d="M17.5 20a5 5 0 0 0-3-4.4" /></> },
   { key: "pacientes", label: "Pacientes", path: "/pacientes", color: "#5ec5c0",
@@ -33,6 +31,8 @@ export const MODULOS: Modulo[] = [
     icon: <><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z" /><path d="M9 13h6M9 17h4" /></> },
   { key: "recordatorios", label: "Sanidad", path: "/recordatorios", color: "#f59e0b",
     icon: <><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><path d="M9 12l2 2 4-4" /></> },
+  { key: "cobros", label: "Cobros", path: "/cobros", color: "#16a34a",
+    icon: <><circle cx="12" cy="12" r="9" /><path d="M14.5 9.2a2.6 2 0 0 0-2.5-1.2c-1.5 0-2.5.8-2.5 1.9 0 2.6 5 1.3 5 3.9 0 1.1-1 1.9-2.5 1.9a2.6 2 0 0 1-2.5-1.2" /><path d="M12 6.5v11" /></> },
   { key: "ventas", label: "Ventas", path: "/ventas", color: "#fbbf24",
     icon: <><path d="M3 3h2l.4 2M7 13h10l4-8H5.4" /><circle cx="9" cy="19" r="1" /><circle cx="17" cy="19" r="1" /></> },
   { key: "proveedores", label: "Proveedores", path: "/proveedores", color: "#f87171",
@@ -64,7 +64,7 @@ export const MODULOS_TOGGLEABLES = MODULOS.filter(m => !m.core)
 export const PRESETS_RUBRO: Record<string, string[]> = {
   distribuidora: ["productos", "clientes", "ventas", "proveedores", "compras", "cuentas", "caja", "reportes", "deudores", "cheques", "mermas", "pedidos", "tienda-online"],
   general:       ["productos", "clientes", "ventas", "caja", "reportes", "cuentas", "deudores"],
-  veterinaria:   ["sala", "tutores", "pacientes", "consultas", "estudios", "recordatorios", "productos", "ventas", "caja", "reportes", "cuentas", "deudores"],
+  veterinaria:   ["sala", "tutores", "pacientes", "consultas", "estudios", "recordatorios", "cobros", "productos", "ventas", "caja", "reportes", "cuentas", "deudores"],
 }
 
 export const DEFAULT_MODULOS = PRESETS_RUBRO.distribuidora
