@@ -17,6 +17,10 @@ export const MODULOS: Modulo[] = [
     icon: <><path d="M3 10l9-7 9 7" /><path d="M9 21V12h6v9" /></> },
   { key: "sala", label: "Sala de espera", path: "/sala", color: "#14b8a6",
     icon: <><circle cx="9" cy="8" r="3" /><path d="M3 20a6 6 0 0 1 12 0" /><path d="M16 5.5a3 3 0 0 1 0 6" /><path d="M21 20a6 6 0 0 0-4-5.7" /></> },
+  { key: "turnos", label: "Turnos", path: "/turnos", color: "#38bdf8",
+    icon: <><rect x="3" y="4.5" width="18" height="16" rx="2" /><path d="M3 9h18" /><path d="M8 2.5v4M16 2.5v4" /><path d="M8 13h3M8 16.5h6" /></> },
+  { key: "internacion", label: "Internación", path: "/internacion", color: "#fb7185",
+    icon: <><path d="M3 7v11" /><path d="M3 12h11a4 4 0 0 1 4 4v2" /><path d="M21 18v-2" /><circle cx="7.5" cy="10.5" r="2" /></> },
   { key: "productos", label: "Productos", path: "/productos", color: "#34d399",
     icon: <><path d="M20 7l-8-4-8 4 8 4 8-4z" /><path d="M4 7v10l8 4 8-4V7" /></> },
   { key: "clientes", label: "Clientes", path: "/clientes", color: "#a78bfa",
@@ -64,7 +68,7 @@ export const MODULOS_TOGGLEABLES = MODULOS.filter(m => !m.core)
 export const PRESETS_RUBRO: Record<string, string[]> = {
   distribuidora: ["productos", "clientes", "ventas", "proveedores", "compras", "cuentas", "caja", "reportes", "deudores", "cheques", "mermas", "pedidos", "tienda-online"],
   general:       ["productos", "clientes", "ventas", "caja", "reportes", "cuentas", "deudores"],
-  veterinaria:   ["sala", "tutores", "pacientes", "consultas", "estudios", "recordatorios", "cobros", "productos", "ventas", "caja", "reportes", "cuentas", "deudores"],
+  veterinaria:   ["sala", "turnos", "tutores", "pacientes", "consultas", "internacion", "estudios", "recordatorios", "cobros", "productos", "ventas", "caja", "reportes", "cuentas", "deudores"],
 }
 
 export const DEFAULT_MODULOS = PRESETS_RUBRO.distribuidora

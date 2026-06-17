@@ -174,6 +174,7 @@ export default function PacientesPage() {
                       {p.raza && <span style={{ fontWeight: 500, color: "#94a3b8", fontSize: 14 }}> · {p.raza}</span>}
                     </Link>
                     {conCobro.has(p.id) && <span style={{ background: "#fff7ed", border: "1px solid #fed7aa", color: "#c2410c", fontSize: 10.5, fontWeight: 800, padding: "2px 7px", borderRadius: 999 }}>💲 A cobrar</span>}
+                    {p.fallecido && <span style={{ background: "#f1f5f9", border: "1px solid #e2e8f0", color: "#64748b", fontSize: 10.5, fontWeight: 800, padding: "2px 7px", borderRadius: 999 }}>🕊 Fallecido</span>}
                   </div>
                   <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 2 }}>{p.especie || "—"}</div>
                   {(p.etiquetas || []).length > 0 && (

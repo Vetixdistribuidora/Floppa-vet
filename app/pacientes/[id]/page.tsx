@@ -30,6 +30,19 @@ export default function FichaPaciente() {
   const [estudios, setEstudios] = useState<any[]>([])
   const [sanidad, setSanidad] = useState<any[]>([])
   const [cargando, setCargando] = useState(true)
+  const [modalDeceso, setModalDeceso] = useState(false)
+  const [fechaDeceso, setFechaDeceso] = useState(new Date().toISOString().split("T")[0])
+  const [guardandoDeceso, setGuardandoDeceso] = useState(false)
+
+  async function marcarDeceso() {
+    setGuardandoDeceso(true)
+    await supabase.from("pacientes").update({ fallecido: true, fecha_deceso: fechaDeceso, activo: false }).eq("id", id)
+    setGuardandoDeceso(false); setModalDeceso(false); cargar()
+  }
+  async function revertirDeceso() {
+    await supabase.from("pacientes").update({ fallecido: false, fecha_deceso: null, activo: true }).eq("id", id)
+    cargar()
+  }
 
   async function cargar() {
     setCargando(true)
@@ -89,13 +102,19 @@ export default function FichaPaciente() {
       {/* Volver + acciones */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
         <button onClick={() => router.push("/pacientes")} style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 9, padding: "8px 14px", fontSize: 13, fontWeight: 600, color: "#475569", cursor: "pointer" }}>← Pacientes</button>
-        <button onClick={imprimirCarnet} style={{ background: OLIVA, color: "white", border: "none", borderRadius: 9, padding: "9px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>🖨️ Carnet de vacunación</button>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {p.fallecido
+            ? <button onClick={revertirDeceso} style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 9, padding: "9px 14px", fontSize: 13, fontWeight: 600, color: "#475569", cursor: "pointer" }}>↩ Revertir deceso</button>
+            : <button onClick={() => setModalDeceso(true)} style={{ background: "white", border: "1px solid #fecaca", borderRadius: 9, padding: "9px 14px", fontSize: 13, fontWeight: 600, color: "#b91c1c", cursor: "pointer" }}>🕊 Marcar deceso</button>}
+          <button onClick={imprimirCarnet} style={{ background: OLIVA, color: "white", border: "none", borderRadius: 9, padding: "9px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>🖨️ Carnet de vacunación</button>
+        </div>
       </div>
 
       {/* Cabecera del paciente */}
       <div style={card}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
           <div style={{ fontSize: 22, fontWeight: 800, color: "#1d1b12" }}>🐾 {p.nombre}</div>
+          {p.fallecido && <span style={{ background: "#f1f5f9", color: "#475569", fontSize: 11.5, fontWeight: 700, padding: "3px 11px", borderRadius: 999, border: "1px solid #e2e8f0" }}>🕊 Fallecido{p.fecha_deceso ? ` · ${f(p.fecha_deceso)}` : ""}</span>}
           {(p.etiquetas || []).map((et: string) => <span key={et} style={{ background: "#eef0e0", color: "#4b5a2c", fontSize: 11, fontWeight: 700, padding: "2px 9px", borderRadius: 999 }}>{et}</span>)}
         </div>
         <div style={{ display: "flex", gap: 16, flexWrap: "wrap", fontSize: 13, color: "#475569", marginTop: 10 }}>
@@ -189,6 +208,23 @@ export default function FichaPaciente() {
           </div>
         )}
       </div>
+
+      {/* Modal deceso */}
+      {modalDeceso && (
+        <div onClick={() => setModalDeceso(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: "white", borderRadius: 16, padding: "26px 28px", width: "100%", maxWidth: 380, textAlign: "center" }}>
+            <div style={{ fontSize: 34, marginBottom: 10 }}>🕊</div>
+            <p style={{ fontWeight: 700, color: "#1d1b12", marginBottom: 6 }}>Registrar deceso de {p.nombre}</p>
+            <p style={{ fontSize: 13, color: "#64748b", marginBottom: 16 }}>El paciente pasa a inactivo y deja de aparecer en recordatorios y turnos.</p>
+            <input type="date" value={fechaDeceso} onChange={e => setFechaDeceso(e.target.value)}
+              style={{ width: "100%", padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 9, fontSize: 14, color: "#1d1b12", outline: "none", boxSizing: "border-box", marginBottom: 18 }} />
+            <div style={{ display: "flex", justifyContent: "center", gap: 10 }}>
+              <button onClick={() => setModalDeceso(false)} style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 9, padding: "9px 18px", fontWeight: 600, color: "#475569", cursor: "pointer" }}>Cancelar</button>
+              <button onClick={marcarDeceso} disabled={guardandoDeceso} style={{ background: "#b91c1c", border: "none", borderRadius: 9, padding: "9px 20px", fontWeight: 700, color: "white", cursor: guardandoDeceso ? "not-allowed" : "pointer" }}>{guardandoDeceso ? "Guardando…" : "Confirmar deceso"}</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase"
 import ComboBox from "@/components/ComboBox"
+import { abrirWhatsApp } from "@/lib/whatsapp"
+import { empresaNombre } from "@/lib/empresa"
 
 const OLIVA = "#6f7d49"
 const TIPOS = ["Vacuna Antirrábica", "Vacuna Quíntuple", "Vacuna Triple", "Desparasitación", "Suministro", "Control", "Turno", "Cirugía", "Otro"]
@@ -46,10 +48,11 @@ export default function RecordatoriosPage() {
   async function cargar() {
     setCargando(true)
     const [{ data: rec }, { data: pac }] = await Promise.all([
-      supabase.from("recordatorios").select("*, pacientes(nombre, especie, clientes(nombre, apellido, email))").order("fecha", { ascending: true }),
-      supabase.from("pacientes").select("id, nombre, especie").order("nombre"),
+      supabase.from("recordatorios").select("*, pacientes(nombre, especie, fallecido, clientes(nombre, apellido, email, telefono))").order("fecha", { ascending: true }),
+      supabase.from("pacientes").select("id, nombre, especie").eq("fallecido", false).order("nombre"),
     ])
-    setItems(rec || [])
+    // No mostrar recordatorios de pacientes fallecidos
+    setItems((rec || []).filter((r: any) => !r.pacientes?.fallecido))
     setPacientes(pac || [])
     setCargando(false)
   }
@@ -104,6 +107,17 @@ export default function RecordatoriosPage() {
       } else mostrar(j.error || "No se pudo enviar", "error")
     } catch (e: any) { mostrar("Error: " + (e?.message || "desconocido"), "error") }
     finally { setEnviando(null) }
+  }
+
+  function recordarWhatsApp(r: any) {
+    const cli = r.pacientes?.clientes
+    const tutor = cli ? `${cli.nombre || ""}`.trim() : ""
+    const pac = r.pacientes?.nombre || ""
+    const fechaTxt = r.fecha ? new Date(r.fecha + "T00:00:00").toLocaleDateString("es-AR") : ""
+    const detalle = r.descripcion ? ` (${r.descripcion})` : ""
+    const emp = empresaNombre()
+    const msg = `Hola${tutor ? " " + tutor : ""}! 🐾 Te recordamos que ${pac || "tu mascota"} tiene ${r.tipo || "un control"}${detalle} para el ${fechaTxt}. ¡Te esperamos!${emp ? "\n" + emp : ""}`
+    if (!abrirWhatsApp(cli?.telefono, msg)) mostrar("El tutor no tiene teléfono cargado", "error")
   }
 
   async function eliminar() {
@@ -182,6 +196,12 @@ export default function RecordatoriosPage() {
                   {r.fecha && <div style={{ fontSize: 12, color: "#0891b2", fontWeight: 700, marginTop: 2 }}>📅 Próxima: {new Date(r.fecha + "T00:00:00").toLocaleDateString("es-AR")}</div>}
                 </div>
                 <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                  {r.pacientes?.clientes?.telefono && (
+                    <button onClick={() => recordarWhatsApp(r)} title="Recordar por WhatsApp"
+                      style={{ background: "#dcfce7", border: "1px solid #86efac", borderRadius: 7, padding: "5px 10px", cursor: "pointer", fontSize: 13, color: "#15803d", fontWeight: 700 }}>
+                      💬
+                    </button>
+                  )}
                   {r.pacientes?.clientes?.email && (
                     <button onClick={() => enviarEmailTutor(r)} disabled={enviando === r.id}
                       title={r.email_enviado_at ? "Reenviar email al tutor" : "Enviar email al tutor"}
