@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase"
 import { setEmpresa } from "@/lib/empresa"
-import { MODULOS_TOGGLEABLES, PRESETS_RUBRO, RUBROS, modulosActivos } from "@/lib/modulos"
+import { MODULOS, modulosActivos, ROLES_CONFIGURABLES } from "@/lib/modulos"
 
 function fmt(n: number) {
   return "$" + Math.round(n).toLocaleString("es-AR")
@@ -27,10 +27,14 @@ export default function ConfiguracionPage() {
   const [empresaForm, setEmpresaForm] = useState({ nombre: "", direccion: "", telefono: "", email: "" })
   const [guardandoEmpresa, setGuardandoEmpresa] = useState(false)
   const [empresaGuardada, setEmpresaGuardada] = useState(false)
-  const [modulosSel, setModulosSel] = useState<string[]>([])
-  const [rubroSel, setRubroSel] = useState("distribuidora")
-  const [guardandoModulos, setGuardandoModulos] = useState(false)
-  const [modulosGuardados, setModulosGuardados] = useState(false)
+  const [esAdmin, setEsAdmin] = useState(false)
+  const [usuarios, setUsuarios] = useState<any[]>([])
+  const [inviteForm, setInviteForm] = useState({ email: "", password: "", rol: "recepcion" })
+  const [invitando, setInvitando] = useState(false)
+  const [errorUsuario, setErrorUsuario] = useState<string | null>(null)
+  const [modulosRolSel, setModulosRolSel] = useState<Record<string, string[]>>({})
+  const [guardandoPermisos, setGuardandoPermisos] = useState(false)
+  const [permisosGuardados, setPermisosGuardados] = useState(false)
 
   useEffect(() => { cargar() }, [])
 
@@ -68,7 +72,7 @@ export default function ConfiguracionPage() {
       setNombreEdit(data?.nombre_negocio || "")
     }
 
-    // Datos de la organización (para comprobantes)
+    // Datos de la organización
     const { data: orgData } = await supabase.from("organizaciones").select("*").single()
     if (orgData) {
       setOrg(orgData)
@@ -78,10 +82,47 @@ export default function ConfiguracionPage() {
         telefono: orgData.telefono || "",
         email: orgData.email || "",
       })
-      setModulosSel(modulosActivos(orgData.modulos))
-      setRubroSel(orgData.rubro || "distribuidora")
+      setModulosRolSel(orgData.modulos_rol || {})
     }
+    // Rol del usuario actual + equipo
+    const { data: miOu } = await supabase.from("org_usuarios").select("rol").eq("user_id", user.id).maybeSingle()
+    setEsAdmin((miOu?.rol || "admin") === "admin")
+    cargarUsuarios()
     setLoading(false)
+  }
+
+  async function cargarUsuarios() {
+    const { data } = await supabase.from("org_usuarios").select("user_id, rol, email").order("rol")
+    setUsuarios(data || [])
+  }
+  async function invitarUsuario() {
+    if (!inviteForm.email.trim() || inviteForm.password.length < 6) { setErrorUsuario("Email y contraseña (mín. 6 caracteres)"); return }
+    setInvitando(true); setErrorUsuario(null)
+    const { data: { session } } = await supabase.auth.getSession()
+    const res = await fetch("/api/usuarios", { method: "POST", headers: { Authorization: `Bearer ${session?.access_token}`, "Content-Type": "application/json" }, body: JSON.stringify(inviteForm) })
+    const j = await res.json(); setInvitando(false)
+    if (!res.ok) { setErrorUsuario(j.error || "Error"); return }
+    setInviteForm({ email: "", password: "", rol: "recepcion" }); cargarUsuarios()
+  }
+  async function quitarUsuario(u: any) {
+    if (!confirm(`¿Quitar el acceso de ${u.email}?`)) return
+    const { data: { session } } = await supabase.auth.getSession()
+    const res = await fetch("/api/usuarios", { method: "DELETE", headers: { Authorization: `Bearer ${session?.access_token}`, "Content-Type": "application/json" }, body: JSON.stringify({ user_id: u.user_id }) })
+    if (res.ok) cargarUsuarios()
+  }
+  const rolModulos = (rol: string) => modulosRolSel[rol] ?? modulosActivos(org?.modulos)
+  function toggleRolModulo(rol: string, key: string) {
+    const actual = rolModulos(rol)
+    setModulosRolSel(prev => ({ ...prev, [rol]: actual.includes(key) ? actual.filter(k => k !== key) : [...actual, key] }))
+  }
+  async function guardarPermisos() {
+    if (!org) return
+    setGuardandoPermisos(true)
+    const payload: Record<string, string[]> = { ...modulosRolSel }
+    for (const r of ROLES_CONFIGURABLES) if (!payload[r.key]) payload[r.key] = modulosActivos(org.modulos)
+    await supabase.from("organizaciones").update({ modulos_rol: payload }).eq("id", org.id)
+    setModulosRolSel(payload)
+    setGuardandoPermisos(false); setPermisosGuardados(true); setTimeout(() => setPermisosGuardados(false), 2500)
   }
 
   async function guardarEmpresa() {
@@ -99,27 +140,6 @@ export default function ConfiguracionPage() {
     setGuardandoEmpresa(false)
     setEmpresaGuardada(true)
     setTimeout(() => setEmpresaGuardada(false), 2500)
-  }
-
-  function toggleModulo(key: string) {
-    setModulosSel(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key])
-  }
-  function aplicarRubro(rubro: string) {
-    setRubroSel(rubro)
-    if (PRESETS_RUBRO[rubro]) setModulosSel(PRESETS_RUBRO[rubro])
-  }
-  async function guardarModulos() {
-    if (!org) return
-    setGuardandoModulos(true)
-    await supabase.from("organizaciones").update({ modulos: modulosSel, rubro: rubroSel }).eq("id", org.id)
-    // El plan/precio sigue al rubro
-    const { data: plan } = await supabase.from("planes").select("id").eq("rubro", rubroSel).maybeSingle()
-    if (plan && usuario?.email) {
-      await supabase.from("suscripciones").update({ plan_id: plan.id }).eq("email", usuario.email)
-    }
-    setGuardandoModulos(false)
-    setModulosGuardados(true)
-    setTimeout(() => window.location.reload(), 800) // recargar para refrescar el menú lateral
   }
 
   async function iniciarSuscripcion() {
@@ -331,59 +351,69 @@ export default function ConfiguracionPage() {
         )}
       </div>
 
-      {/* ── Módulos y rubro ──────────────────────────────────────────────────── */}
-      <div style={{
-        background: "white", border: "1px solid #e2e8f0",
-        borderRadius: 20, padding: "24px 28px", marginBottom: 20,
-        boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
-      }}>
-        <h2 style={{ margin: "0 0 4px", color: "#0f172a", fontSize: 17, fontWeight: 700 }}>🧩 Módulos y rubro</h2>
-        <p style={{ margin: "0 0 18px", color: "#64748b", fontSize: 13 }}>
-          Elegí qué secciones aparecen en el menú. Podés partir de un preset según tu rubro.
-        </p>
+      {/* ── Usuarios del equipo (solo el dueño/admin) ────────────────────────── */}
+      {esAdmin && (
+        <div style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 20, padding: "24px 28px", marginBottom: 20, boxShadow: "0 1px 4px rgba(0,0,0,0.05)" }}>
+          <h2 style={{ margin: "0 0 4px", color: "#0f172a", fontSize: 17, fontWeight: 700 }}>👥 Usuarios del equipo</h2>
+          <p style={{ margin: "0 0 16px", color: "#64748b", fontSize: 13 }}>Creá accesos para tus empleados. Cada uno entra con su email y ve solo lo de su rol.</p>
 
-        <label style={{ display: "block", fontSize: 11, color: "#64748b", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 6 }}>
-          Rubro
-        </label>
-        <select
-          value={rubroSel}
-          onChange={e => aplicarRubro(e.target.value)}
-          style={{ width: "100%", padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 14, color: "#0f172a", background: "white", marginBottom: 18, boxSizing: "border-box" }}>
-          {RUBROS.map(r => <option key={r.key} value={r.key}>{r.label}</option>)}
-        </select>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 18 }}>
+            {usuarios.map(u => (
+              <div key={u.user_id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, padding: "10px 14px", border: "1px solid #e2e8f0", borderRadius: 10 }}>
+                <div>
+                  <div style={{ fontWeight: 600, color: "#0f172a", fontSize: 13.5 }}>{u.email || "(sin email)"}</div>
+                  <div style={{ fontSize: 11.5, color: "#64748b" }}>{u.rol === "admin" ? "👑 Dueño / Admin" : u.rol === "veterinario" ? "🩺 Veterinario/a" : "🧑‍💼 Recepción"}</div>
+                </div>
+                {u.rol !== "admin" && <button onClick={() => quitarUsuario(u)} style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 7, padding: "5px 10px", cursor: "pointer", fontSize: 12, color: "#dc2626", fontWeight: 700 }}>Quitar</button>}
+              </div>
+            ))}
+          </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(170px, 1fr))", gap: 10, marginBottom: 18 }}>
-          {MODULOS_TOGGLEABLES.map(m => {
-            const on = modulosSel.includes(m.key)
-            return (
-              <button
-                key={m.key} type="button" onClick={() => toggleModulo(m.key)}
-                style={{
-                  display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, padding: "10px 12px",
-                  border: `1px solid ${on ? "#8a9a5b" : "#e2e8f0"}`, background: on ? "#f4f2e6" : "white",
-                  borderRadius: 10, cursor: "pointer", fontSize: 13, fontWeight: 600, color: "#0f172a",
-                }}>
-                <span>{m.label}</span>
-                <span style={{ width: 34, height: 20, borderRadius: 20, background: on ? "#6f7d49" : "#cbd5e1", position: "relative", flexShrink: 0, transition: "background .2s" }}>
-                  <span style={{ position: "absolute", top: 2, left: on ? 16 : 2, width: 16, height: 16, borderRadius: "50%", background: "white", transition: "left .2s" }} />
-                </span>
-              </button>
-            )
-          })}
+          <div style={{ borderTop: "1px solid #f1f5f9", paddingTop: 16 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "#475569", marginBottom: 10 }}>+ Nuevo usuario</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: 10 }}>
+              <input value={inviteForm.email} onChange={e => setInviteForm({ ...inviteForm, email: e.target.value })} placeholder="Email" style={{ padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 9, fontSize: 14, color: "#0f172a", background: "white", outline: "none", boxSizing: "border-box" }} />
+              <input value={inviteForm.password} onChange={e => setInviteForm({ ...inviteForm, password: e.target.value })} placeholder="Contraseña (mín. 6)" style={{ padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 9, fontSize: 14, color: "#0f172a", background: "white", outline: "none", boxSizing: "border-box" }} />
+              <select value={inviteForm.rol} onChange={e => setInviteForm({ ...inviteForm, rol: e.target.value })} style={{ padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 9, fontSize: 14, color: "#0f172a", background: "white", outline: "none", boxSizing: "border-box" }}>
+                <option value="recepcion">Recepción</option>
+                <option value="veterinario">Veterinario/a</option>
+              </select>
+            </div>
+            {errorUsuario && <div style={{ color: "#dc2626", fontSize: 12.5, marginTop: 8 }}>{errorUsuario}</div>}
+            <button onClick={invitarUsuario} disabled={invitando} style={{ marginTop: 12, padding: "10px 20px", background: "#0f172a", border: "none", borderRadius: 9, color: "white", fontSize: 13, fontWeight: 700, cursor: invitando ? "wait" : "pointer" }}>{invitando ? "Creando…" : "Crear usuario"}</button>
+          </div>
         </div>
+      )}
 
-        <button
-          onClick={guardarModulos}
-          disabled={guardandoModulos}
-          style={{
-            padding: "11px 20px",
-            background: modulosGuardados ? "#16a34a" : "#0f172a",
-            border: "none", borderRadius: 9, color: "white",
-            fontSize: 13, fontWeight: 700, cursor: guardandoModulos ? "not-allowed" : "pointer",
-          }}>
-          {guardandoModulos ? "Guardando..." : modulosGuardados ? "✓ Guardado — actualizando menú..." : "Guardar módulos"}
-        </button>
-      </div>
+      {/* ── Permisos por rol ─────────────────────────────────────────────────── */}
+      {esAdmin && (
+        <div style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 20, padding: "24px 28px", marginBottom: 20, boxShadow: "0 1px 4px rgba(0,0,0,0.05)" }}>
+          <h2 style={{ margin: "0 0 4px", color: "#0f172a", fontSize: 17, fontWeight: 700 }}>🔐 Qué ve cada rol</h2>
+          <p style={{ margin: "0 0 18px", color: "#64748b", fontSize: 13 }}>Dentro de los módulos de tu plan, elegí qué pestañas ve cada rol. El dueño ve todo.</p>
+
+          {ROLES_CONFIGURABLES.map(r => (
+            <div key={r.key} style={{ marginBottom: 18 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#0f172a", marginBottom: 8 }}>{r.label}</div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                {modulosActivos(org?.modulos).map(key => {
+                  const m = MODULOS.find(x => x.key === key)
+                  const on = rolModulos(r.key).includes(key)
+                  return (
+                    <button key={key} type="button" onClick={() => toggleRolModulo(r.key, key)}
+                      style={{ padding: "6px 12px", borderRadius: 999, cursor: "pointer", fontSize: 12.5, fontWeight: 700, border: on ? "1.5px solid #6f7d49" : "1px solid #e2e8f0", background: on ? "#f4f2e6" : "white", color: on ? "#4b5a2c" : "#94a3b8" }}>
+                      {on ? "✓ " : ""}{m?.label || key}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          ))}
+
+          <button onClick={guardarPermisos} disabled={guardandoPermisos} style={{ padding: "11px 20px", background: permisosGuardados ? "#16a34a" : "#0f172a", border: "none", borderRadius: 9, color: "white", fontSize: 13, fontWeight: 700, cursor: guardandoPermisos ? "not-allowed" : "pointer" }}>
+            {guardandoPermisos ? "Guardando…" : permisosGuardados ? "✓ Guardado" : "Guardar permisos"}
+          </button>
+        </div>
+      )}
 
       {/* ── Datos para comprobantes ──────────────────────────────────────────── */}
       <div style={{

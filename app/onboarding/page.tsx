@@ -58,6 +58,7 @@ export default function OnboardingPage() {
         nombre_negocio: nombre.trim(),
         estado: "trial",
         plan_id: planId,
+        organizacion_id: orgId,
         fecha_inicio: new Date().toISOString().split("T")[0],
         fecha_vencimiento: venc.toISOString().split("T")[0],
       }, { onConflict: "email" })

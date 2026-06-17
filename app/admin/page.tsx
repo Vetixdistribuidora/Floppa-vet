@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase"
+import { RUBROS, MODULOS_TOGGLEABLES, PRESETS_RUBRO, modulosActivos } from "@/lib/modulos"
 
 const OWNER_EMAIL = process.env.NEXT_PUBLIC_OWNER_EMAIL || ""
 
@@ -52,6 +53,30 @@ export default function AdminPage() {
   async function cambiarEstado(id: number, nuevoEstado: string) {
     await supabase.from("suscripciones").update({ estado: nuevoEstado }).eq("id", id)
     setSuscripciones(prev => prev.map(s => s.id === id ? { ...s, estado: nuevoEstado } : s))
+  }
+
+  const [editor, setEditor] = useState<any>(null)
+  const [orgForm, setOrgForm] = useState<{ rubro: string; modulos: string[] }>({ rubro: "distribuidora", modulos: [] })
+  const [cargandoOrg, setCargandoOrg] = useState(false)
+  const [guardandoOrg, setGuardandoOrg] = useState(false)
+
+  async function abrirEditorPlan(s: any) {
+    if (!s.organizacion_id) { alert("Este cliente todavía no tiene organización (no completó el onboarding)."); return }
+    setEditor(s); setCargandoOrg(true)
+    const { data: { session } } = await supabase.auth.getSession()
+    const res = await fetch(`/api/admin/org?org=${s.organizacion_id}`, { headers: { Authorization: `Bearer ${session?.access_token}` } })
+    const org = await res.json()
+    setOrgForm({ rubro: org.rubro || "distribuidora", modulos: modulosActivos(org.modulos) })
+    setCargandoOrg(false)
+  }
+  function aplicarRubroAdmin(rubro: string) { setOrgForm({ rubro, modulos: PRESETS_RUBRO[rubro] || orgForm.modulos }) }
+  function toggleModAdmin(key: string) { setOrgForm(f => ({ ...f, modulos: f.modulos.includes(key) ? f.modulos.filter(k => k !== key) : [...f.modulos, key] })) }
+  async function guardarPlan() {
+    if (!editor) return
+    setGuardandoOrg(true)
+    const { data: { session } } = await supabase.auth.getSession()
+    await fetch("/api/admin/org", { method: "POST", headers: { Authorization: `Bearer ${session?.access_token}`, "Content-Type": "application/json" }, body: JSON.stringify({ organizacion_id: editor.organizacion_id, rubro: orgForm.rubro, modulos: orgForm.modulos }) })
+    setGuardandoOrg(false); setEditor(null)
   }
 
   const filtradas = suscripciones.filter(s =>
@@ -180,7 +205,7 @@ export default function AdminPage() {
               </span>
 
               {/* Acción rápida */}
-              <div>
+              <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
                 {s.estado !== "owner" && (
                   <select
                     value={s.estado}
@@ -194,11 +219,45 @@ export default function AdminPage() {
                     <option value="vencido">Vencido</option>
                   </select>
                 )}
+                <button onClick={() => abrirEditorPlan(s)} title="Editar plan y módulos" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 6, color: "#cbd5e1", fontSize: 11, padding: "4px 8px", cursor: "pointer", whiteSpace: "nowrap" }}>⚙ Plan</button>
               </div>
             </div>
           )
         })}
       </div>
+
+      {/* Editor de plan / módulos (solo admin Floppa) */}
+      {editor && (
+        <div onClick={() => setEditor(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: "white", borderRadius: 18, padding: "26px 28px", width: "100%", maxWidth: 520, maxHeight: "90vh", overflowY: "auto" }}>
+            <h2 style={{ margin: "0 0 4px", fontSize: 18, fontWeight: 800, color: "#0f172a" }}>Plan y módulos</h2>
+            <p style={{ margin: "0 0 16px", color: "#64748b", fontSize: 13 }}>{editor.nombre_negocio || editor.email}</p>
+            {cargandoOrg ? <p style={{ color: "#94a3b8" }}>Cargando…</p> : (
+              <>
+                <label style={{ display: "block", fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", marginBottom: 6 }}>Rubro / plan</label>
+                <select value={orgForm.rubro} onChange={e => aplicarRubroAdmin(e.target.value)} style={{ width: "100%", padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 14, color: "#0f172a", background: "white", marginBottom: 18, boxSizing: "border-box" }}>
+                  {RUBROS.map(r => <option key={r.key} value={r.key}>{r.label}</option>)}
+                </select>
+                <label style={{ display: "block", fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", marginBottom: 8 }}>Módulos del plan</label>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: 8, marginBottom: 18 }}>
+                  {MODULOS_TOGGLEABLES.map(m => {
+                    const on = orgForm.modulos.includes(m.key)
+                    return (
+                      <button key={m.key} type="button" onClick={() => toggleModAdmin(m.key)} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 6, padding: "8px 10px", border: `1px solid ${on ? "#6f7d49" : "#e2e8f0"}`, background: on ? "#f4f2e6" : "white", borderRadius: 9, cursor: "pointer", fontSize: 12.5, fontWeight: 600, color: "#0f172a" }}>
+                        {m.label}<span>{on ? "✓" : ""}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
+                  <button onClick={() => setEditor(null)} style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 9, padding: "10px 18px", fontSize: 14, fontWeight: 600, color: "#475569", cursor: "pointer" }}>Cancelar</button>
+                  <button onClick={guardarPlan} disabled={guardandoOrg} style={{ background: "#0f172a", border: "none", borderRadius: 9, padding: "10px 22px", fontSize: 14, fontWeight: 700, color: "white", cursor: guardandoOrg ? "wait" : "pointer" }}>{guardandoOrg ? "Guardando…" : "Guardar"}</button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
     </div>
   )

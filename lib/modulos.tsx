@@ -79,3 +79,22 @@ export const RUBROS = [
 export function modulosActivos(modulos: string[] | null | undefined): string[] {
   return Array.isArray(modulos) ? modulos : DEFAULT_MODULOS
 }
+
+export const ROLES = [
+  { key: "admin", label: "Dueño / Admin" },
+  { key: "veterinario", label: "Veterinario/a" },
+  { key: "recepcion", label: "Recepción" },
+]
+// Roles a los que el dueño les configura visibilidad (admin ve todo siempre)
+export const ROLES_CONFIGURABLES = ROLES.filter(r => r.key !== "admin")
+
+/** Módulos que ve un usuario según su rol: admin ve todo el plan; los demás, el subconjunto que el dueño habilitó. */
+export function modulosVisibles(
+  rol: string | null | undefined,
+  planModulos: string[],
+  modulosRol: Record<string, string[]> | null | undefined,
+): string[] {
+  if (!rol || rol === "admin") return planModulos
+  const permitidos = modulosRol?.[rol]
+  return Array.isArray(permitidos) ? planModulos.filter(m => permitidos.includes(m)) : planModulos
+}

@@ -8,13 +8,15 @@ import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 import { setEmpresa } from "@/lib/empresa"
 import Logo from "@/components/Logo"
-import { MODULOS, modulosActivos } from "@/lib/modulos"
+import { MODULOS, modulosActivos, modulosVisibles } from "@/lib/modulos"
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const [usuario, setUsuario] = useState<any>(null)
   const [orgNombre, setOrgNombre] = useState<string>("Floppa")
   const [modulos, setModulos] = useState<string[] | null>(null)
+  const [modulosRol, setModulosRol] = useState<Record<string, string[]>>({})
+  const [rol, setRol] = useState<string>("admin")
   const [sidebarAbierto, setSidebarAbierto] = useState(false)
   const router = useRouter()
   // Refs para acceder siempre al valor actualizado dentro del callback (evitar stale closure)
@@ -41,9 +43,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         if (usuarioIdRef.current === session.user.id) return
         usuarioIdRef.current = session.user.id
         setUsuario(session.user)
-        const { data: org } = await supabase.from("organizaciones").select("nombre, direccion, telefono, email, logo_url, modulos").maybeSingle()
+        const { data: org } = await supabase.from("organizaciones").select("nombre, direccion, telefono, email, logo_url, modulos, modulos_rol").maybeSingle()
         if (org) {
-          setOrgNombre(org.nombre); setEmpresa(org); setModulos(org.modulos)
+          setOrgNombre(org.nombre); setEmpresa(org); setModulos(org.modulos); setModulosRol(org.modulos_rol || {})
+          const { data: ou } = await supabase.from("org_usuarios").select("rol").maybeSingle()
+          setRol(ou?.rol || "admin")
         } else if (!RUTAS_PUBLICAS.includes(pathnameRef.current)) {
           // Usuario autenticado pero sin organización todavía → onboarding
           router.replace("/onboarding")
@@ -250,7 +254,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         {/* NAV */}
         <nav>
-          {MODULOS.filter(m => m.core || modulosActivos(modulos).includes(m.key)).map(m => {
+          {MODULOS.filter(m => m.core || modulosVisibles(rol, modulosActivos(modulos), modulosRol).includes(m.key)).map(m => {
             const active = m.path === "/" ? pathname === "/" : pathname.startsWith(m.path)
             return (
               <Link key={m.key} href={m.path} style={getItemStyle(m.path)} onClick={() => setSidebarAbierto(false)}>
