@@ -233,6 +233,8 @@ export default function Productos() {
   const [colNombre, setColNombre] = useState("")
   const [colCosto, setColCosto] = useState("")
   const [colLaboratorio, setColLaboratorio] = useState("")
+  const [colCategoria, setColCategoria] = useState("")
+  const [esVet, setEsVet] = useState(false)
   const [rawRows, setRawRows] = useState<any[]>([])
   const [laboratorio, setLaboratorio] = useState("")
   const [fleteProducto, setFleteProducto] = useState("")
@@ -409,6 +411,10 @@ export default function Productos() {
 
   useEffect(() => { cargar() }, [])
 
+  useEffect(() => {
+    supabase.from("organizaciones").select("rubro").maybeSingle().then(({ data }) => setEsVet((data?.rubro || "") === "veterinaria"))
+  }, [])
+
   // Avisar al layout que hay una edición/alta en curso → no recargar automáticamente
   useEffect(() => {
     if (Object.keys(editando).length > 0 || mostrarAgregar) {
@@ -536,13 +542,17 @@ export default function Productos() {
 
   async function descargarPlantilla() {
     const XLSX = await import("xlsx")
-    const ws = XLSX.utils.aoa_to_sheet([
-      ["Nombre del producto", "Laboratorio", "Costo"],
-      ["Ivermectina 1% x 50ml", "Laboratorio Richmond", "1500"],
-      ["Amoxicilina 250mg x 10", "Laboratorio Bagó", "850"],
-      ["Enrofloxacina 50mg x 20", "Laboratorio Holliday", "2300"],
-    ])
-    ws["!cols"] = [{ wch: 40 }, { wch: 22 }, { wch: 14 }]
+    const ws = esVet
+      ? XLSX.utils.aoa_to_sheet([["Nombre del producto", "Laboratorio", "Precio", "Categoría"]])
+      : XLSX.utils.aoa_to_sheet([
+          ["Nombre del producto", "Laboratorio", "Costo"],
+          ["Ivermectina 1% x 50ml", "Laboratorio Richmond", "1500"],
+          ["Amoxicilina 250mg x 10", "Laboratorio Bagó", "850"],
+          ["Enrofloxacina 50mg x 20", "Laboratorio Holliday", "2300"],
+        ])
+    ws["!cols"] = esVet
+      ? [{ wch: 40 }, { wch: 22 }, { wch: 14 }, { wch: 20 }]
+      : [{ wch: 40 }, { wch: 22 }, { wch: 14 }]
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, "Productos")
     XLSX.writeFile(wb, "plantilla_productos.xlsx")
@@ -550,7 +560,7 @@ export default function Productos() {
 
   async function leerArchivo(file: File) {
     setArchivo(file)
-    setColumnas([]); setColNombre(""); setColCosto(""); setColLaboratorio(""); setRawRows([]); setPreview([])
+    setColumnas([]); setColNombre(""); setColCosto(""); setColLaboratorio(""); setColCategoria(""); setRawRows([]); setPreview([])
     try {
       const data = await file.arrayBuffer()
       let rows: any[] = []
@@ -579,9 +589,11 @@ export default function Productos() {
       const probNombre = cols.find(c => /nombre|descrip|product|articul/i.test(c)) || cols[0]
       const probCosto = cols.find(c => /precio|costo|price|valor|importe/i.test(c)) || (cols.length > 1 ? cols[cols.length - 1] : cols[0])
       const probLab = cols.find(c => /laborator|lab\b|fabricante|marca|proveedor|drogueria|drog/i.test(c)) || ""
+      const probCat = cols.find(c => /categor|rubro|grupo|tipo|familia|línea|linea/i.test(c)) || ""
       setColNombre(probNombre)
       setColCosto(probCosto)
       setColLaboratorio(probLab)
+      setColCategoria(probCat)
       mostrarToast(`✅ ${rows.length} filas · ${cols.length} columnas detectadas`, "ok")
     } catch {
       mostrarToast("❌ Error leyendo el archivo", "error")
@@ -595,6 +607,7 @@ export default function Productos() {
         nombre: String(r[colNombre] || "").trim(),
         costo: parsePrecio(r[colCosto]),
         laboratorio: colLaboratorio ? String(r[colLaboratorio] || "").trim() : "",
+        categoria: colCategoria ? String(r[colCategoria] || "").trim() : "",
       }))
       .filter(r => r.nombre && !isNaN(r.costo))
   }
@@ -638,11 +651,12 @@ export default function Productos() {
     // Separar nuevos de existentes
     const nuevos: any[] = []
     const existentes: any[] = []
-    for (const { nombre, costo, laboratorio } of mapeo) {
+    for (const { nombre, costo, laboratorio, categoria } of mapeo) {
       const existente = nombresExistentes.get(nombre.toLowerCase().trim())
       const precio_venta = Math.round(costo * (1 + margenDefault / 100) * (1 + fleteDefault / 100) * 100) / 100
       const campos: any = { costo: Math.round(costo * 100) / 100, margen: margenDefault, flete: fleteDefault, precio_venta }
       if (laboratorio) campos.laboratorio = laboratorio
+      if (categoria) campos.categoria = categoria
       if (existente) {
         // Usar id para garantizar que actualiza el registro correcto sin importar mayúsculas
         existentes.push({ id: existente.id, nombre: existente.nombre, ...campos })
@@ -673,7 +687,7 @@ export default function Productos() {
       procesados += Math.min(CHUNK, existentes.length - i)
       setProgreso(Math.round((procesados / total) * 100))
     }
-    setImportando(false); setPreview([]); setRawRows([]); setColumnas([]); setColNombre(""); setColCosto(""); setColLaboratorio(""); setArchivo(null); setFleteImportacion("")
+    setImportando(false); setPreview([]); setRawRows([]); setColumnas([]); setColNombre(""); setColCosto(""); setColLaboratorio(""); setColCategoria(""); setArchivo(null); setFleteImportacion("")
     mostrarToast(`✅ ${nuevosSinDup.length} nuevos · ${existentes.length} actualizados`, "ok"); cargar()
   }
 
@@ -859,9 +873,11 @@ export default function Productos() {
         <button onClick={exportarListaPrecios} style={btnSecundario} title="Lista de precios para clientes">
           📋 Precios
         </button>
+        {!esVet && (
         <button onClick={() => setModalPrecios(true)} style={{ ...btnPrimario, background: "linear-gradient(135deg, #7c3aed, #8b5cf6)" }}>
           💲 Actualizar precios
         </button>
+        )}
       </div>
 
       {/* Panel agregar */}
@@ -875,12 +891,12 @@ export default function Productos() {
               style={{ flex: "2 1 130px", minWidth: 0, padding: "10px 14px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", color: "white", fontSize: 13, outline: "none" }} />
             <input placeholder="Precio Neto" value={costo} onChange={e => setCosto(e.target.value)} type="number"
               style={{ flex: "1 1 110px", minWidth: 0, padding: "10px 14px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", color: "white", fontSize: 13, outline: "none" }} />
-            <input placeholder="% IVA" value={margen} onChange={e => setMargen(e.target.value)} type="number"
+            <input placeholder={esVet ? "% Margen" : "% IVA"} value={margen} onChange={e => setMargen(e.target.value)} type="number"
               style={{ flex: "1 1 90px", minWidth: 0, padding: "10px 14px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", color: "white", fontSize: 13, outline: "none" }} />
-            <input placeholder="% Flete" value={fleteProducto} onChange={e => setFleteProducto(e.target.value)} type="number"
-              style={{ flex: "1 1 90px", minWidth: 0, padding: "10px 14px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", color: "white", fontSize: 13, outline: "none" }} />
-            <input placeholder="% Pérdida" value={perdidaProducto} onChange={e => setPerdidaProducto(e.target.value)} type="number"
-              style={{ flex: "1 1 90px", minWidth: 0, padding: "10px 14px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", color: "white", fontSize: 13, outline: "none" }} />
+            {!esVet && <input placeholder="% Flete" value={fleteProducto} onChange={e => setFleteProducto(e.target.value)} type="number"
+              style={{ flex: "1 1 90px", minWidth: 0, padding: "10px 14px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", color: "white", fontSize: 13, outline: "none" }} />}
+            {!esVet && <input placeholder="% Pérdida" value={perdidaProducto} onChange={e => setPerdidaProducto(e.target.value)} type="number"
+              style={{ flex: "1 1 90px", minWidth: 0, padding: "10px 14px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", color: "white", fontSize: 13, outline: "none" }} />}
             <input placeholder="Stock" value={stock} onChange={e => setStock(e.target.value)} type="number"
               style={{ flex: "1 1 90px", minWidth: 0, padding: "10px 14px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", color: "white", fontSize: 13, outline: "none" }} />
             <input placeholder="Categoría" value={categoria} onChange={e => setCategoria(e.target.value)} type="text"
@@ -957,6 +973,14 @@ export default function Productos() {
                   </select>
                 </div>
                 <div>
+                  <label style={labelStyle}>Columna de categoría</label>
+                  <select value={colCategoria} onChange={e => { setColCategoria(e.target.value); setPreview([]) }}
+                    style={{ width: "100%", padding: "9px 12px", background: "#1e293b", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 8, color: "white", fontSize: 13, outline: "none", cursor: "pointer" }}>
+                    <option value="" style={{ background: "#1e293b", color: "white" }}>— ninguna —</option>
+                    {columnas.map(c => <option key={c} value={c} style={{ background: "#1e293b", color: "white" }}>{c}</option>)}
+                  </select>
+                </div>
+                <div>
                   <label style={labelStyle}>Columna de nombre *</label>
                   <select value={colNombre} onChange={e => { setColNombre(e.target.value); setPreview([]) }}
                     style={{ width: "100%", padding: "9px 12px", background: "#1e293b", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 8, color: "white", fontSize: 13, outline: "none", cursor: "pointer" }}>
@@ -973,12 +997,13 @@ export default function Productos() {
                   </select>
                 </div>
                 <div>
-                  <label style={labelStyle}>IVA para nuevos (%)</label>
-                  <input type="number" placeholder="ej: 21" value={margenImportacion}
+                  <label style={labelStyle}>{esVet ? "Margen para nuevos (%)" : "IVA para nuevos (%)"}</label>
+                  <input type="number" placeholder={esVet ? "ej: 40" : "ej: 21"} value={margenImportacion}
                     onChange={e => setMargenImportacion(e.target.value)}
                     style={{ width: "100%", padding: "9px 12px", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, color: "white", fontSize: 13, outline: "none", boxSizing: "border-box" }} />
-                  <div style={{ fontSize: 11, color: "#4b5563", marginTop: 4 }}>Existentes conservan su IVA</div>
+                  <div style={{ fontSize: 11, color: "#4b5563", marginTop: 4 }}>{esVet ? "Existentes conservan su margen" : "Existentes conservan su IVA"}</div>
                 </div>
+                {!esVet && (
                 <div>
                   <label style={labelStyle}>Flete (%)</label>
                   <input type="number" placeholder="ej: 5" value={fleteImportacion}
@@ -986,6 +1011,7 @@ export default function Productos() {
                     style={{ width: "100%", padding: "9px 12px", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, color: "white", fontSize: 13, outline: "none", boxSizing: "border-box" }} />
                   <div style={{ fontSize: 11, color: "#4b5563", marginTop: 4 }}>Precio = Neto × (1+IVA) × (1+Flete)</div>
                 </div>
+                )}
               </div>
             </div>
           )}
@@ -1087,15 +1113,20 @@ export default function Productos() {
                   <p style={{ color: "#9ca3af", fontSize: 11, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 14 }}>
                     Editando: <span style={{ color: "white" }}>{p.nombre}</span>
                   </p>
-                  <div className="producto-edit-grid" style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr 1fr", gap: 12 }}>
-                    {[
+                  <div className="producto-edit-grid" style={{ display: "grid", gridTemplateColumns: esVet ? "2fr 1fr 1fr 1fr" : "2fr 1fr 1fr 1fr 1fr 1fr", gap: 12 }}>
+                    {(esVet ? [
+                      { label: "Nombre",      key: "nombre",  type: "text" },
+                      { label: "Precio Neto", key: "costo",   type: "number" },
+                      { label: "% Margen",    key: "margen",  type: "number" },
+                      { label: "Stock",       key: "stock",   type: "number" },
+                    ] : [
                       { label: "Nombre",      key: "nombre",  type: "text" },
                       { label: "Precio Neto", key: "costo",   type: "number" },
                       { label: "% IVA",       key: "margen",  type: "number" },
                       { label: "% Flete",     key: "flete",   type: "number" },
                       { label: "% Pérdida",   key: "perdida", type: "number" },
                       { label: "Stock",       key: "stock",   type: "number" },
-                    ].map(f => (
+                    ]).map(f => (
                       <div key={f.key}>
                         <label style={labelStyle}>{f.label}</label>
                         <input type={f.type} value={ep?.[f.key] ?? ""}
@@ -1121,8 +1152,8 @@ export default function Productos() {
                   </div>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 14, flexWrap: "wrap", gap: 10 }}>
                     <span style={{ color: "#a8b67d", fontSize: 13 }}>
-                      💵 Precio estimado: <b style={{ color: "white" }}>{formatearPrecio(precioEstimado)}</b>
-                      <span style={{ color: "#6b7280", fontSize: 11 }}> = Neto × (1+IVA{margenNum > 0 ? " " + margenNum + "%" : ""}) × (1+Flete{fleteEditNum > 0 ? " " + fleteEditNum + "%" : ""}) × (1+Pérd.{perdidaEditNum > 0 ? " " + perdidaEditNum + "%" : ""})</span>
+                      💵 Precio de venta: <b style={{ color: "white" }}>{formatearPrecio(precioEstimado)}</b>
+                      <span style={{ color: "#6b7280", fontSize: 11 }}>{esVet ? ` = Neto × (1+Margen${margenNum > 0 ? " " + margenNum + "%" : ""})` : ` = Neto × (1+IVA${margenNum > 0 ? " " + margenNum + "%" : ""}) × (1+Flete${fleteEditNum > 0 ? " " + fleteEditNum + "%" : ""}) × (1+Pérd.${perdidaEditNum > 0 ? " " + perdidaEditNum + "%" : ""})`}</span>
                     </span>
                     <div style={{ display: "flex", gap: 8 }}>
                       <button onClick={() => guardarEdicion(p.id)} disabled={guardandoEdicion === p.id} style={{ background: "linear-gradient(135deg, #5b6b34, #6f7d49)", color: "white", border: "none", borderRadius: 8, padding: "8px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer", opacity: guardandoEdicion === p.id ? 0.6 : 1 }}>💾 Guardar</button>
@@ -1170,12 +1201,25 @@ export default function Productos() {
                         {badgeLote}
                       </div>
                       <div style={{ fontSize: 11, color: "#6b7280", marginTop: 2, flexWrap: "wrap", display: "flex", gap: 8, alignItems: "center" }}>
-                        <span style={{ background: "#f4f2e6", border: "1px solid #cdd6a8", borderRadius: 6, padding: "2px 8px" }}>
-                          🏥 Vet. <b style={{ color: "#55692f" }}>{formatearPrecio(Math.round(p.precio_venta * 1.30 * 100) / 100)}</b>
-                        </span>
-                        <span style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 6, padding: "2px 8px" }}>
-                          🌾 Prod. <b style={{ color: "#15803d" }}>{formatearPrecio(Math.round(p.precio_venta * 1.58 * 100) / 100)}</b>
-                        </span>
+                        {esVet ? (
+                          <>
+                            <span style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 6, padding: "2px 8px" }}>
+                              Neto <b style={{ color: "#374151" }}>{formatearPrecio(p.costo)}</b>
+                            </span>
+                            <span style={{ background: "#f4f2e6", border: "1px solid #cdd6a8", borderRadius: 6, padding: "2px 8px" }}>
+                              Margen <b style={{ color: "#55692f" }}>{p.margen ?? 0}%</b>
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <span style={{ background: "#f4f2e6", border: "1px solid #cdd6a8", borderRadius: 6, padding: "2px 8px" }}>
+                              🏥 Vet. <b style={{ color: "#55692f" }}>{formatearPrecio(Math.round(p.precio_venta * 1.30 * 100) / 100)}</b>
+                            </span>
+                            <span style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 6, padding: "2px 8px" }}>
+                              🌾 Prod. <b style={{ color: "#15803d" }}>{formatearPrecio(Math.round(p.precio_venta * 1.58 * 100) / 100)}</b>
+                            </span>
+                          </>
+                        )}
                         <span style={{ color: "#d1d5db" }}>·</span>
                         <span>Stock: <b style={{ color: p.stock === 0 ? "#dc2626" : p.stock <= 5 ? "#92400e" : "#374151" }}>{p.stock}</b></span>
                       </div>
