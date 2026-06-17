@@ -4,6 +4,18 @@ import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase"
 import { useRouter } from "next/navigation"
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts"
+import DashboardVet from "@/components/DashboardVet"
+
+// El Inicio depende del rubro: veterinaria usa un panel clínico/operativo,
+// el resto de los rubros usa el panel comercial (ventas/compras/stock).
+export default function DashboardPage() {
+  const [rubro, setRubro] = useState<string | null | undefined>(undefined)
+  useEffect(() => {
+    supabase.from("organizaciones").select("rubro").maybeSingle().then(({ data }) => setRubro((data?.rubro as string) || null))
+  }, [])
+  if (rubro === undefined) return <div style={{ padding: 40, textAlign: "center", color: "#94a3b8" }}>Cargando…</div>
+  return rubro === "veterinaria" ? <DashboardVet /> : <DashboardComercial />
+}
 
 function fmt(num: number) {
   return "$" + Math.round(num).toLocaleString("es-AR")
@@ -35,7 +47,7 @@ function diasParaVencer(l: any): number {
 
 type ModalTipo = "stockBajo" | "sinStock" | "sinVentas" | "sinRotacion" | "lotes" | "ventasHoy" | "ventasMes" | "detalleVenta" | "cuentasCC" | null
 
-export default function Dashboard() {
+function DashboardComercial() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [errorCarga, setErrorCarga] = useState<string | null>(null)
