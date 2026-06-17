@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase"
 import { setEmpresa } from "@/lib/empresa"
-import { MODULOS, modulosActivos, ROLES_CONFIGURABLES } from "@/lib/modulos"
+import { MODULOS, modulosActivos, ROLES_CONFIGURABLES, RUBROS } from "@/lib/modulos"
 
 function fmt(n: number) {
   return "$" + Math.round(n).toLocaleString("es-AR")
@@ -25,6 +25,7 @@ export default function ConfiguracionPage() {
   const [editandoNombre, setEditandoNombre] = useState(false)
   const [org, setOrg] = useState<any>(null)
   const [empresaForm, setEmpresaForm] = useState({ nombre: "", direccion: "", telefono: "", email: "" })
+  const [mostrarRubroSel, setMostrarRubroSel] = useState(true)
   const [guardandoEmpresa, setGuardandoEmpresa] = useState(false)
   const [empresaGuardada, setEmpresaGuardada] = useState(false)
   const [esAdmin, setEsAdmin] = useState(false)
@@ -83,6 +84,7 @@ export default function ConfiguracionPage() {
         email: orgData.email || "",
       })
       setModulosRolSel(orgData.modulos_rol || {})
+      setMostrarRubroSel(orgData.mostrar_rubro !== false)
     }
     // Rol del usuario actual + equipo
     const { data: miOu } = await supabase.from("org_usuarios").select("rol").eq("user_id", user.id).maybeSingle()
@@ -133,6 +135,7 @@ export default function ConfiguracionPage() {
       direccion: empresaForm.direccion,
       telefono: empresaForm.telefono,
       email: empresaForm.email,
+      mostrar_rubro: mostrarRubroSel,
     }
     await supabase.from("organizaciones").update(payload).eq("id", org.id)
     setOrg({ ...org, ...payload })
@@ -198,7 +201,7 @@ export default function ConfiguracionPage() {
 
       {/* ── Suscripción ──────────────────────────────────────────────────────── */}
       <div style={{
-        background: "#0f172a", border: "1px solid rgba(255,255,255,0.08)",
+        background: "#1d1b12", border: "1px solid rgba(255,255,255,0.08)",
         borderRadius: 20, padding: "28px 28px", marginBottom: 20,
         boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
       }}>
@@ -354,14 +357,14 @@ export default function ConfiguracionPage() {
       {/* ── Usuarios del equipo (solo el dueño/admin) ────────────────────────── */}
       {esAdmin && (
         <div style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 20, padding: "24px 28px", marginBottom: 20, boxShadow: "0 1px 4px rgba(0,0,0,0.05)" }}>
-          <h2 style={{ margin: "0 0 4px", color: "#0f172a", fontSize: 17, fontWeight: 700 }}>👥 Usuarios del equipo</h2>
+          <h2 style={{ margin: "0 0 4px", color: "#1d1b12", fontSize: 17, fontWeight: 700 }}>👥 Usuarios del equipo</h2>
           <p style={{ margin: "0 0 16px", color: "#64748b", fontSize: 13 }}>Creá accesos para tus empleados. Cada uno entra con su email y ve solo lo de su rol.</p>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 18 }}>
             {usuarios.map(u => (
               <div key={u.user_id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, padding: "10px 14px", border: "1px solid #e2e8f0", borderRadius: 10 }}>
                 <div>
-                  <div style={{ fontWeight: 600, color: "#0f172a", fontSize: 13.5 }}>{u.email || "(sin email)"}</div>
+                  <div style={{ fontWeight: 600, color: "#1d1b12", fontSize: 13.5 }}>{u.email || "(sin email)"}</div>
                   <div style={{ fontSize: 11.5, color: "#64748b" }}>{u.rol === "admin" ? "👑 Dueño / Admin" : u.rol === "veterinario" ? "🩺 Veterinario/a" : "🧑‍💼 Recepción"}</div>
                 </div>
                 {u.rol !== "admin" && <button onClick={() => quitarUsuario(u)} style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 7, padding: "5px 10px", cursor: "pointer", fontSize: 12, color: "#dc2626", fontWeight: 700 }}>Quitar</button>}
@@ -372,15 +375,15 @@ export default function ConfiguracionPage() {
           <div style={{ borderTop: "1px solid #f1f5f9", paddingTop: 16 }}>
             <div style={{ fontSize: 12, fontWeight: 700, color: "#475569", marginBottom: 10 }}>+ Nuevo usuario</div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: 10 }}>
-              <input value={inviteForm.email} onChange={e => setInviteForm({ ...inviteForm, email: e.target.value })} placeholder="Email" style={{ padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 9, fontSize: 14, color: "#0f172a", background: "white", outline: "none", boxSizing: "border-box" }} />
-              <input value={inviteForm.password} onChange={e => setInviteForm({ ...inviteForm, password: e.target.value })} placeholder="Contraseña (mín. 6)" style={{ padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 9, fontSize: 14, color: "#0f172a", background: "white", outline: "none", boxSizing: "border-box" }} />
-              <select value={inviteForm.rol} onChange={e => setInviteForm({ ...inviteForm, rol: e.target.value })} style={{ padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 9, fontSize: 14, color: "#0f172a", background: "white", outline: "none", boxSizing: "border-box" }}>
+              <input value={inviteForm.email} onChange={e => setInviteForm({ ...inviteForm, email: e.target.value })} placeholder="Email" style={{ padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 9, fontSize: 14, color: "#1d1b12", background: "white", outline: "none", boxSizing: "border-box" }} />
+              <input value={inviteForm.password} onChange={e => setInviteForm({ ...inviteForm, password: e.target.value })} placeholder="Contraseña (mín. 6)" style={{ padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 9, fontSize: 14, color: "#1d1b12", background: "white", outline: "none", boxSizing: "border-box" }} />
+              <select value={inviteForm.rol} onChange={e => setInviteForm({ ...inviteForm, rol: e.target.value })} style={{ padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 9, fontSize: 14, color: "#1d1b12", background: "white", outline: "none", boxSizing: "border-box" }}>
                 <option value="recepcion">Recepción</option>
                 <option value="veterinario">Veterinario/a</option>
               </select>
             </div>
             {errorUsuario && <div style={{ color: "#dc2626", fontSize: 12.5, marginTop: 8 }}>{errorUsuario}</div>}
-            <button onClick={invitarUsuario} disabled={invitando} style={{ marginTop: 12, padding: "10px 20px", background: "#0f172a", border: "none", borderRadius: 9, color: "white", fontSize: 13, fontWeight: 700, cursor: invitando ? "wait" : "pointer" }}>{invitando ? "Creando…" : "Crear usuario"}</button>
+            <button onClick={invitarUsuario} disabled={invitando} style={{ marginTop: 12, padding: "10px 20px", background: "#1d1b12", border: "none", borderRadius: 9, color: "white", fontSize: 13, fontWeight: 700, cursor: invitando ? "wait" : "pointer" }}>{invitando ? "Creando…" : "Crear usuario"}</button>
           </div>
         </div>
       )}
@@ -388,12 +391,12 @@ export default function ConfiguracionPage() {
       {/* ── Permisos por rol ─────────────────────────────────────────────────── */}
       {esAdmin && (
         <div style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 20, padding: "24px 28px", marginBottom: 20, boxShadow: "0 1px 4px rgba(0,0,0,0.05)" }}>
-          <h2 style={{ margin: "0 0 4px", color: "#0f172a", fontSize: 17, fontWeight: 700 }}>🔐 Qué ve cada rol</h2>
+          <h2 style={{ margin: "0 0 4px", color: "#1d1b12", fontSize: 17, fontWeight: 700 }}>🔐 Qué ve cada rol</h2>
           <p style={{ margin: "0 0 18px", color: "#64748b", fontSize: 13 }}>Dentro de los módulos de tu plan, elegí qué pestañas ve cada rol. El dueño ve todo.</p>
 
           {ROLES_CONFIGURABLES.map(r => (
             <div key={r.key} style={{ marginBottom: 18 }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: "#0f172a", marginBottom: 8 }}>{r.label}</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#1d1b12", marginBottom: 8 }}>{r.label}</div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                 {modulosActivos(org?.modulos).map(key => {
                   const m = MODULOS.find(x => x.key === key)
@@ -409,7 +412,7 @@ export default function ConfiguracionPage() {
             </div>
           ))}
 
-          <button onClick={guardarPermisos} disabled={guardandoPermisos} style={{ padding: "11px 20px", background: permisosGuardados ? "#16a34a" : "#0f172a", border: "none", borderRadius: 9, color: "white", fontSize: 13, fontWeight: 700, cursor: guardandoPermisos ? "not-allowed" : "pointer" }}>
+          <button onClick={guardarPermisos} disabled={guardandoPermisos} style={{ padding: "11px 20px", background: permisosGuardados ? "#16a34a" : "#1d1b12", border: "none", borderRadius: 9, color: "white", fontSize: 13, fontWeight: 700, cursor: guardandoPermisos ? "not-allowed" : "pointer" }}>
             {guardandoPermisos ? "Guardando…" : permisosGuardados ? "✓ Guardado" : "Guardar permisos"}
           </button>
         </div>
@@ -421,7 +424,7 @@ export default function ConfiguracionPage() {
         borderRadius: 20, padding: "24px 28px", marginBottom: 20,
         boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
       }}>
-        <h2 style={{ margin: "0 0 4px", color: "#0f172a", fontSize: 17, fontWeight: 700 }}>🧾 Datos para comprobantes</h2>
+        <h2 style={{ margin: "0 0 4px", color: "#1d1b12", fontSize: 17, fontWeight: 700 }}>🧾 Datos para comprobantes</h2>
         <p style={{ margin: "0 0 18px", color: "#64748b", fontSize: 13 }}>
           Aparecen en el encabezado y pie de los presupuestos, recibos y notas de crédito.
         </p>
@@ -439,16 +442,23 @@ export default function ConfiguracionPage() {
               value={(empresaForm as any)[f.k]}
               onChange={e => setEmpresaForm(prev => ({ ...prev, [f.k]: e.target.value }))}
               placeholder={f.ph}
-              style={{ width: "100%", padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 14, color: "#0f172a", outline: "none", boxSizing: "border-box" }}
+              style={{ width: "100%", padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 14, color: "#1d1b12", outline: "none", boxSizing: "border-box" }}
             />
           </div>
         ))}
+        <label style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 6, marginBottom: 4, cursor: "pointer", userSelect: "none" }}>
+          <input type="checkbox" checked={mostrarRubroSel} onChange={e => setMostrarRubroSel(e.target.checked)}
+            style={{ width: 16, height: 16, accentColor: "#6f7d49", cursor: "pointer" }} />
+          <span style={{ fontSize: 13, color: "#334155" }}>
+            Mostrar el rubro{org?.rubro ? ` («${RUBROS.find(r => r.key === org.rubro)?.label || org.rubro}»)` : ""} debajo del nombre en el menú
+          </span>
+        </label>
         <button
           onClick={guardarEmpresa}
           disabled={guardandoEmpresa}
           style={{
             marginTop: 8, padding: "11px 20px",
-            background: empresaGuardada ? "#16a34a" : "#0f172a",
+            background: empresaGuardada ? "#16a34a" : "#1d1b12",
             border: "none", borderRadius: 9, color: "white",
             fontSize: 13, fontWeight: 700, cursor: guardandoEmpresa ? "not-allowed" : "pointer",
           }}>
@@ -462,7 +472,7 @@ export default function ConfiguracionPage() {
         borderRadius: 20, padding: "24px 28px",
         boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
       }}>
-        <h2 style={{ margin: "0 0 16px", color: "#0f172a", fontSize: 17, fontWeight: 700 }}>⚙️ Cuenta</h2>
+        <h2 style={{ margin: "0 0 16px", color: "#1d1b12", fontSize: 17, fontWeight: 700 }}>⚙️ Cuenta</h2>
         <div style={{ fontSize: 13, color: "#374151", marginBottom: 6 }}>
           <span style={{ fontWeight: 600 }}>Email:</span> {usuario?.email}
         </div>

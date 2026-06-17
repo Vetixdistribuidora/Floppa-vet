@@ -420,7 +420,7 @@ export default function Reportes() {
               <YAxis tickFormatter={v => "$" + Math.round(v / 1000) + "k"} tick={{ fontSize: 11, fill: "#9ca3af" }} width={52} />
               <Tooltip
                 formatter={(value: any) => [fmtExacto(Number(value ?? 0)), "Total"]}
-                contentStyle={{ background: "#0f172a", border: "none", borderRadius: 8, color: "white", fontSize: 12 }}
+                contentStyle={{ background: "#1d1b12", border: "none", borderRadius: 8, color: "white", fontSize: 12 }}
                 labelStyle={{ color: "#9ca3af" }}
               />
               <Line type="monotone" dataKey="total" stroke="#6f7d49" strokeWidth={2.5} dot={false} activeDot={{ r: 5, fill: "#6f7d49" }} />

@@ -127,7 +127,7 @@ export default function AdminPage() {
                 <span style={{ fontSize: 10, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: 0.5 }}>{k.label}</span>
                 <span style={{ fontSize: 16 }}>{k.icon}</span>
               </div>
-              <div style={{ fontSize: 28, fontWeight: 800, color: "#0f172a" }}>{k.valor}</div>
+              <div style={{ fontSize: 28, fontWeight: 800, color: "#1d1b12" }}>{k.valor}</div>
             </div>
           </div>
         ))}
@@ -142,13 +142,13 @@ export default function AdminPage() {
           style={{
             width: "100%", padding: "10px 16px", borderRadius: 10,
             border: "1px solid #e2e8f0", fontSize: 14, outline: "none",
-            background: "white", color: "#0f172a",
+            background: "white", color: "#1d1b12",
           }}
         />
       </div>
 
       {/* Tabla */}
-      <div style={{ background: "#0f172a", borderRadius: 16, border: "1px solid rgba(255,255,255,0.08)", overflow: "hidden" }}>
+      <div style={{ background: "#1d1b12", borderRadius: 16, border: "1px solid rgba(255,255,255,0.08)", overflow: "hidden" }}>
         {/* Header */}
         <div style={{
           display: "grid", gridTemplateColumns: "1fr 1fr auto auto auto",
@@ -230,12 +230,12 @@ export default function AdminPage() {
       {editor && (
         <div onClick={() => setEditor(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 }}>
           <div onClick={e => e.stopPropagation()} style={{ background: "white", borderRadius: 18, padding: "26px 28px", width: "100%", maxWidth: 520, maxHeight: "90vh", overflowY: "auto" }}>
-            <h2 style={{ margin: "0 0 4px", fontSize: 18, fontWeight: 800, color: "#0f172a" }}>Plan y módulos</h2>
+            <h2 style={{ margin: "0 0 4px", fontSize: 18, fontWeight: 800, color: "#1d1b12" }}>Plan y módulos</h2>
             <p style={{ margin: "0 0 16px", color: "#64748b", fontSize: 13 }}>{editor.nombre_negocio || editor.email}</p>
             {cargandoOrg ? <p style={{ color: "#94a3b8" }}>Cargando…</p> : (
               <>
                 <label style={{ display: "block", fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", marginBottom: 6 }}>Rubro / plan</label>
-                <select value={orgForm.rubro} onChange={e => aplicarRubroAdmin(e.target.value)} style={{ width: "100%", padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 14, color: "#0f172a", background: "white", marginBottom: 18, boxSizing: "border-box" }}>
+                <select value={orgForm.rubro} onChange={e => aplicarRubroAdmin(e.target.value)} style={{ width: "100%", padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 14, color: "#1d1b12", background: "white", marginBottom: 18, boxSizing: "border-box" }}>
                   {RUBROS.map(r => <option key={r.key} value={r.key}>{r.label}</option>)}
                 </select>
                 <label style={{ display: "block", fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", marginBottom: 8 }}>Módulos del plan</label>
@@ -243,7 +243,7 @@ export default function AdminPage() {
                   {MODULOS_TOGGLEABLES.map(m => {
                     const on = orgForm.modulos.includes(m.key)
                     return (
-                      <button key={m.key} type="button" onClick={() => toggleModAdmin(m.key)} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 6, padding: "8px 10px", border: `1px solid ${on ? "#6f7d49" : "#e2e8f0"}`, background: on ? "#f4f2e6" : "white", borderRadius: 9, cursor: "pointer", fontSize: 12.5, fontWeight: 600, color: "#0f172a" }}>
+                      <button key={m.key} type="button" onClick={() => toggleModAdmin(m.key)} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 6, padding: "8px 10px", border: `1px solid ${on ? "#6f7d49" : "#e2e8f0"}`, background: on ? "#f4f2e6" : "white", borderRadius: 9, cursor: "pointer", fontSize: 12.5, fontWeight: 600, color: "#1d1b12" }}>
                         {m.label}<span>{on ? "✓" : ""}</span>
                       </button>
                     )
@@ -251,7 +251,7 @@ export default function AdminPage() {
                 </div>
                 <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
                   <button onClick={() => setEditor(null)} style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 9, padding: "10px 18px", fontSize: 14, fontWeight: 600, color: "#475569", cursor: "pointer" }}>Cancelar</button>
-                  <button onClick={guardarPlan} disabled={guardandoOrg} style={{ background: "#0f172a", border: "none", borderRadius: 9, padding: "10px 22px", fontSize: 14, fontWeight: 700, color: "white", cursor: guardandoOrg ? "wait" : "pointer" }}>{guardandoOrg ? "Guardando…" : "Guardar"}</button>
+                  <button onClick={guardarPlan} disabled={guardandoOrg} style={{ background: "#1d1b12", border: "none", borderRadius: 9, padding: "10px 22px", fontSize: 14, fontWeight: 700, color: "white", cursor: guardandoOrg ? "wait" : "pointer" }}>{guardandoOrg ? "Guardando…" : "Guardar"}</button>
                 </div>
               </>
             )}

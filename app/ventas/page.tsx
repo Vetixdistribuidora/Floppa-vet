@@ -76,18 +76,18 @@ html,body{margin:0;padding:0;font-family:Arial;background:#e5e7eb}
 .page{width:180mm;min-height:267mm;margin:16px auto;background:white;padding:24px;display:flex;flex-direction:column;box-shadow:0 2px 8px rgba(0,0,0,.12)}
 .logo{height:130px;display:block}
 .empresa-info{font-size:11px;color:#555;margin-top:4px;line-height:1.6}
-.header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #0f172a;padding-bottom:14px;margin-bottom:16px}
+.header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #1d1b12;padding-bottom:14px;margin-bottom:16px}
 .header-right{text-align:center;padding-top:4px}
-.titulo{font-size:20px;font-weight:800;color:#0f172a;margin:0 0 6px}
+.titulo{font-size:20px;font-weight:800;color:#1d1b12;margin:0 0 6px}
 .nro-doc{font-size:15px;font-weight:700;color:#111;margin:0 0 4px}
 .fecha-doc{font-size:12px;color:#555;margin:0}
 .cliente-row{padding:10px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;font-size:12px;line-height:1.9;margin-bottom:16px}
 table{width:100%;border-collapse:collapse}
 thead th{background:#f1f5f9;padding:8px 8px;font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.4px;border-bottom:2px solid #e2e8f0}
 .total-box{margin-top:16px;display:flex;justify-content:flex-end}
-.total-inner{width:260px;border-top:2px solid #0f172a;padding-top:10px}
+.total-inner{width:260px;border-top:2px solid #1d1b12;padding-top:10px}
 .total-inner p{margin:4px 0;font-size:12px;display:flex;justify-content:space-between}
-.total-inner h2{margin:8px 0 4px;font-size:22px;font-weight:800;color:#0f172a;display:flex;justify-content:space-between}
+.total-inner h2{margin:8px 0 4px;font-size:22px;font-weight:800;color:#1d1b12;display:flex;justify-content:space-between}
 .firma-box{margin-top:40px;display:flex;justify-content:space-between;font-size:11px;color:#555}
 .firma-linea{border-top:1px solid #555;width:200px;text-align:center;padding-top:6px}
 .footer{margin-top:auto;padding-top:16px;border-top:1px solid #eee;font-size:10px;color:#aaa;text-align:center}
@@ -96,7 +96,7 @@ thead th{background:#f1f5f9;padding:8px 8px;font-size:11px;font-weight:700;color
 </style></head><body>
 <div class="acciones">
   <button onclick="window.close();window.history.back();" style="background:#f1f5f9;border:1px solid #d1d5db;border-radius:8px;padding:10px 18px;font-size:14px;font-family:Arial;cursor:pointer;color:#374151;font-weight:600">&#8592; Volver</button>
-  <button onclick="window.print()" style="background:#0f172a;border:none;border-radius:8px;padding:10px 20px;font-size:14px;font-family:Arial;cursor:pointer;color:white;font-weight:700">&#128438; Imprimir</button>
+  <button onclick="window.print()" style="background:#1d1b12;border:none;border-radius:8px;padding:10px 20px;font-size:14px;font-family:Arial;cursor:pointer;color:white;font-weight:700">&#128438; Imprimir</button>
 </div>
 <div class="page">
   <div class="header">
@@ -355,7 +355,7 @@ thead th:last-child{text-align:right}
 </style></head><body>
 <div class="acciones">
   <button onclick="window.close();window.history.back();" style="background:#f1f5f9;border:1px solid #d1d5db;border-radius:8px;padding:10px 18px;font-size:14px;font-family:Arial;cursor:pointer;color:#374151;font-weight:600">&#8592; Volver</button>
-  <button onclick="window.print()" style="background:#0f172a;border:none;border-radius:8px;padding:10px 20px;font-size:14px;font-family:Arial;cursor:pointer;color:white;font-weight:700">&#128438; Imprimir</button>
+  <button onclick="window.print()" style="background:#1d1b12;border:none;border-radius:8px;padding:10px 20px;font-size:14px;font-family:Arial;cursor:pointer;color:white;font-weight:700">&#128438; Imprimir</button>
 </div>
 <div class="page">
   <div class="header">
@@ -1261,7 +1261,7 @@ thead th:last-child{text-align:right}
           <button key={t.key} onClick={() => setTab(t.key)} style={{
             padding: "8px 20px", borderRadius: 9, border: "none", cursor: "pointer",
             fontSize: 13, fontWeight: 700, transition: "all 0.15s",
-            background: tab === t.key ? "#0f172a" : "transparent",
+            background: tab === t.key ? "#1d1b12" : "transparent",
             color: tab === t.key ? "white" : "#6b7280",
             boxShadow: tab === t.key ? "0 2px 8px rgba(0,0,0,0.15)" : "none"
           }}>{t.label}{t.key === "borradores" && borradores.length > 0 && tab !== "borradores" && (
@@ -1407,7 +1407,7 @@ thead th:last-child{text-align:right}
               <button onClick={agregarAlCarrito} disabled={!productoId}
                 style={{
                   marginTop: 10, width: "100%", padding: "11px",
-                  background: productoId ? "#0f172a" : "#f1f5f9",
+                  background: productoId ? "#1d1b12" : "#f1f5f9",
                   color: productoId ? "white" : "#94a3b8",
                   border: "none", borderRadius: 10, fontSize: 13, fontWeight: 700,
                   cursor: productoId ? "pointer" : "not-allowed", letterSpacing: 0.3
@@ -1422,7 +1422,7 @@ thead th:last-child{text-align:right}
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", borderBottom: "1px solid #f1f5f9", background: "#fafafa" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                     <span style={{ fontSize: 13, fontWeight: 700, color: "#111827" }}>Carrito</span>
-                    <span style={{ background: "#0f172a", color: "white", fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 20 }}>
+                    <span style={{ background: "#1d1b12", color: "white", fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 20 }}>
                       {carrito.length} producto{carrito.length !== 1 ? "s" : ""}
                     </span>
                     <span style={{ fontSize: 12, color: "#94a3b8" }}>· {carrito.reduce((acc, i) => acc + i.cantidad, 0)} u.</span>
@@ -1448,12 +1448,12 @@ thead th:last-child{text-align:right}
                               type="text"
                               value={item.nombre}
                               onChange={e => cambiarNombre(i, e.target.value)}
-                              style={{ fontWeight: 700, fontSize: 14, color: "#0f172a", border: "none", outline: "none", background: "transparent", width: "100%", padding: 0, fontFamily: "inherit" }}
+                              style={{ fontWeight: 700, fontSize: 14, color: "#1d1b12", border: "none", outline: "none", background: "transparent", width: "100%", padding: 0, fontFamily: "inherit" }}
                             />
                             {bonif > 0 && <div style={{ fontSize: 11, color: "#d97706", fontWeight: 600, marginTop: 2 }}>{item.cantidad} u. · {bonif} bonif. · {pagan} pagan</div>}
                           </div>
                           <div style={{ textAlign: "right", flexShrink: 0 }}>
-                            <div style={{ fontSize: 15, fontWeight: 800, color: "#0f172a" }}>{fmt(subtotalItem)}</div>
+                            <div style={{ fontSize: 15, fontWeight: 800, color: "#1d1b12" }}>{fmt(subtotalItem)}</div>
                             <div style={{ fontSize: 11, color: tieneDescuento ? "#16a34a" : "#94a3b8", marginTop: 1 }}>
                               {tieneDescuento
                                 ? <span><s style={{ color: "#94a3b8" }}>{fmt(item.precio)}</s> → {fmt(pEfectivo)} c/u</span>
@@ -1491,9 +1491,9 @@ thead th:last-child{text-align:right}
                             <label style={{ fontSize: 10, fontWeight: 700, color: tieneDescuento ? "#16a34a" : "#94a3b8", textTransform: "uppercase", whiteSpace: "nowrap" }}>Desc.</label>
                             <div style={{ display: "flex", border: "1px solid #e2e8f0", borderRadius: 7, overflow: "hidden" }}>
                               <button onClick={() => cambiarTipoDescuento(i, "pesos")}
-                                style={{ padding: "4px 7px", border: "none", background: (item.tipoDescuento || "pesos") !== "porcentaje" ? "#0f172a" : "white", color: (item.tipoDescuento || "pesos") !== "porcentaje" ? "white" : "#6b7280", fontSize: 10, fontWeight: 700, cursor: "pointer" }}>$</button>
+                                style={{ padding: "4px 7px", border: "none", background: (item.tipoDescuento || "pesos") !== "porcentaje" ? "#1d1b12" : "white", color: (item.tipoDescuento || "pesos") !== "porcentaje" ? "white" : "#6b7280", fontSize: 10, fontWeight: 700, cursor: "pointer" }}>$</button>
                               <button onClick={() => cambiarTipoDescuento(i, "porcentaje")}
-                                style={{ padding: "4px 7px", border: "none", background: item.tipoDescuento === "porcentaje" ? "#0f172a" : "white", color: item.tipoDescuento === "porcentaje" ? "white" : "#6b7280", fontSize: 10, fontWeight: 700, cursor: "pointer", borderLeft: "1px solid #e2e8f0" }}>%</button>
+                                style={{ padding: "4px 7px", border: "none", background: item.tipoDescuento === "porcentaje" ? "#1d1b12" : "white", color: item.tipoDescuento === "porcentaje" ? "white" : "#6b7280", fontSize: 10, fontWeight: 700, cursor: "pointer", borderLeft: "1px solid #e2e8f0" }}>%</button>
                             </div>
                             <input type="number" min="0" value={item.descuento || ""} placeholder="0"
                               onChange={e => cambiarDescuento(i, Number(e.target.value))}
@@ -1511,7 +1511,7 @@ thead th:last-child{text-align:right}
 
           {/* Resumen sticky */}
           <div className="ventas-resumen-sticky" style={{ position: "sticky", top: 20 }}>
-            <div style={{ background: "#0f172a", borderRadius: 16, padding: 24, border: "1px solid rgba(255,255,255,0.08)", boxShadow: "0 8px 32px rgba(0,0,0,0.2)" }}>
+            <div style={{ background: "#1d1b12", borderRadius: 16, padding: 24, border: "1px solid rgba(255,255,255,0.08)", boxShadow: "0 8px 32px rgba(0,0,0,0.2)" }}>
               <p style={{ fontSize: 11, fontWeight: 700, color: "#6b7280", letterSpacing: 1, textTransform: "uppercase", marginBottom: 20 }}>Resumen</p>
               <div style={{ display: "grid", gridTemplateColumns: "80px 1fr", gap: 10, marginBottom: 16 }}>
                 <div>
@@ -1522,13 +1522,13 @@ thead th:last-child{text-align:right}
                 <div>
                   <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#9ca3af", letterSpacing: 0.5, marginBottom: 6, textTransform: "uppercase" }}>Cobro</label>
                   <select value={metodoCobro} onChange={e => setMetodoCobro(e.target.value)} disabled={esCuentaCorriente}
-                    style={{ width: "100%", padding: "10px 10px", background: esCuentaCorriente ? "rgba(255,255,255,0.03)" : "#1e293b", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, color: esCuentaCorriente ? "#4b5563" : "white", fontSize: 13, outline: "none", boxSizing: "border-box", cursor: esCuentaCorriente ? "not-allowed" : "pointer" }}>
-                    <option value="efectivo" style={{ background: "#1e293b", color: "white" }}>Efectivo</option>
-                    <option value="transferencia" style={{ background: "#1e293b", color: "white" }}>Transferencia</option>
-                    <option value="cheque" style={{ background: "#1e293b", color: "white" }}>Cheque</option>
-                    <option value="echeq" style={{ background: "#1e293b", color: "white" }}>E-Cheq</option>
-                    <option value="tarjeta" style={{ background: "#1e293b", color: "white" }}>Tarjeta</option>
-                    <option value="otro" style={{ background: "#1e293b", color: "white" }}>Otro</option>
+                    style={{ width: "100%", padding: "10px 10px", background: esCuentaCorriente ? "rgba(255,255,255,0.03)" : "#2a2718", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, color: esCuentaCorriente ? "#4b5563" : "white", fontSize: 13, outline: "none", boxSizing: "border-box", cursor: esCuentaCorriente ? "not-allowed" : "pointer" }}>
+                    <option value="efectivo" style={{ background: "#2a2718", color: "white" }}>Efectivo</option>
+                    <option value="transferencia" style={{ background: "#2a2718", color: "white" }}>Transferencia</option>
+                    {rubroOrg !== "veterinaria" && <option value="cheque" style={{ background: "#2a2718", color: "white" }}>Cheque</option>}
+                    {rubroOrg !== "veterinaria" && <option value="echeq" style={{ background: "#2a2718", color: "white" }}>E-Cheq</option>}
+                    <option value="tarjeta" style={{ background: "#2a2718", color: "white" }}>Tarjeta</option>
+                    <option value="otro" style={{ background: "#2a2718", color: "white" }}>Otro</option>
                   </select>
                 </div>
               </div>
@@ -1674,7 +1674,7 @@ thead th:last-child{text-align:right}
                   <h2 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: "#111827" }}>📝 Borradores</h2>
                   <p style={{ margin: "4px 0 0", fontSize: 13, color: "#6b7280" }}>Pedidos guardados que todavía no se confirmaron como ventas</p>
                 </div>
-                <button onClick={crearBorrador} style={{ padding: "10px 20px", background: "#0f172a", border: "none", borderRadius: 10, color: "white", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+                <button onClick={crearBorrador} style={{ padding: "10px 20px", background: "#1d1b12", border: "none", borderRadius: 10, color: "white", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
                   ➕ Nuevo borrador
                 </button>
               </div>
@@ -1707,7 +1707,7 @@ thead th:last-child{text-align:right}
                         </div>
                         <div style={{ display: "flex", gap: 8, flexShrink: 0, flexWrap: "wrap" }}>
                           <button onClick={() => abrirBorrador(b)} style={{ padding: "8px 16px", background: "#f1f5f9", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", color: "#374151" }}>✏️ Editar</button>
-                          <button onClick={() => pasarAVenta(b)} disabled={nItems === 0} style={{ padding: "8px 16px", background: nItems === 0 ? "#f3f4f6" : "#0f172a", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: nItems === 0 ? "not-allowed" : "pointer", color: nItems === 0 ? "#9ca3af" : "white" }}>✅ Pasar a venta</button>
+                          <button onClick={() => pasarAVenta(b)} disabled={nItems === 0} style={{ padding: "8px 16px", background: nItems === 0 ? "#f3f4f6" : "#1d1b12", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: nItems === 0 ? "not-allowed" : "pointer", color: nItems === 0 ? "#9ca3af" : "white" }}>✅ Pasar a venta</button>
                           <button onClick={() => eliminarBorrador(b.id)} style={{ padding: "8px 12px", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", color: "#dc2626" }}>🗑️</button>
                         </div>
                       </div>
@@ -1883,7 +1883,7 @@ thead th:last-child{text-align:right}
 
                   {/* Botones de acción */}
                   <button onClick={guardarBorrador} disabled={borrGuardando}
-                    style={{ width: "100%", padding: "12px", background: borrGuardando ? "#94a3b8" : "#0f172a", border: "none", borderRadius: 10, color: "white", fontSize: 14, fontWeight: 700, cursor: borrGuardando ? "not-allowed" : "pointer" }}>
+                    style={{ width: "100%", padding: "12px", background: borrGuardando ? "#94a3b8" : "#1d1b12", border: "none", borderRadius: 10, color: "white", fontSize: 14, fontWeight: 700, cursor: borrGuardando ? "not-allowed" : "pointer" }}>
                     {borrGuardando ? "Guardando..." : "💾 Guardar borrador"}
                   </button>
                   <button onClick={() => pasarAVenta()} disabled={borrItems.length === 0}
@@ -2051,7 +2051,7 @@ thead th:last-child{text-align:right}
       {/* ── MODAL DETALLE VENTA ── */}
       {ventaDetalle && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 16 }} onClick={() => setVentaDetalle(null)}>
-          <div style={{ background: "#0f172a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "32px 28px", width: "100%", maxWidth: 480, maxHeight: "80vh", overflow: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }} onClick={e => e.stopPropagation()}>
+          <div style={{ background: "#1d1b12", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "32px 28px", width: "100%", maxWidth: 480, maxHeight: "80vh", overflow: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }} onClick={e => e.stopPropagation()}>
             <div style={{ marginBottom: 20 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <h2 style={{ color: "white", fontSize: 17, fontWeight: 700, margin: 0 }}>{ventaDetalle.clientes?.nombre} {ventaDetalle.clientes?.apellido}</h2>
@@ -2115,7 +2115,7 @@ thead th:last-child{text-align:right}
       {/* ── MODAL CONFIRMAR ELIMINAR VENTA ANULADA ── */}
       {confirmEliminarVenta && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 60, padding: 16 }} onClick={() => setConfirmEliminarVenta(null)}>
-          <div style={{ background: "#0f172a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "36px 32px", width: "100%", maxWidth: 380, boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }} onClick={e => e.stopPropagation()}>
+          <div style={{ background: "#1d1b12", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "36px 32px", width: "100%", maxWidth: 380, boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }} onClick={e => e.stopPropagation()}>
             <div style={{ fontSize: 32, marginBottom: 8 }}>🗑️</div>
             <h2 style={{ color: "white", fontSize: 18, fontWeight: 700, margin: "0 0 8px" }}>¿Eliminar venta anulada?</h2>
             <p style={{ color: "#9ca3af", fontSize: 13, marginBottom: 8 }}>Cliente: <span style={{ color: "white", fontWeight: 600 }}>{confirmEliminarVenta.clientes?.nombre} {confirmEliminarVenta.clientes?.apellido}</span></p>
@@ -2136,7 +2136,7 @@ thead th:last-child{text-align:right}
       {/* ── MODAL CONFIRMAR ANULACIÓN ── */}
       {confirmAnular && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 60, padding: 16 }} onClick={() => setConfirmAnular(null)}>
-          <div style={{ background: "#0f172a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "36px 32px", width: "100%", maxWidth: 380, boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }} onClick={e => e.stopPropagation()}>
+          <div style={{ background: "#1d1b12", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "36px 32px", width: "100%", maxWidth: 380, boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }} onClick={e => e.stopPropagation()}>
             <div style={{ fontSize: 32, marginBottom: 8 }}>⚠️</div>
             <h2 style={{ color: "white", fontSize: 18, fontWeight: 700, margin: "0 0 8px" }}>¿Anular venta?</h2>
             <p style={{ color: "#9ca3af", fontSize: 13, marginBottom: 8 }}>Cliente: <span style={{ color: "white", fontWeight: 600 }}>{confirmAnular.clientes?.nombre} {confirmAnular.clientes?.apellido}</span></p>

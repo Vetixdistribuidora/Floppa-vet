@@ -56,6 +56,14 @@ export default function CuentasCorrientes() {
   const [notaPago, setNotaPago] = useState("")
   const [descuentoPago, setDescuentoPago] = useState("")
   const [guardando, setGuardando] = useState(false)
+  const [esVet, setEsVet] = useState(false)
+  const ent = esVet
+    ? { s: "tutor", p: "tutores", S: "Tutor", P: "Tutores" }
+    : { s: "cliente", p: "clientes", S: "Cliente", P: "Clientes" }
+
+  useEffect(() => {
+    supabase.from("organizaciones").select("rubro").maybeSingle().then(({ data }) => setEsVet((data?.rubro || "") === "veterinaria"))
+  }, [])
 
   function mostrarToast(mensaje: string, tipo: "ok" | "error") {
     setToast({ mensaje, tipo })
@@ -274,8 +282,8 @@ export default function CuentasCorrientes() {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12, marginBottom: 20 }}>
         {[
           { label: "Deuda total", valor: fmt(deudaTotal), color: "#f87171", icon: "💰" },
-          { label: "Clientes deudores", valor: Object.keys(resumen).length, color: "#fbbf24", icon: "👥" },
-          { label: "Total clientes", valor: clientes.length, color: "#6f7d49", icon: "📋" },
+          { label: `${ent.P} deudores`, valor: Object.keys(resumen).length, color: "#fbbf24", icon: "👥" },
+          { label: `Total ${ent.p}`, valor: clientes.length, color: "#6f7d49", icon: "📋" },
         ].map((k, i) => (
           <div key={i} style={{
             background: "white", border: "1px solid #e2e8f0",
@@ -307,7 +315,7 @@ export default function CuentasCorrientes() {
         {/* Panel izquierdo — lista clientes */}
         <div className="cc-panel-lista" style={{ background: "white", borderRadius: 14, border: "1px solid #e2e8f0", boxShadow: "0 1px 4px rgba(0,0,0,0.05)", overflow: "hidden" }}>
           <div style={{ padding: "14px 14px 10px", borderBottom: "1px solid #f1f5f9" }}>
-            <input placeholder="🔍 Buscar cliente..." value={busqueda}
+            <input placeholder={`🔍 Buscar ${ent.s}...`} value={busqueda}
               onChange={e => setBusqueda(e.target.value)}
               style={{ width: "100%", padding: "9px 12px", border: "1px solid #e2e8f0", borderRadius: 9, fontSize: 13, outline: "none", boxSizing: "border-box" }} />
             <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
@@ -315,7 +323,7 @@ export default function CuentasCorrientes() {
                 <button key={f} onClick={() => setFiltro(f)} style={{
                   flex: 1, padding: "6px 0", borderRadius: 8, border: "none",
                   fontSize: 12, fontWeight: 700, cursor: "pointer",
-                  background: filtro === f ? "#0f172a" : "#f1f5f9",
+                  background: filtro === f ? "#1d1b12" : "#f1f5f9",
                   color: filtro === f ? "white" : "#6b7280"
                 }}>
                   {f === "deudores" ? "Con deuda" : "Todos"}
@@ -326,7 +334,7 @@ export default function CuentasCorrientes() {
           <div style={{ maxHeight: 560, overflowY: "auto" }}>
             {clientesFiltrados.length === 0 && (
               <div style={{ padding: 30, textAlign: "center", color: "#9ca3af", fontSize: 13 }}>
-                Sin clientes {filtro === "deudores" ? "con deuda" : ""}
+                Sin {ent.p} {filtro === "deudores" ? "con deuda" : ""}
               </div>
             )}
             {clientesFiltrados.map(c => {
@@ -366,11 +374,11 @@ export default function CuentasCorrientes() {
           {!clienteActivo ? (
             <div style={{ background: "white", borderRadius: 14, border: "1px solid #e2e8f0", padding: 60, textAlign: "center", color: "#9ca3af", boxShadow: "0 1px 4px rgba(0,0,0,0.05)" }}>
               <div style={{ fontSize: 48, marginBottom: 12 }}>👈</div>
-              <div style={{ fontSize: 15, fontWeight: 600, color: "#374151" }}>Seleccioná un cliente</div>
+              <div style={{ fontSize: 15, fontWeight: 600, color: "#374151" }}>Seleccioná un {ent.s}</div>
               <div style={{ fontSize: 13, marginTop: 4 }}>para ver su cuenta corriente</div>
             </div>
           ) : (
-            <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid rgba(255,255,255,0.08)", boxShadow: "0 4px 20px rgba(0,0,0,0.2)", overflow: "hidden" }}>
+            <div style={{ background: "#1d1b12", borderRadius: 14, border: "1px solid rgba(255,255,255,0.08)", boxShadow: "0 4px 20px rgba(0,0,0,0.2)", overflow: "hidden" }}>
 
               {/* Header cliente */}
               <div style={{ padding: "20px 24px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
@@ -539,7 +547,7 @@ export default function CuentasCorrientes() {
       {ventaPago && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 16 }}
           onClick={() => { setVentaPago(null); setMontoPago(""); setNotaPago(""); setDescuentoPago("") }}>
-          <div style={{ background: "#0f172a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "32px 28px", width: "100%", maxWidth: 400, boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}
+          <div style={{ background: "#1d1b12", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "32px 28px", width: "100%", maxWidth: 400, boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}
             onClick={e => e.stopPropagation()}>
             <h2 style={{ color: "white", fontSize: 17, fontWeight: 700, margin: "0 0 4px" }}>Registrar pago</h2>
             <p style={{ color: "#6b7280", fontSize: 12, marginBottom: 20 }}>Factura #{ventaPago.nro_factura || ventaPago.id}</p>
@@ -592,7 +600,7 @@ export default function CuentasCorrientes() {
             </div>
             <div style={{ marginBottom: 12 }}>
               <label style={labelStyle}>Método de pago</label>
-              <select value={metodoPago} onChange={e => setMetodoPago(e.target.value)} style={{ ...inputDarkStyle, cursor: "pointer", background: "#1e293b" }}>
+              <select value={metodoPago} onChange={e => setMetodoPago(e.target.value)} style={{ ...inputDarkStyle, cursor: "pointer", background: "#2a2718" }}>
                 <option value="efectivo" style={{ color: "#000" }}>Efectivo</option>
                 <option value="transferencia" style={{ color: "#000" }}>Transferencia</option>
                 <option value="cheque" style={{ color: "#000" }}>Cheque</option>

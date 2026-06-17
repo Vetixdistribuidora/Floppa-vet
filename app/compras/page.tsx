@@ -75,7 +75,7 @@ const inputDarkStyle: React.CSSProperties = {
   color: "white", fontSize: 14, outline: "none", boxSizing: "border-box"
 }
 const selectDarkStyle: React.CSSProperties = {
-  width: "100%", padding: "10px 14px", background: "#1e293b",
+  width: "100%", padding: "10px 14px", background: "#2a2718",
   border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10,
   color: "white", fontSize: 14, outline: "none", boxSizing: "border-box", cursor: "pointer"
 }
@@ -136,6 +136,8 @@ export default function ComprasPage() {
   const [guardandoPago, setGuardandoPago] = useState(false);
   const [saldoFavorDisponible, setSaldoFavorDisponible] = useState(0);
   const [usarSaldoFavor, setUsarSaldoFavor] = useState(false);
+  const [esVet, setEsVet] = useState(false);
+  const metodosDisponibles = esVet ? METODOS.filter(m => m !== "Cheque") : METODOS;
   const [cancelando, setCancelando] = useState(false);
   const [modalCancelar, setModalCancelar] = useState(false);
   const [descuentoCancelar, setDescuentoCancelar] = useState("");
@@ -151,6 +153,10 @@ export default function ComprasPage() {
   const [hayBorrador, setHayBorrador] = useState(false);
 
   useEffect(() => { cargarTodo(); }, []);
+
+  useEffect(() => {
+    supabase.from("organizaciones").select("rubro").maybeSingle().then(({ data }) => setEsVet((data?.rubro || "") === "veterinaria"));
+  }, []);
 
   // Avisar al layout cuando el modal de nueva compra está abierto (tiene su propio borrador en localStorage,
   // pero el flag en sessionStorage evita la recarga automática por inactividad)
@@ -812,7 +818,7 @@ export default function ComprasPage() {
       {/* ── MODAL NUEVA COMPRA ── */}
       {modalNueva && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "flex-start", justifyContent: "center", zIndex: 50, padding: 16, overflowY: "auto" }}>
-          <div style={{ background: "#0f172a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, width: "100%", maxWidth: 1240, margin: "32px 0", boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}>
+          <div style={{ background: "#1d1b12", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, width: "100%", maxWidth: 1240, margin: "32px 0", boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}>
             <div style={{ padding: "24px 28px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
               <h2 style={{ color: "white", fontSize: 18, fontWeight: 700, margin: 0 }}>Nueva compra</h2>
             </div>
@@ -829,8 +835,8 @@ export default function ComprasPage() {
                 <div>
                   <label style={labelStyle}>Proveedor *</label>
                   <select value={form.proveedor_id} onChange={e => setForm({ ...form, proveedor_id: e.target.value })} style={selectDarkStyle}>
-                    <option value="" style={{ background: "#1e293b", color: "white" }}>Seleccioná un proveedor</option>
-                    {proveedores.map(p => <option key={p.id} value={p.id} style={{ background: "#1e293b", color: "white" }}>{p.nombre}</option>)}
+                    <option value="" style={{ background: "#2a2718", color: "white" }}>Seleccioná un proveedor</option>
+                    {proveedores.map(p => <option key={p.id} value={p.id} style={{ background: "#2a2718", color: "white" }}>{p.nombre}</option>)}
                   </select>
                 </div>
                 <div>
@@ -866,7 +872,7 @@ export default function ComprasPage() {
                     <div style={{ fontSize: 12, color: "#9ca3af", marginTop: 4, marginBottom: 2 }}>Cargando productos…</div>
                   )}
                   {productoDropdown && busquedaProducto && !loadingProductos && (
-                    <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: "#1e293b", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, zIndex: 10, maxHeight: 260, overflowY: "auto", marginTop: 4, boxShadow: "0 8px 24px rgba(0,0,0,0.4)" }}>
+                    <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: "#2a2718", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, zIndex: 10, maxHeight: 260, overflowY: "auto", marginTop: 4, boxShadow: "0 8px 24px rgba(0,0,0,0.4)" }}>
                       {productosFiltradosDropdown.length === 0 ? (
                         <div style={{ padding: "10px 14px", fontSize: 13, color: "#6b7280", textAlign: "center" }}>Sin resultados</div>
                       ) : productosFiltradosDropdown.map((p, idx) => (
@@ -1068,7 +1074,7 @@ export default function ComprasPage() {
                       <div>
                         <label style={labelStyle}>Método de pago</label>
                         <select value={form.metodo_pago} onChange={e => setForm({ ...form, metodo_pago: e.target.value })} style={selectDarkStyle}>
-                          {METODOS.map(m => <option key={m} style={{ background: "#1e293b", color: "white" }}>{m}</option>)}
+                          {metodosDisponibles.map(m => <option key={m} style={{ background: "#2a2718", color: "white" }}>{m}</option>)}
                         </select>
                       </div>
                     )}
@@ -1112,7 +1118,7 @@ export default function ComprasPage() {
       {/* ── MODAL DETALLE ── */}
       {compraVer && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "flex-start", justifyContent: "center", zIndex: 50, padding: 16, overflowY: "auto" }}>
-          <div style={{ background: "#0f172a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, width: "100%", maxWidth: 640, margin: "32px 0", boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}>
+          <div style={{ background: "#1d1b12", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, width: "100%", maxWidth: 640, margin: "32px 0", boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}>
             <div style={{ padding: "22px 28px", borderBottom: "1px solid rgba(255,255,255,0.08)", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, flexWrap: "wrap" }}>
@@ -1316,7 +1322,7 @@ export default function ComprasPage() {
         const cubreDeuda = montoEfectivo >= saldoDeuda;
         return (
           <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 60, padding: 16 }}>
-            <div style={{ background: "#0f172a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "32px 28px", width: "100%", maxWidth: 400, boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}>
+            <div style={{ background: "#1d1b12", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "32px 28px", width: "100%", maxWidth: 400, boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}>
               <h2 style={{ color: "white", fontSize: 17, fontWeight: 700, margin: "0 0 4px" }}>Registrar pago</h2>
               <p style={{ color: "#6b7280", fontSize: 12, marginBottom: 16 }}>
                 Saldo pendiente: <span style={{ color: "#f87171", fontWeight: 700 }}>{fmt(saldoDeudaTotal)}</span>
@@ -1382,7 +1388,7 @@ export default function ComprasPage() {
               <div style={{ marginBottom: 14 }}>
                 <label style={labelStyle}>Método</label>
                 <select value={formPago.metodo_pago} onChange={e => setFormPago({ ...formPago, metodo_pago: e.target.value })} style={selectDarkStyle}>
-                  {METODOS.map(m => <option key={m} style={{ background: "#1e293b", color: "white" }}>{m}</option>)}
+                  {metodosDisponibles.map(m => <option key={m} style={{ background: "#2a2718", color: "white" }}>{m}</option>)}
                 </select>
               </div>
               <div style={{ marginBottom: 24 }}>
@@ -1408,7 +1414,7 @@ export default function ComprasPage() {
         const montoPago = Math.round((saldo - montoDesc) * 100) / 100;
         return (
           <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 70, padding: 16 }}>
-            <div style={{ background: "#0f172a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "32px 28px", width: "100%", maxWidth: 400, boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}>
+            <div style={{ background: "#1d1b12", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "32px 28px", width: "100%", maxWidth: 400, boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}>
               <h2 style={{ color: "white", fontSize: 17, fontWeight: 700, margin: "0 0 6px" }}>✅ Cancelar deuda</h2>
               <p style={{ color: "#6b7280", fontSize: 12, marginBottom: 24 }}>
                 Saldo pendiente: <span style={{ color: "#f87171", fontWeight: 700 }}>{fmt(saldo)}</span>
@@ -1459,7 +1465,7 @@ export default function ComprasPage() {
       {/* ── MODAL ELIMINAR COMPRA ── */}
       {confirmEliminarCompra && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 16 }}>
-          <div style={{ background: "#0f172a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "36px 32px", width: "100%", maxWidth: 400, boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}>
+          <div style={{ background: "#1d1b12", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "36px 32px", width: "100%", maxWidth: 400, boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}>
             <div style={{ fontSize: 32, marginBottom: 8 }}>🗑️</div>
             <h2 style={{ color: "white", fontSize: 18, fontWeight: 700, margin: "0 0 8px" }}>¿Eliminar compra?</h2>
             <p style={{ color: "#9ca3af", fontSize: 13, marginBottom: 8 }}>

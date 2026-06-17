@@ -22,7 +22,7 @@ function esperaTexto(desde: string): string {
 }
 
 const labelStyle: React.CSSProperties = { display: "block", fontSize: 11, fontWeight: 700, color: "#64748b", letterSpacing: 0.4, marginBottom: 5, textTransform: "uppercase" }
-const inputStyle: React.CSSProperties = { width: "100%", padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 9, fontSize: 14, color: "#0f172a", outline: "none", boxSizing: "border-box", background: "white" }
+const inputStyle: React.CSSProperties = { width: "100%", padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 9, fontSize: 14, color: "#1d1b12", outline: "none", boxSizing: "border-box", background: "white" }
 
 export default function SalaEsperaPage() {
   const [items, setItems] = useState<any[]>([])
@@ -101,8 +101,8 @@ export default function SalaEsperaPage() {
       <div style={{ background: "white", border: `1px solid ${urgente ? "#fecaca" : "#e2e8f0"}`, borderLeft: `4px solid ${urgente ? "#dc2626" : TEAL}`, borderRadius: 12, padding: "12px 16px", display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
         {idx != null && <div style={{ fontSize: 22, fontWeight: 800, color: urgente ? "#dc2626" : "#94a3b8", minWidth: 28, textAlign: "center" }}>{idx + 1}</div>}
         <div style={{ flex: 1, minWidth: 160 }}>
-          <div style={{ fontWeight: 700, fontSize: 15.5, color: "#0f172a" }}>
-            {it.pacientes ? <Link href={`/pacientes/${it.pacientes.id}`} style={{ color: "#0f172a", textDecoration: "none" }}>{nombreDe(it)}</Link> : nombreDe(it)}
+          <div style={{ fontWeight: 700, fontSize: 15.5, color: "#1d1b12" }}>
+            {it.pacientes ? <Link href={`/pacientes/${it.pacientes.id}`} style={{ color: "#1d1b12", textDecoration: "none" }}>{nombreDe(it)}</Link> : nombreDe(it)}
             {it.pacientes?.especie && <span style={{ fontWeight: 500, color: "#94a3b8", fontSize: 13 }}> · {it.pacientes.especie}</span>}
             {urgente && <span style={{ marginLeft: 8, background: "#fef2f2", color: "#dc2626", fontSize: 10.5, fontWeight: 800, padding: "2px 7px", borderRadius: 999 }}>URGENTE</span>}
           </div>
@@ -133,11 +133,11 @@ export default function SalaEsperaPage() {
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
           <div style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 12, padding: "10px 18px" }}>
             <div style={{ fontSize: 11, color: "#94a3b8", fontWeight: 700, textTransform: "uppercase" }}>En espera</div>
-            <div style={{ fontSize: 24, fontWeight: 800, color: esperando.length ? TEAL : "#0f172a" }}>{esperando.length}</div>
+            <div style={{ fontSize: 24, fontWeight: 800, color: esperando.length ? TEAL : "#1d1b12" }}>{esperando.length}</div>
           </div>
           <div style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 12, padding: "10px 18px" }}>
             <div style={{ fontSize: 11, color: "#94a3b8", fontWeight: 700, textTransform: "uppercase" }}>En atención</div>
-            <div style={{ fontSize: 24, fontWeight: 800, color: "#0f172a" }}>{atendiendo.length}</div>
+            <div style={{ fontSize: 24, fontWeight: 800, color: "#1d1b12" }}>{atendiendo.length}</div>
           </div>
         </div>
         <button onClick={() => setModal(true)} style={{ background: TEAL, color: "white", border: "none", borderRadius: 10, padding: "11px 18px", fontSize: 14, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>+ Agregar a la sala</button>
@@ -146,7 +146,7 @@ export default function SalaEsperaPage() {
       {cargando ? <p style={{ color: "#94a3b8", textAlign: "center", padding: 40 }}>Cargando…</p> : (
         <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
           <div>
-            <h3 style={{ fontSize: 14, fontWeight: 800, color: "#0f172a", margin: "0 0 10px" }}>🟢 En espera (orden de atención)</h3>
+            <h3 style={{ fontSize: 14, fontWeight: 800, color: "#1d1b12", margin: "0 0 10px" }}>🟢 En espera (orden de atención)</h3>
             {esperando.length === 0 ? (
               <div style={{ textAlign: "center", padding: "40px 20px", color: "#94a3b8", background: "white", border: "1px dashed #e2e8f0", borderRadius: 12 }}>
                 <div style={{ fontSize: 34, marginBottom: 8 }}>🪑</div>
@@ -157,7 +157,7 @@ export default function SalaEsperaPage() {
 
           {atendiendo.length > 0 && (
             <div>
-              <h3 style={{ fontSize: 14, fontWeight: 800, color: "#0f172a", margin: "0 0 10px" }}>🔵 En atención</h3>
+              <h3 style={{ fontSize: 14, fontWeight: 800, color: "#1d1b12", margin: "0 0 10px" }}>🔵 En atención</h3>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>{atendiendo.map(it => <Tarjeta key={it.id} it={it} />)}</div>
             </div>
           )}
@@ -175,7 +175,7 @@ export default function SalaEsperaPage() {
       {modal && (
         <div onClick={() => setModal(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 }}>
           <div onClick={e => e.stopPropagation()} style={{ background: "white", borderRadius: 18, padding: "26px 28px", width: "100%", maxWidth: 460 }}>
-            <h2 style={{ margin: "0 0 18px", fontSize: 19, fontWeight: 800, color: "#0f172a" }}>Agregar a la sala</h2>
+            <h2 style={{ margin: "0 0 18px", fontSize: 19, fontWeight: 800, color: "#1d1b12" }}>Agregar a la sala</h2>
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               <div>
                 <label style={labelStyle}>Paciente</label>

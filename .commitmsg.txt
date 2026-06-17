@@ -1,0 +1,13 @@
+feat: ajustes veterinaria + armonizacion de colores (oliva/arena)
+
+Productos (vet): muestra Precio (neto + margen) junto a Neto y Margen.
+Sidebar: subtitulo dinamico segun rubro elegido (no fijo "Distribuidora"),
+  con toggle en Configuracion para mostrarlo u ocultarlo (mostrar_rubro).
+Cuenta corriente: wording "tutor/tutores" en rubro veterinaria.
+Ventas/Compras (vet): se ocultan Cheque y E-Cheq como metodo de cobro.
+Colores: reemplazo global del azul marino/azul del sistema viejo por la
+  paleta oliva de Floppa en 26 archivos (incluye el form de movimiento de Caja).
+Fondos: canvas principal y contenido pasan de gris frio a arena (#f5f2e8);
+  sidebar a oliva oscuro (#14130d).
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>

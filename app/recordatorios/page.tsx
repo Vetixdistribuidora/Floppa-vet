@@ -25,7 +25,7 @@ function fechaCorta(f: string) {
 }
 
 const labelStyle: React.CSSProperties = { display: "block", fontSize: 11, fontWeight: 700, color: "#64748b", letterSpacing: 0.4, marginBottom: 5, textTransform: "uppercase" }
-const inputStyle: React.CSSProperties = { width: "100%", padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 9, fontSize: 14, color: "#0f172a", outline: "none", boxSizing: "border-box", background: "white" }
+const inputStyle: React.CSSProperties = { width: "100%", padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 9, fontSize: 14, color: "#1d1b12", outline: "none", boxSizing: "border-box", background: "white" }
 const formVacio = () => ({ paciente_id: "", fecha_aplicacion: hoyISO(), fecha: "", tipo: "Vacuna Antirrábica", descripcion: "", notas: "" })
 
 export default function RecordatoriosPage() {
@@ -136,22 +136,22 @@ export default function RecordatoriosPage() {
       <div style={{ display: "flex", gap: 12, marginBottom: 18, flexWrap: "wrap" }}>
         <div style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 12, padding: "12px 18px", flex: 1, minWidth: 130 }}>
           <div style={{ fontSize: 11, color: "#94a3b8", fontWeight: 700, textTransform: "uppercase" }}>Vencidos</div>
-          <div style={{ fontSize: 26, fontWeight: 800, color: vencidos ? "#dc2626" : "#0f172a" }}>{vencidos}</div>
+          <div style={{ fontSize: 26, fontWeight: 800, color: vencidos ? "#dc2626" : "#1d1b12" }}>{vencidos}</div>
         </div>
         <div style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 12, padding: "12px 18px", flex: 1, minWidth: 130 }}>
           <div style={{ fontSize: 11, color: "#94a3b8", fontWeight: 700, textTransform: "uppercase" }}>Próximos 7 días</div>
-          <div style={{ fontSize: 26, fontWeight: 800, color: proximos ? "#d97706" : "#0f172a" }}>{proximos}</div>
+          <div style={{ fontSize: 26, fontWeight: 800, color: proximos ? "#d97706" : "#1d1b12" }}>{proximos}</div>
         </div>
         <div style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 12, padding: "12px 18px", flex: 1, minWidth: 130 }}>
           <div style={{ fontSize: 11, color: "#94a3b8", fontWeight: 700, textTransform: "uppercase" }}>Pendientes</div>
-          <div style={{ fontSize: 26, fontWeight: 800, color: "#0f172a" }}>{pendientes.length}</div>
+          <div style={{ fontSize: 26, fontWeight: 800, color: "#1d1b12" }}>{pendientes.length}</div>
         </div>
       </div>
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 16, flexWrap: "wrap" }}>
         <div style={{ display: "flex", gap: 6, background: "#f1f5f9", padding: 4, borderRadius: 10 }}>
           {(["pendientes", "todos"] as const).map(f => (
-            <button key={f} onClick={() => setFiltro(f)} style={{ border: "none", borderRadius: 7, padding: "7px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer", background: filtro === f ? "white" : "transparent", color: filtro === f ? "#0f172a" : "#64748b", boxShadow: filtro === f ? "0 1px 3px rgba(0,0,0,0.1)" : "none" }}>
+            <button key={f} onClick={() => setFiltro(f)} style={{ border: "none", borderRadius: 7, padding: "7px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer", background: filtro === f ? "white" : "transparent", color: filtro === f ? "#1d1b12" : "#64748b", boxShadow: filtro === f ? "0 1px 3px rgba(0,0,0,0.1)" : "none" }}>
               {f === "pendientes" ? "Pendientes" : "Todos"}
             </button>
           ))}
@@ -174,7 +174,7 @@ export default function RecordatoriosPage() {
               <div key={r.id} style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 12, padding: "12px 16px", display: "flex", alignItems: "center", gap: 14, opacity: hecho ? 0.65 : 1 }}>
                 <div style={{ textAlign: "center", background: ef.bg, color: ef.color, borderRadius: 9, padding: "8px 12px", minWidth: 96, fontSize: 12, fontWeight: 700, textTransform: "capitalize" }}>{ef.label}</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 700, fontSize: 14.5, color: "#0f172a", textDecoration: hecho ? "line-through" : "none" }}>
+                  <div style={{ fontWeight: 700, fontSize: 14.5, color: "#1d1b12", textDecoration: hecho ? "line-through" : "none" }}>
                     {r.tipo || "Recordatorio"}{r.pacientes && <span style={{ fontWeight: 500, color: "#64748b" }}> · {r.pacientes.nombre}</span>}
                   </div>
                   {r.descripcion && <div style={{ fontSize: 12.5, color: "#64748b", marginTop: 2 }}>{r.descripcion}</div>}
@@ -203,7 +203,7 @@ export default function RecordatoriosPage() {
       {modal && (
         <div onClick={() => setModal(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 }}>
           <div onClick={e => e.stopPropagation()} style={{ background: "white", borderRadius: 18, padding: "26px 28px", width: "100%", maxWidth: 480, maxHeight: "90vh", overflowY: "auto" }}>
-            <h2 style={{ margin: "0 0 18px", fontSize: 19, fontWeight: 800, color: "#0f172a" }}>{editId ? "Editar registro" : "Nuevo registro de sanidad"}</h2>
+            <h2 style={{ margin: "0 0 18px", fontSize: 19, fontWeight: 800, color: "#1d1b12" }}>{editId ? "Editar registro" : "Nuevo registro de sanidad"}</h2>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
               <div>
                 <label style={labelStyle}>Tipo</label>
@@ -252,7 +252,7 @@ export default function RecordatoriosPage() {
         <div onClick={() => setConfirmEliminar(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 }}>
           <div onClick={e => e.stopPropagation()} style={{ background: "white", borderRadius: 16, padding: "26px 28px", width: "100%", maxWidth: 360, textAlign: "center" }}>
             <div style={{ fontSize: 34, marginBottom: 10 }}>🗑</div>
-            <p style={{ fontWeight: 700, color: "#0f172a", marginBottom: 20 }}>¿Eliminar este registro?</p>
+            <p style={{ fontWeight: 700, color: "#1d1b12", marginBottom: 20 }}>¿Eliminar este registro?</p>
             <div style={{ display: "flex", justifyContent: "center", gap: 10 }}>
               <button onClick={() => setConfirmEliminar(null)} style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 9, padding: "9px 18px", fontWeight: 600, color: "#475569", cursor: "pointer" }}>Cancelar</button>
               <button onClick={eliminar} style={{ background: "#dc2626", border: "none", borderRadius: 9, padding: "9px 20px", fontWeight: 700, color: "white", cursor: "pointer" }}>Eliminar</button>

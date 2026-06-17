@@ -26,7 +26,7 @@ function fechaCorta(f: string | null) {
 }
 
 const labelStyle: React.CSSProperties = { display: "block", fontSize: 11, fontWeight: 700, color: "#64748b", letterSpacing: 0.4, marginBottom: 5, textTransform: "uppercase" }
-const inputStyle: React.CSSProperties = { width: "100%", padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 9, fontSize: 14, color: "#0f172a", outline: "none", boxSizing: "border-box", background: "white" }
+const inputStyle: React.CSSProperties = { width: "100%", padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 9, fontSize: 14, color: "#1d1b12", outline: "none", boxSizing: "border-box", background: "white" }
 
 const formVacio = () => ({ paciente_id: "", fecha: hoyISO(), motivo: "", diagnostico: "", tratamiento: "", peso: "", temperatura: "", notas: "", para_cobrar: "" })
 
@@ -180,7 +180,7 @@ export default function ConsultasPage() {
               <div key={c.id} style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 14, padding: "16px 18px", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10, gap: 10 }}>
                   <div>
-                    <div style={{ fontWeight: 700, fontSize: 15, color: "#0f172a" }}>
+                    <div style={{ fontWeight: 700, fontSize: 15, color: "#1d1b12" }}>
                       {pac?.nombre || "Paciente"} {pac?.especie && <span style={{ color: "#94a3b8", fontWeight: 500, fontSize: 13 }}>· {pac.especie}</span>}
                     </div>
                     <div style={{ fontSize: 12.5, color: "#64748b", marginTop: 2 }}>
@@ -197,13 +197,13 @@ export default function ConsultasPage() {
                     <div style={{ background: c.cobrado ? "#f0fdf4" : "#fff7ed", border: `1px solid ${c.cobrado ? "#bbf7d0" : "#fed7aa"}`, borderRadius: 8, padding: "8px 12px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
                       <div style={{ minWidth: 0 }}>
                         <b style={{ color: c.cobrado ? "#16a34a" : "#c2410c", fontWeight: 800 }}>{c.cobrado ? "✓ Cobrado:" : "💲 A cobrar:"}</b>{" "}
-                        <span style={{ fontWeight: 700, color: "#0f172a", textDecoration: c.cobrado ? "line-through" : "none" }}>{c.para_cobrar}</span>
+                        <span style={{ fontWeight: 700, color: "#1d1b12", textDecoration: c.cobrado ? "line-through" : "none" }}>{c.para_cobrar}</span>
                       </div>
                       <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
                         {!c.cobrado && c.pacientes?.cliente_id && (
                           <Link href={`/ventas?cliente=${c.pacientes.cliente_id}&cobrar=${encodeURIComponent(c.para_cobrar)}`}
                             title="Cobrar en Ventas (abre con el tutor cargado)"
-                            style={{ background: "#0f172a", color: "white", borderRadius: 7, padding: "5px 12px", fontSize: 12, fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap" }}>Cobrar →</Link>
+                            style={{ background: "#1d1b12", color: "white", borderRadius: 7, padding: "5px 12px", fontSize: 12, fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap" }}>Cobrar →</Link>
                         )}
                         <button onClick={() => marcarCobrado(c, !c.cobrado)} style={{ background: c.cobrado ? "#f1f5f9" : "#16a34a", color: c.cobrado ? "#64748b" : "white", border: "none", borderRadius: 7, padding: "5px 12px", fontSize: 12, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>{c.cobrado ? "Reabrir" : "Cobrado"}</button>
                       </div>
@@ -221,7 +221,7 @@ export default function ConsultasPage() {
                   {c.notas && (
                     <div style={{ background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 8, padding: "8px 12px", marginTop: 2 }}>
                       <b style={{ color: "#4b5a2c", fontWeight: 800 }}>Notas:</b>{" "}
-                      <span style={{ fontWeight: 700, color: "#0f172a", whiteSpace: "pre-wrap" }}>{c.notas}</span>
+                      <span style={{ fontWeight: 700, color: "#1d1b12", whiteSpace: "pre-wrap" }}>{c.notas}</span>
                     </div>
                   )}
                 </div>
@@ -235,7 +235,7 @@ export default function ConsultasPage() {
       {modal && (
         <div onClick={() => setModal(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 }}>
           <div onClick={e => e.stopPropagation()} style={{ background: "white", borderRadius: 18, padding: "26px 28px", width: "100%", maxWidth: 520, maxHeight: "90vh", overflowY: "auto" }}>
-            <h2 style={{ margin: "0 0 18px", fontSize: 19, fontWeight: 800, color: "#0f172a" }}>{editId ? "Editar consulta" : "Nueva consulta"}</h2>
+            <h2 style={{ margin: "0 0 18px", fontSize: 19, fontWeight: 800, color: "#1d1b12" }}>{editId ? "Editar consulta" : "Nueva consulta"}</h2>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
               <div>
                 <label style={labelStyle}>Paciente *</label>
@@ -292,7 +292,7 @@ export default function ConsultasPage() {
         <div onClick={() => setConfirmEliminar(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 }}>
           <div onClick={e => e.stopPropagation()} style={{ background: "white", borderRadius: 16, padding: "26px 28px", width: "100%", maxWidth: 380, textAlign: "center" }}>
             <div style={{ fontSize: 34, marginBottom: 10 }}>🗑</div>
-            <p style={{ fontWeight: 700, color: "#0f172a", marginBottom: 6 }}>¿Eliminar esta consulta?</p>
+            <p style={{ fontWeight: 700, color: "#1d1b12", marginBottom: 6 }}>¿Eliminar esta consulta?</p>
             <p style={{ fontSize: 13, color: "#64748b", marginBottom: 20 }}>Esta acción no se puede deshacer.</p>
             <div style={{ display: "flex", justifyContent: "center", gap: 10 }}>
               <button onClick={() => setConfirmEliminar(null)} style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 9, padding: "9px 18px", fontWeight: 600, color: "#475569", cursor: "pointer" }}>Cancelar</button>

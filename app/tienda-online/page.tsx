@@ -356,7 +356,7 @@ export default function TiendaOnline() {
       {/* Título */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
         <div>
-          <h1 style={{ margin: 0, fontSize: 22, fontWeight: 900, color: "#0f172a" }}>
+          <h1 style={{ margin: 0, fontSize: 22, fontWeight: 900, color: "#1d1b12" }}>
             Tienda Online
             {pendientes > 0 && (
               <span style={{ marginLeft: 10, fontSize: 13, fontWeight: 800, background: "#e8197d", color: "white", borderRadius: 20, padding: "2px 10px" }}>
@@ -368,7 +368,7 @@ export default function TiendaOnline() {
             Pedidos recibidos desde la tienda web · {pedidos.length} total
           </p>
         </div>
-        <button onClick={cargarPedidos} style={{ padding: "8px 16px", background: "#1e293b", color: "white", border: "none", borderRadius: 9, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+        <button onClick={cargarPedidos} style={{ padding: "8px 16px", background: "#2a2718", color: "white", border: "none", borderRadius: 9, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
           ↺ Actualizar
         </button>
       </div>
@@ -421,7 +421,7 @@ export default function TiendaOnline() {
                 >
                   <span style={{ fontSize: 11, fontWeight: 800, color: "#94a3b8", minWidth: 46 }}>#{p.id}</span>
                   <span style={{ fontSize: 11.5, color: "#64748b", minWidth: 105, whiteSpace: "nowrap" }}>{fechaCorta(p.created_at)}</span>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: "#0f172a", flex: 1, minWidth: 120 }}>{pNombre(p)}</span>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: "#1d1b12", flex: 1, minWidth: 120 }}>{pNombre(p)}</span>
 
                   {/* Badge vinculación */}
                   {vinculado === true && (
@@ -441,7 +441,7 @@ export default function TiendaOnline() {
                   )}
 
                   <span style={{ fontSize: 12, color: "#64748b", minWidth: 150 }}>{email ?? "—"}</span>
-                  <span style={{ fontSize: 13, fontWeight: 800, color: "#0f172a", minWidth: 90, textAlign: "right" }}>{fmt(p.total ?? 0)}</span>
+                  <span style={{ fontSize: 13, fontWeight: 800, color: "#1d1b12", minWidth: 90, textAlign: "right" }}>{fmt(p.total ?? 0)}</span>
 
                   {/* Estado select */}
                   <div onClick={e => e.stopPropagation()}>
@@ -498,10 +498,10 @@ export default function TiendaOnline() {
                       <tbody>
                         {p.pedido_items?.map((item, i) => (
                           <tr key={i} style={{ borderTop: "1px solid #f1f5f9" }}>
-                            <td style={{ padding: "7px 10px", fontSize: 12, color: "#0f172a" }}>{item.nombre_producto}</td>
+                            <td style={{ padding: "7px 10px", fontSize: 12, color: "#1d1b12" }}>{item.nombre_producto}</td>
                             <td style={{ padding: "7px 10px", fontSize: 12, color: "#475569" }}>{item.cantidad}</td>
                             <td style={{ padding: "7px 10px", fontSize: 12, color: "#475569" }}>{fmt(item.precio_unitario)}</td>
-                            <td style={{ padding: "7px 10px", fontSize: 12, fontWeight: 700, color: "#0f172a" }}>{fmt(item.precio_unitario * item.cantidad)}</td>
+                            <td style={{ padding: "7px 10px", fontSize: 12, fontWeight: 700, color: "#1d1b12" }}>{fmt(item.precio_unitario * item.cantidad)}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -513,7 +513,7 @@ export default function TiendaOnline() {
                       >
                         🗑 Eliminar pedido
                       </button>
-                      <span style={{ fontSize: 14, fontWeight: 900, color: "#0f172a" }}>Total: {fmt(p.total ?? 0)}</span>
+                      <span style={{ fontSize: 14, fontWeight: 900, color: "#1d1b12" }}>Total: {fmt(p.total ?? 0)}</span>
                     </div>
                   </div>
                 )}
@@ -530,7 +530,7 @@ export default function TiendaOnline() {
           onClick={e => { if (e.target === e.currentTarget) setConfirmDeleteId(null) }}
         >
           <div style={{ background: "white", borderRadius: 14, padding: 28, maxWidth: 380, width: "100%", boxShadow: "0 20px 50px rgba(0,0,0,0.25)" }}>
-            <h3 style={{ margin: "0 0 10px", fontSize: 16, fontWeight: 900, color: "#0f172a" }}>¿Eliminar pedido?</h3>
+            <h3 style={{ margin: "0 0 10px", fontSize: 16, fontWeight: 900, color: "#1d1b12" }}>¿Eliminar pedido?</h3>
             <p style={{ margin: "0 0 20px", fontSize: 13, color: "#64748b" }}>
               Esta acción es permanente. El pedido #{confirmDeleteId} será eliminado junto con sus items.
             </p>
@@ -561,7 +561,7 @@ export default function TiendaOnline() {
             {/* Header */}
             <div style={{ padding: "20px 24px 16px", borderBottom: "1px solid #f1f5f9", display: "flex", justifyContent: "space-between", alignItems: "center", position: "sticky", top: 0, background: "white", zIndex: 10 }}>
               <div>
-                <h2 style={{ margin: 0, fontSize: 17, fontWeight: 900, color: "#0f172a" }}>Pasar a venta</h2>
+                <h2 style={{ margin: 0, fontSize: 17, fontWeight: 900, color: "#1d1b12" }}>Pasar a venta</h2>
                 <p style={{ margin: "2px 0 0", fontSize: 12, color: "#64748b" }}>Pedido #{modalVenta.id} · {pNombre(modalVenta)}</p>
               </div>
               <button onClick={cerrarModal} style={{ width: 32, height: 32, border: "1px solid #e2e8f0", borderRadius: 8, background: "#f8fafc", cursor: "pointer", fontSize: 16, color: "#64748b" }}>✕</button>
@@ -574,7 +574,7 @@ export default function TiendaOnline() {
                   <div style={{ width: 56, height: 56, borderRadius: "50%", background: "#f0fdf4", border: "2px solid #86efac", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
                     <svg width="24" height="24" fill="none" stroke="#16a34a" strokeWidth="2.5" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>
                   </div>
-                  <p style={{ margin: "0 0 6px", fontSize: 16, fontWeight: 900, color: "#0f172a" }}>¡Venta registrada!</p>
+                  <p style={{ margin: "0 0 6px", fontSize: 16, fontWeight: 900, color: "#1d1b12" }}>¡Venta registrada!</p>
                   <p style={{ margin: "0 0 20px", fontSize: 13, color: "#64748b" }}>
                     Venta N° {String(ventaCreada.nro).padStart(5, "0")} creada · stock descontado · pedido procesado.
                   </p>
@@ -605,7 +605,7 @@ export default function TiendaOnline() {
                       )}
                       {modalItems.map((item, idx) => (
                         <div key={idx} style={{ display: "grid", gridTemplateColumns: "1fr 80px 90px 70px 32px", gap: 6, padding: "7px 10px", borderTop: "1px solid #f1f5f9", alignItems: "center" }}>
-                          <span style={{ fontSize: 12, color: "#0f172a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={item.nombre_producto}>
+                          <span style={{ fontSize: 12, color: "#1d1b12", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={item.nombre_producto}>
                             {item.nombre_producto}
                           </span>
                           <input type="number" min={1} value={item.cantidad}
@@ -627,7 +627,7 @@ export default function TiendaOnline() {
                       ))}
                       <div style={{ display: "flex", justifyContent: "space-between", padding: "9px 12px", borderTop: "2px solid #e2e8f0", fontSize: 14, fontWeight: 900, background: "#f8fafc" }}>
                         <span style={{ color: "#475569", fontSize: 12 }}>Total (con bonif.)</span>
-                        <span style={{ color: "#0f172a" }}>{fmt(modalTotal)}</span>
+                        <span style={{ color: "#1d1b12" }}>{fmt(modalTotal)}</span>
                       </div>
                     </div>
                   </div>
@@ -712,7 +712,7 @@ export default function TiendaOnline() {
                                 onMouseEnter={e => (e.currentTarget.style.background = "#f4f2e6")}
                                 onMouseLeave={e => (e.currentTarget.style.background = "white")}
                               >
-                                <span style={{ fontWeight: 600, color: "#0f172a" }}>{c.nombre} {c.apellido}</span>
+                                <span style={{ fontWeight: 600, color: "#1d1b12" }}>{c.nombre} {c.apellido}</span>
                                 {c.email && <span style={{ color: "#64748b", marginLeft: 8, fontSize: 12 }}>{c.email}</span>}
                               </button>
                             ))}

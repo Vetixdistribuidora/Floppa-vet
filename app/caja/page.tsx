@@ -86,7 +86,7 @@ const inputDark: React.CSSProperties = {
 // (sobre el modal oscuro un select oscuro queda ilegible).
 const selectClaro: React.CSSProperties = {
   width: "100%", padding: "10px 12px", background: "#ffffff",
-  border: "1px solid #cbd5e1", borderRadius: 10, color: "#0f172a",
+  border: "1px solid #cbd5e1", borderRadius: 10, color: "#1d1b12",
   fontSize: 14, fontWeight: 600, outline: "none", boxSizing: "border-box", cursor: "pointer",
 }
 
@@ -545,7 +545,7 @@ export default function CajaPage() {
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <button onClick={() => cambiarMes(-1)} style={navBtn}>◀</button>
           <div style={{ display: "flex", flexDirection: "column", minWidth: 160, alignItems: "center" }}>
-            <span style={{ fontSize: 17, fontWeight: 800, color: "#0f172a", textTransform: "capitalize" }}>{mesLabel}</span>
+            <span style={{ fontSize: 17, fontWeight: 800, color: "#1d1b12", textTransform: "capitalize" }}>{mesLabel}</span>
             <input type="month" value={mesInputValue}
               onChange={e => { const [y, m] = e.target.value.split("-").map(Number); if (y && m) { setAnio(y); setMes(m - 1) } }}
               style={{ marginTop: 4, fontSize: 11, border: "1px solid #e2e8f0", borderRadius: 6, padding: "2px 6px", color: "#64748b", cursor: "pointer" }} />
@@ -597,7 +597,7 @@ export default function CajaPage() {
                 <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
                   <span style={{ fontSize: 16 }}>{meta.icon}</span>
                   <div style={{ minWidth: 0 }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: "#0f172a" }}>{meta.label}</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "#1d1b12" }}>{meta.label}</div>
                     <div style={{ fontSize: 10, color: "#94a3b8", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{partes.join(" · ")}</div>
                   </div>
                 </div>
@@ -625,7 +625,7 @@ export default function CajaPage() {
               <div key={k} style={lineaPanel}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <span style={{ fontSize: 16 }}>{meta.icon}</span>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#0f172a" }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "#1d1b12" }}>
                     {meta.label}{meta.auto && <span style={{ fontSize: 9, color: "#94a3b8", marginLeft: 6, fontWeight: 600 }}>AUTO</span>}
                   </div>
                 </div>
@@ -659,7 +659,7 @@ export default function CajaPage() {
                   <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                     <span style={{ fontSize: 18 }}>{b.icon}</span>
                     <div>
-                      <div style={{ fontSize: 14, fontWeight: 800, color: "#0f172a" }}>{b.label}</div>
+                      <div style={{ fontSize: 14, fontWeight: 800, color: "#1d1b12" }}>{b.label}</div>
                       <div style={{ fontSize: 11, color: "#94a3b8" }}>{rows.length} movimiento{rows.length !== 1 ? "s" : ""}</div>
                     </div>
                   </div>
@@ -681,7 +681,7 @@ export default function CajaPage() {
                       {rows.map(f => (
                         <tr key={f.id} style={{ borderTop: "1px solid #f1f5f9" }}>
                           <td style={{ padding: "8px 14px", fontSize: 12, color: "#64748b", whiteSpace: "nowrap" }}>{fmtFecha(f.fecha)}</td>
-                          <td style={{ padding: "8px 14px", fontSize: 13, color: "#0f172a", maxWidth: 320 }}>{f.detalle}</td>
+                          <td style={{ padding: "8px 14px", fontSize: 13, color: "#1d1b12", maxWidth: 320 }}>{f.detalle}</td>
                           <td style={{ padding: "8px 14px", fontSize: 12, color: "#64748b", whiteSpace: "nowrap" }}>{METODOS[f.metodo]?.label || ""}</td>
                           <td style={{ padding: "8px 14px", textAlign: "right", fontSize: 13, fontWeight: 700, color: b.modo === "ingreso" ? "#16a34a" : "#ef4444", whiteSpace: "nowrap" }}>{fmt(b.modo === "ingreso" ? f.ingreso : f.egreso)}</td>
                           <td style={{ padding: "8px 6px", textAlign: "center" }}>
@@ -833,7 +833,7 @@ export default function CajaPage() {
 function SaldoCard({ titulo, valor, sub, color, icon, destacado }: { titulo: string; valor: number; sub: string; color: string; icon: string; destacado?: boolean }) {
   return (
     <div style={{
-      background: destacado ? "#0f172a" : "white", borderRadius: 16, padding: "18px 20px",
+      background: destacado ? "#1d1b12" : "white", borderRadius: 16, padding: "18px 20px",
       boxShadow: "0 1px 4px rgba(0,0,0,0.06)", border: destacado ? "1px solid rgba(255,255,255,0.08)" : "1px solid #e2e8f0",
       position: "relative", overflow: "hidden",
     }}>
@@ -842,7 +842,7 @@ function SaldoCard({ titulo, valor, sub, color, icon, destacado }: { titulo: str
         <span style={{ fontSize: 11, fontWeight: 700, color: destacado ? "#94a3b8" : "#94a3b8", textTransform: "uppercase", letterSpacing: 0.5 }}>{titulo}</span>
         <span style={{ fontSize: 17 }}>{icon}</span>
       </div>
-      <div style={{ fontSize: 23, fontWeight: 800, color: destacado ? "white" : "#0f172a", paddingLeft: 6, lineHeight: 1 }}>{fmt(valor)}</div>
+      <div style={{ fontSize: 23, fontWeight: 800, color: destacado ? "white" : "#1d1b12", paddingLeft: 6, lineHeight: 1 }}>{fmt(valor)}</div>
       <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 6, paddingLeft: 6 }}>{sub}</div>
     </div>
   )
@@ -851,7 +851,7 @@ function SaldoCard({ titulo, valor, sub, color, icon, destacado }: { titulo: str
 function ModalShell({ children, titulo, onClose }: { children: React.ReactNode; titulo: string; onClose: () => void }) {
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: 16 }}>
-      <div onClick={e => e.stopPropagation()} style={{ background: "#0f172a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 18, padding: "26px 24px", width: "100%", maxWidth: 440, maxHeight: "85vh", overflow: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: "#1d1b12", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 18, padding: "26px 24px", width: "100%", maxWidth: 440, maxHeight: "85vh", overflow: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}>
         <h2 style={{ color: "white", fontSize: 17, fontWeight: 700, margin: "0 0 18px" }}>{titulo}</h2>
         {children}
       </div>

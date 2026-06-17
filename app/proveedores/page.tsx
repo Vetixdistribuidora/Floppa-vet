@@ -589,7 +589,7 @@ export default function ProveedoresPage() {
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 16 }}
           onClick={cerrarModal}>
           <div className="prov-modal-inner" style={{
-            background: "#0f172a", border: "1px solid rgba(255,255,255,0.08)",
+            background: "#1d1b12", border: "1px solid rgba(255,255,255,0.08)",
             borderRadius: 20, padding: "36px 32px", width: "100%", maxWidth: 480,
             boxShadow: "0 24px 64px rgba(0,0,0,0.6)"
           }} onClick={e => e.stopPropagation()}>
@@ -661,7 +661,7 @@ export default function ProveedoresPage() {
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 16 }}
           onClick={cerrarPago}>
           <div style={{
-            background: "#0f172a", border: "1px solid rgba(255,255,255,0.08)",
+            background: "#1d1b12", border: "1px solid rgba(255,255,255,0.08)",
             borderRadius: 20, padding: "32px 28px", width: "100%", maxWidth: 520,
             maxHeight: "88vh", overflow: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.6)"
           }} onClick={e => e.stopPropagation()}>
@@ -735,7 +735,7 @@ export default function ProveedoresPage() {
                 <div>
                   <label style={labelStyle}>Método de pago</label>
                   <select value={metodoPago} onChange={e => setMetodoPago(e.target.value)}
-                    style={{ width: "100%", padding: "10px 14px", background: "#1e293b", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, color: "white", fontSize: 14, outline: "none", boxSizing: "border-box" as const, cursor: "pointer" }}>
+                    style={{ width: "100%", padding: "10px 14px", background: "#2a2718", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, color: "white", fontSize: 14, outline: "none", boxSizing: "border-box" as const, cursor: "pointer" }}>
                     {METODOS_PAGO.map(m => <option key={m} value={m}>{m}</option>)}
                   </select>
                 </div>
@@ -916,7 +916,7 @@ export default function ProveedoresPage() {
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 16 }}
           onClick={() => setModalNC(null)}>
           <div style={{
-            background: "#0f172a", border: "1px solid rgba(255,255,255,0.08)",
+            background: "#1d1b12", border: "1px solid rgba(255,255,255,0.08)",
             borderRadius: 20, padding: "32px 28px", width: "100%", maxWidth: 440,
             boxShadow: "0 24px 64px rgba(0,0,0,0.6)"
           }} onClick={e => e.stopPropagation()}>
@@ -979,7 +979,7 @@ export default function ProveedoresPage() {
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 16 }}
           onClick={() => { setConfirmEliminar(null); setErrorEliminar(null); }}>
           <div style={{
-            background: "#0f172a", border: "1px solid rgba(255,255,255,0.08)",
+            background: "#1d1b12", border: "1px solid rgba(255,255,255,0.08)",
             borderRadius: 20, padding: "36px 32px", width: "100%", maxWidth: 380,
             boxShadow: "0 24px 64px rgba(0,0,0,0.6)"
           }} onClick={e => e.stopPropagation()}>
@@ -1048,7 +1048,7 @@ export default function ProveedoresPage() {
         return (
           <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 16 }}
             onClick={() => setModalHistorial(null)}>
-            <div style={{ background: "#0f172a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "28px 28px", width: "100%", maxWidth: 700, maxHeight: "88vh", display: "flex", flexDirection: "column", boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}
+            <div style={{ background: "#1d1b12", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "28px 28px", width: "100%", maxWidth: 700, maxHeight: "88vh", display: "flex", flexDirection: "column", boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}
               onClick={e => e.stopPropagation()}>
 
               {/* Header */}

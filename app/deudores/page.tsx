@@ -403,7 +403,7 @@ export default function Deudores() {
 
       {/* KPIs */}
       <div className="deudores-kpis" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14, marginBottom: 24 }}>
-        <div style={{ background: deudores.length === 0 ? "white" : "#0f172a", borderRadius: 14, padding: "18px 20px", border: deudores.length === 0 ? "1px solid #e2e8f0" : "1px solid rgba(255,255,255,0.08)", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
+        <div style={{ background: deudores.length === 0 ? "white" : "#1d1b12", borderRadius: 14, padding: "18px 20px", border: deudores.length === 0 ? "1px solid #e2e8f0" : "1px solid rgba(255,255,255,0.08)", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: "#6b7280", letterSpacing: 0.5, textTransform: "uppercase", marginBottom: 6 }}>Clientes con deuda</div>
           <div style={{ fontSize: 26, fontWeight: 800, color: deudores.length === 0 ? "#22c55e" : "#f87171" }}>{deudores.length}</div>
           <div style={{ fontSize: 11, color: "#6b7280", marginTop: 4 }}>{deudores.length === 0 ? "Sin deudores" : "activos"}</div>
@@ -413,7 +413,7 @@ export default function Deudores() {
           <div style={{ fontSize: 26, fontWeight: 800, color: "#f59e0b" }}>{totalFacturas}</div>
           <div style={{ fontSize: 11, color: "#6b7280", marginTop: 4 }}>sin cobrar</div>
         </div>
-        <div style={{ background: totalGeneral > 0 ? "#0f172a" : "white", borderRadius: 14, padding: "18px 20px", border: totalGeneral > 0 ? "1px solid rgba(255,255,255,0.08)" : "1px solid #e2e8f0", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
+        <div style={{ background: totalGeneral > 0 ? "#1d1b12" : "white", borderRadius: 14, padding: "18px 20px", border: totalGeneral > 0 ? "1px solid rgba(255,255,255,0.08)" : "1px solid #e2e8f0", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: "#6b7280", letterSpacing: 0.5, textTransform: "uppercase", marginBottom: 6 }}>Total adeudado</div>
           <div style={{ fontSize: 22, fontWeight: 800, color: totalGeneral > 0 ? "#f87171" : "#22c55e", lineHeight: 1.1 }}>{fmt(totalGeneral)}</div>
           <div style={{ fontSize: 11, color: "#6b7280", marginTop: 4 }}>acumulado</div>
@@ -534,7 +534,7 @@ export default function Deudores() {
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 16 }}
           onClick={cerrarCobro}>
           <div style={{
-            background: "#0f172a", border: "1px solid rgba(255,255,255,0.08)",
+            background: "#1d1b12", border: "1px solid rgba(255,255,255,0.08)",
             borderRadius: 20, padding: "32px 28px", width: "100%", maxWidth: 500,
             maxHeight: "88vh", overflow: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.6)"
           }} onClick={e => e.stopPropagation()}>
@@ -613,7 +613,7 @@ export default function Deudores() {
               <div style={{ marginBottom: 12 }}>
                 <label style={labelStyle}>Método de pago</label>
                 <select value={metodoCobro} onChange={e => setMetodoCobro(e.target.value)}
-                  style={{ ...inputDarkStyle, cursor: "pointer", background: "#1e293b" }}>
+                  style={{ ...inputDarkStyle, cursor: "pointer", background: "#2a2718" }}>
                   <option value="efectivo" style={{ color: "#000" }}>Efectivo</option>
                   <option value="transferencia" style={{ color: "#000" }}>Transferencia</option>
                   <option value="cheque" style={{ color: "#000" }}>Cheque</option>
@@ -795,7 +795,7 @@ export default function Deudores() {
       {modalNC && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 16 }}
           onClick={() => setModalNC(null)}>
-          <div style={{ background: "#0f172a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "32px 28px", width: "100%", maxWidth: 440, boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}
+          <div style={{ background: "#1d1b12", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "32px 28px", width: "100%", maxWidth: 440, boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}
             onClick={e => e.stopPropagation()}>
             <h2 style={{ color: "white", fontSize: 18, fontWeight: 700, margin: "0 0 4px" }}>↩️ Nota de crédito / devolución</h2>
             <p style={{ color: "#6b7280", fontSize: 13, margin: "0 0 20px" }}>{modalNC.nombre} {modalNC.apellido}</p>

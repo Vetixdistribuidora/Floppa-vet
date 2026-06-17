@@ -64,7 +64,7 @@ function ItemPedido({ item, onCantidadChange, onNotasChange, onEliminar }: {
     <div style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 12, padding: "12px 16px", marginBottom: 8, boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 14, fontWeight: 700, color: "#0f172a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{prod.nombre || "—"}</div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: "#1d1b12", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{prod.nombre || "—"}</div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
             {prod.laboratorio && <span style={{ fontSize: 12, color: "#64748b", background: "#f1f5f9", padding: "1px 8px", borderRadius: 6, border: "1px solid #e2e8f0" }}>{prod.laboratorio}</span>}
             <StockChip stock={prod.stock ?? 0} />
@@ -77,7 +77,7 @@ function ItemPedido({ item, onCantidadChange, onNotasChange, onEliminar }: {
             onChange={e => setCantidad(e.target.value)}
             onBlur={handleBlur}
             onKeyDown={e => { if (e.key === "Enter") { handleBlur(); (e.target as HTMLElement).blur() } }}
-            style={{ width: 58, textAlign: "center", padding: "6px 4px", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 8, color: "#0f172a", fontSize: 14, fontWeight: 800, outline: "none" }}
+            style={{ width: 58, textAlign: "center", padding: "6px 4px", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 8, color: "#1d1b12", fontSize: 14, fontWeight: 800, outline: "none" }}
           />
           <button onClick={() => sumar(1)} style={{ width: 32, height: 32, border: "1px solid #e2e8f0", background: "#f8fafc", borderRadius: 8, color: "#374151", fontSize: 16, cursor: "pointer", fontWeight: 700 }}>+</button>
         </div>
@@ -407,9 +407,9 @@ export default function Pedidos() {
       <div style={{ background: "white", borderRadius: 18, padding: "32px 28px", maxWidth: 380, width: "100%", boxShadow: "0 24px 64px rgba(0,0,0,0.2)" }}
         onClick={e => e.stopPropagation()}>
         <div style={{ fontSize: 36, marginBottom: 10 }}>🗑️</div>
-        <h2 style={{ margin: "0 0 8px", fontSize: 17, fontWeight: 700, color: "#0f172a" }}>¿Eliminar pedido?</h2>
+        <h2 style={{ margin: "0 0 8px", fontSize: 17, fontWeight: 700, color: "#1d1b12" }}>¿Eliminar pedido?</h2>
         <p style={{ color: "#64748b", fontSize: 14, margin: "0 0 24px" }}>
-          Pedido a <b style={{ color: "#0f172a" }}>{confirmEliminar.nombre_proveedor}</b> con{" "}
+          Pedido a <b style={{ color: "#1d1b12" }}>{confirmEliminar.nombre_proveedor}</b> con{" "}
           <b>{confirmEliminar.totalItems} productos</b>. Esta acción no se puede deshacer.
         </p>
         <div style={{ display: "flex", gap: 10 }}>
@@ -461,7 +461,7 @@ export default function Pedidos() {
                   width: "100%", padding: "10px 14px 10px 36px",
                   border: `2px solid ${proveedorSelec ? "#22c55e" : "#6f7d49"}`,
                   borderRadius: 10, fontSize: 14, fontWeight: 600,
-                  color: "#0f172a", background: esNuevo ? "white" : "#f8fafc",
+                  color: "#1d1b12", background: esNuevo ? "white" : "#f8fafc",
                   outline: "none", boxSizing: "border-box",
                   cursor: esNuevo ? "text" : "default",
                 }}
@@ -485,7 +485,7 @@ export default function Pedidos() {
                     <div style={{ width: 32, height: 32, borderRadius: "50%", background: "linear-gradient(135deg,#6f7d49,#4b5a2c)", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: 13, fontWeight: 700, flexShrink: 0 }}>
                       {prov.nombre.charAt(0).toUpperCase()}
                     </div>
-                    <span style={{ fontSize: 14, fontWeight: 600, color: "#0f172a" }}>{prov.nombre}</span>
+                    <span style={{ fontSize: 14, fontWeight: 600, color: "#1d1b12" }}>{prov.nombre}</span>
                   </button>
                 ))}
               </div>
@@ -504,7 +504,7 @@ export default function Pedidos() {
                 {pedidoActivo.estado === "enviado" ? "✓ Enviado" : "📝 Borrador"}
               </span>
               <div style={{ textAlign: "right" }}>
-                <div style={{ fontSize: 13, fontWeight: 800, color: "#0f172a" }}>{itemsPedido.length} prod · {totalUnidadesPedido} uds</div>
+                <div style={{ fontSize: 13, fontWeight: 800, color: "#1d1b12" }}>{itemsPedido.length} prod · {totalUnidadesPedido} uds</div>
                 <div style={{ fontSize: 11, color: "#94a3b8" }}>Creado {fechaCorta(pedidoActivo.created_at)}</div>
               </div>
             </div>
@@ -562,7 +562,7 @@ export default function Pedidos() {
                     value={busqueda}
                     onChange={e => setBusqueda(e.target.value)}
                     placeholder="Buscar producto o laboratorio…"
-                    style={{ width: "100%", padding: "10px 14px 10px 36px", border: "1.5px solid #e2e8f0", borderRadius: 9, fontSize: 13, color: "#0f172a", outline: "none", background: "#f8fafc", boxSizing: "border-box", transition: "border-color 0.15s" }}
+                    style={{ width: "100%", padding: "10px 14px 10px 36px", border: "1.5px solid #e2e8f0", borderRadius: 9, fontSize: 13, color: "#1d1b12", outline: "none", background: "#f8fafc", boxSizing: "border-box", transition: "border-color 0.15s" }}
                     onFocus={e => (e.target.style.borderColor = "#6f7d49")}
                     onBlur={e => (e.target.style.borderColor = "#e2e8f0")}
                   />
@@ -603,7 +603,7 @@ export default function Pedidos() {
                         onMouseEnter={e => (e.currentTarget.style.background = "#f8fafc")}
                         onMouseLeave={e => (e.currentTarget.style.background = "none")}>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 13, fontWeight: 600, color: "#0f172a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{prod.nombre}</div>
+                          <div style={{ fontSize: 13, fontWeight: 600, color: "#1d1b12", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{prod.nombre}</div>
                           {prod.laboratorio && <div style={{ fontSize: 11, color: "#64748b", marginTop: 2 }}>{prod.laboratorio}</div>}
                         </div>
                         <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
@@ -685,7 +685,7 @@ export default function Pedidos() {
 
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
         <div>
-          <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: "#0f172a" }}>Pedidos a proveedores</h1>
+          <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: "#1d1b12" }}>Pedidos a proveedores</h1>
           <p style={{ margin: "4px 0 0", fontSize: 13, color: "#64748b" }}>
             {pedidos.length} pedido{pedidos.length !== 1 ? "s" : ""}
             {pedidos.filter(p => p.estado === "borrador").length > 0 && <span style={{ color: "#d97706", fontWeight: 600 }}> · {pedidos.filter(p => p.estado === "borrador").length} en borrador</span>}
@@ -706,7 +706,7 @@ export default function Pedidos() {
           { key: "enviado",  label: "✅ Enviados",   count: pedidos.filter(p => p.estado === "enviado").length },
         ] as const).map(t => (
           <button key={t.key} onClick={() => setFiltro(t.key)}
-            style={{ padding: "8px 18px", borderRadius: 9, border: "none", cursor: "pointer", fontSize: 13, fontWeight: 700, background: filtro === t.key ? "#0f172a" : "transparent", color: filtro === t.key ? "white" : "#64748b" }}>
+            style={{ padding: "8px 18px", borderRadius: 9, border: "none", cursor: "pointer", fontSize: 13, fontWeight: 700, background: filtro === t.key ? "#1d1b12" : "transparent", color: filtro === t.key ? "white" : "#64748b" }}>
             {t.label}
             {t.count > 0 && <span style={{ marginLeft: 5, background: filtro === t.key ? "rgba(255,255,255,0.2)" : "#e2e8f0", color: filtro === t.key ? "white" : "#374151", borderRadius: 99, fontSize: 11, padding: "1px 7px", fontWeight: 800 }}>{t.count}</span>}
           </button>
@@ -732,7 +732,7 @@ export default function Pedidos() {
               <div style={{ padding: "18px 20px" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: 800, fontSize: 16, color: "#0f172a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.nombre_proveedor}</div>
+                    <div style={{ fontWeight: 800, fontSize: 16, color: "#1d1b12", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.nombre_proveedor}</div>
                     <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 2 }}>{fechaCorta(p.created_at)}</div>
                   </div>
                   <span style={{ fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 20, flexShrink: 0, marginLeft: 8, background: p.estado === "enviado" ? "#f0fdf4" : "#fffbeb", color: p.estado === "enviado" ? "#16a34a" : "#d97706", border: p.estado === "enviado" ? "1px solid #bbf7d0" : "1px solid #fde68a" }}>
@@ -741,11 +741,11 @@ export default function Pedidos() {
                 </div>
                 <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
                   <div style={{ background: "#f8fafc", borderRadius: 10, padding: "8px 0", flex: 1, textAlign: "center", border: "1px solid #f1f5f9" }}>
-                    <div style={{ fontSize: 22, fontWeight: 800, color: "#0f172a" }}>{p.totalItems}</div>
+                    <div style={{ fontSize: 22, fontWeight: 800, color: "#1d1b12" }}>{p.totalItems}</div>
                     <div style={{ fontSize: 10, color: "#94a3b8", fontWeight: 700 }}>PRODUCTOS</div>
                   </div>
                   <div style={{ background: "#f8fafc", borderRadius: 10, padding: "8px 0", flex: 1, textAlign: "center", border: "1px solid #f1f5f9" }}>
-                    <div style={{ fontSize: 22, fontWeight: 800, color: "#0f172a" }}>{p.totalUnidades}</div>
+                    <div style={{ fontSize: 22, fontWeight: 800, color: "#1d1b12" }}>{p.totalUnidades}</div>
                     <div style={{ fontSize: 10, color: "#94a3b8", fontWeight: 700 }}>UNIDADES</div>
                   </div>
                 </div>

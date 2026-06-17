@@ -54,9 +54,9 @@ export default function CobrosPage() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 18, flexWrap: "wrap" }}>
         <div style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 12, padding: "10px 18px" }}>
           <div style={{ fontSize: 11, color: "#94a3b8", fontWeight: 700, textTransform: "uppercase" }}>Pendientes de cobro</div>
-          <div style={{ fontSize: 24, fontWeight: 800, color: items.length ? "#16a34a" : "#0f172a" }}>{items.length}</div>
+          <div style={{ fontSize: 24, fontWeight: 800, color: items.length ? "#16a34a" : "#1d1b12" }}>{items.length}</div>
         </div>
-        <input value={busqueda} onChange={e => setBusqueda(e.target.value)} placeholder="Buscar por paciente, tutor o ítem…" style={{ width: "100%", maxWidth: 320, padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 9, fontSize: 14, color: "#0f172a", outline: "none", boxSizing: "border-box", background: "white" }} />
+        <input value={busqueda} onChange={e => setBusqueda(e.target.value)} placeholder="Buscar por paciente, tutor o ítem…" style={{ width: "100%", maxWidth: 320, padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 9, fontSize: 14, color: "#1d1b12", outline: "none", boxSizing: "border-box", background: "white" }} />
       </div>
 
       {cargando ? (
@@ -73,11 +73,11 @@ export default function CobrosPage() {
             return (
               <div key={c.id} style={{ background: "white", border: "1px solid #e2e8f0", borderLeft: "4px solid #16a34a", borderRadius: 12, padding: "13px 16px", display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
                 <div style={{ flex: 1, minWidth: 180 }}>
-                  <div style={{ fontWeight: 700, fontSize: 15, color: "#0f172a" }}>
-                    {c.pacientes ? <Link href={`/pacientes/${c.pacientes.id}`} style={{ color: "#0f172a", textDecoration: "none" }}>🐾 {c.pacientes.nombre}</Link> : "Paciente"}
+                  <div style={{ fontWeight: 700, fontSize: 15, color: "#1d1b12" }}>
+                    {c.pacientes ? <Link href={`/pacientes/${c.pacientes.id}`} style={{ color: "#1d1b12", textDecoration: "none" }}>🐾 {c.pacientes.nombre}</Link> : "Paciente"}
                     {tutor && <span style={{ fontWeight: 500, color: "#64748b", fontSize: 13 }}> · {tutor}</span>}
                   </div>
-                  <div style={{ fontSize: 13, color: "#0f172a", marginTop: 3 }}>
+                  <div style={{ fontSize: 13, color: "#1d1b12", marginTop: 3 }}>
                     <b style={{ color: "#15803d", fontWeight: 800 }}>💲 A cobrar:</b> {c.para_cobrar}
                   </div>
                   <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 2 }}>
@@ -87,7 +87,7 @@ export default function CobrosPage() {
                 <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
                   {c.pacientes?.cliente_id && (
                     <Link href={`/ventas?cliente=${c.pacientes.cliente_id}&cobrar=${encodeURIComponent(c.para_cobrar)}`}
-                      style={{ background: "#0f172a", color: "white", borderRadius: 8, padding: "8px 14px", fontSize: 13, fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap" }}>Cobrar →</Link>
+                      style={{ background: "#1d1b12", color: "white", borderRadius: 8, padding: "8px 14px", fontSize: 13, fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap" }}>Cobrar →</Link>
                   )}
                   <button onClick={() => marcarCobrado(c)} style={{ background: "#16a34a", color: "white", border: "none", borderRadius: 8, padding: "8px 14px", fontSize: 13, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>✓ Cobrado</button>
                 </div>

@@ -20,7 +20,7 @@ function edadDe(fecha: string | null): string {
 }
 
 const card: React.CSSProperties = { background: "white", border: "1px solid #e2e8f0", borderRadius: 14, padding: "18px 20px", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }
-const h3: React.CSSProperties = { margin: "0 0 12px", fontSize: 15, fontWeight: 800, color: "#0f172a" }
+const h3: React.CSSProperties = { margin: "0 0 12px", fontSize: 15, fontWeight: 800, color: "#1d1b12" }
 
 export default function FichaPaciente() {
   const { id } = useParams<{ id: string }>()
@@ -95,7 +95,7 @@ export default function FichaPaciente() {
       {/* Cabecera del paciente */}
       <div style={card}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-          <div style={{ fontSize: 22, fontWeight: 800, color: "#0f172a" }}>🐾 {p.nombre}</div>
+          <div style={{ fontSize: 22, fontWeight: 800, color: "#1d1b12" }}>🐾 {p.nombre}</div>
           {(p.etiquetas || []).map((et: string) => <span key={et} style={{ background: "#eef0e0", color: "#4b5a2c", fontSize: 11, fontWeight: 700, padding: "2px 9px", borderRadius: 999 }}>{et}</span>)}
         </div>
         <div style={{ display: "flex", gap: 16, flexWrap: "wrap", fontSize: 13, color: "#475569", marginTop: 10 }}>
@@ -112,7 +112,7 @@ export default function FichaPaciente() {
         {p.notas && (
           <div style={{ marginTop: 12, background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 8, padding: "10px 14px", fontSize: 13 }}>
             <b style={{ color: "#b45309", fontWeight: 800 }}>Nota / patología:</b>{" "}
-            <span style={{ fontWeight: 700, color: "#0f172a", whiteSpace: "pre-wrap" }}>{p.notas}</span>
+            <span style={{ fontWeight: 700, color: "#1d1b12", whiteSpace: "pre-wrap" }}>{p.notas}</span>
           </div>
         )}
       </div>
@@ -143,7 +143,7 @@ export default function FichaPaciente() {
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {sanidad.map(s => (
               <div key={s.id} style={{ display: "flex", justifyContent: "space-between", gap: 10, fontSize: 13, borderBottom: "1px solid #f1f5f9", paddingBottom: 7 }}>
-                <span><b style={{ color: "#0f172a" }}>{s.tipo}</b>{s.descripcion ? ` · ${s.descripcion}` : ""}</span>
+                <span><b style={{ color: "#1d1b12" }}>{s.tipo}</b>{s.descripcion ? ` · ${s.descripcion}` : ""}</span>
                 <span style={{ color: "#64748b", whiteSpace: "nowrap" }}>{s.fecha_aplicacion ? `aplic. ${f(s.fecha_aplicacion)} · ` : ""}próx. <b style={{ color: "#0891b2" }}>{f(s.fecha)}</b></span>
               </div>
             ))}
@@ -182,7 +182,7 @@ export default function FichaPaciente() {
           <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
             {estudios.map(e => (
               <div key={e.id} style={{ display: "flex", justifyContent: "space-between", gap: 10, fontSize: 13, alignItems: "center", borderBottom: "1px solid #f1f5f9", paddingBottom: 7 }}>
-                <span><b style={{ color: "#0f172a" }}>{e.titulo}</b> <span style={{ color: "#94a3b8" }}>· {e.tipo} · {f(e.created_at?.slice(0, 10))}</span></span>
+                <span><b style={{ color: "#1d1b12" }}>{e.titulo}</b> <span style={{ color: "#94a3b8" }}>· {e.tipo} · {f(e.created_at?.slice(0, 10))}</span></span>
                 <button onClick={() => abrirEstudio(e)} style={{ background: "#ecfeff", border: "1px solid #a5f3fc", borderRadius: 7, padding: "5px 11px", cursor: "pointer", fontSize: 12.5, color: "#0891b2", fontWeight: 700, whiteSpace: "nowrap" }}>⬇ Abrir</button>
               </div>
             ))}

@@ -34,7 +34,7 @@ function iconoTipo(t: string | null, nombre: string | null) {
 }
 
 const labelStyle: React.CSSProperties = { display: "block", fontSize: 11, fontWeight: 700, color: "#64748b", letterSpacing: 0.4, marginBottom: 5, textTransform: "uppercase" }
-const inputStyle: React.CSSProperties = { width: "100%", padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 9, fontSize: 14, color: "#0f172a", outline: "none", boxSizing: "border-box", background: "white" }
+const inputStyle: React.CSSProperties = { width: "100%", padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 9, fontSize: 14, color: "#1d1b12", outline: "none", boxSizing: "border-box", background: "white" }
 
 export default function EstudiosPage() {
   const [estudios, setEstudios] = useState<any[]>([])
@@ -166,7 +166,7 @@ export default function EstudiosPage() {
               <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
                 <div style={{ fontSize: 28, lineHeight: 1 }}>{iconoTipo(e.tipo, e.archivo_nombre)}</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 700, fontSize: 14.5, color: "#0f172a", wordBreak: "break-word" }}>{e.titulo}</div>
+                  <div style={{ fontWeight: 700, fontSize: 14.5, color: "#1d1b12", wordBreak: "break-word" }}>{e.titulo}</div>
                   <div style={{ fontSize: 12, color: "#64748b", marginTop: 2 }}>
                     {e.tipo}{e.pacientes ? ` · 🐾 ${e.pacientes.nombre}` : ""}
                   </div>
@@ -188,7 +188,7 @@ export default function EstudiosPage() {
       {modal && (
         <div onClick={() => setModal(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 }}>
           <div onClick={ev => ev.stopPropagation()} style={{ background: "white", borderRadius: 18, padding: "26px 28px", width: "100%", maxWidth: 480 }}>
-            <h2 style={{ margin: "0 0 18px", fontSize: 19, fontWeight: 800, color: "#0f172a" }}>Subir estudio</h2>
+            <h2 style={{ margin: "0 0 18px", fontSize: 19, fontWeight: 800, color: "#1d1b12" }}>Subir estudio</h2>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
               <div style={{ gridColumn: "1 / -1" }}>
                 <label style={labelStyle}>Paciente *</label>
@@ -230,7 +230,7 @@ export default function EstudiosPage() {
         <div onClick={() => setConfirmEliminar(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 }}>
           <div onClick={ev => ev.stopPropagation()} style={{ background: "white", borderRadius: 16, padding: "26px 28px", width: "100%", maxWidth: 380, textAlign: "center" }}>
             <div style={{ fontSize: 34, marginBottom: 10 }}>🗑</div>
-            <p style={{ fontWeight: 700, color: "#0f172a", marginBottom: 6 }}>¿Eliminar “{confirmEliminar.titulo}”?</p>
+            <p style={{ fontWeight: 700, color: "#1d1b12", marginBottom: 6 }}>¿Eliminar “{confirmEliminar.titulo}”?</p>
             <p style={{ fontSize: 13, color: "#64748b", marginBottom: 20 }}>Se borra el archivo definitivamente.</p>
             <div style={{ display: "flex", justifyContent: "center", gap: 10 }}>
               <button onClick={() => setConfirmEliminar(null)} style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 9, padding: "9px 18px", fontWeight: 600, color: "#475569", cursor: "pointer" }}>Cancelar</button>

@@ -35,7 +35,7 @@ export async function enviarRecordatorio(r: any, tutor: any, org: { nombre?: str
   const tutorNombre = `${tutor.nombre || ""} ${tutor.apellido || ""}`.trim()
   const subject = `Recordatorio: ${r.tipo || "Turno"}${mascota} — ${orgNombre}`
   const html = `
-    <div style="font-family:Arial,Helvetica,sans-serif;max-width:520px;margin:0 auto;color:#0f172a">
+    <div style="font-family:Arial,Helvetica,sans-serif;max-width:520px;margin:0 auto;color:#1d1b12">
       <div style="background:#6f7d49;color:#fff;padding:18px 22px;border-radius:12px 12px 0 0">
         <h2 style="margin:0;font-size:18px">⏰ Recordatorio${mascota}</h2>
       </div>
@@ -54,7 +54,7 @@ export async function enviarCumpleanos(paciente: any, tutor: any, org: { nombre?
   const orgNombre = org?.nombre || "Veterinaria"
   const subject = `🎂 ¡Feliz cumpleaños, ${paciente.nombre}!`
   const html = `
-    <div style="font-family:Arial,Helvetica,sans-serif;max-width:520px;margin:0 auto;color:#0f172a;text-align:center">
+    <div style="font-family:Arial,Helvetica,sans-serif;max-width:520px;margin:0 auto;color:#1d1b12;text-align:center">
       <div style="background:#6f7d49;color:#fff;padding:22px;border-radius:12px 12px 0 0">
         <div style="font-size:40px">🎂🐾</div>
         <h2 style="margin:6px 0 0;font-size:20px">¡Feliz cumpleaños, ${paciente.nombre}!</h2>

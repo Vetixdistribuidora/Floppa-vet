@@ -139,7 +139,7 @@ function ModalLote({
 
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 16 }}>
-      <div style={{ background: "#0f172a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "36px 32px", width: "100%", maxWidth: 380, boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}>
+      <div style={{ background: "#1d1b12", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "36px 32px", width: "100%", maxWidth: 380, boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}>
         <h2 style={{ color: "white", fontSize: 18, fontWeight: 700, margin: "0 0 4px" }}>Agregar lote</h2>
         <p style={{ color: "#6b7280", fontSize: 13, marginBottom: 20 }}>{productoNombre}</p>
 
@@ -882,7 +882,7 @@ export default function Productos() {
 
       {/* Panel agregar */}
       {mostrarAgregar && (
-        <div className="productos-add-panel" style={{ background: "#0f172a", borderRadius: 14, padding: "20px 24px", marginBottom: 16, border: "1px solid rgba(255,255,255,0.08)" }}>
+        <div className="productos-add-panel" style={{ background: "#1d1b12", borderRadius: 14, padding: "20px 24px", marginBottom: 16, border: "1px solid rgba(255,255,255,0.08)" }}>
           <p style={{ color: "#6b7280", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, marginBottom: 14 }}>Nuevo producto</p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "end" }}>
             <input placeholder="Nombre del producto" value={nombre} onChange={e => setNombre(e.target.value)} type="text"
@@ -908,7 +908,7 @@ export default function Productos() {
 
       {/* Panel importar */}
       {mostrarImport && (
-        <div style={{ background: "#0f172a", borderRadius: 14, padding: "20px 24px", marginBottom: 16, border: "1px solid rgba(255,255,255,0.08)" }}>
+        <div style={{ background: "#1d1b12", borderRadius: 14, padding: "20px 24px", marginBottom: 16, border: "1px solid rgba(255,255,255,0.08)" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, flexWrap: "wrap", gap: 10 }}>
             <div>
               <p style={{ color: "white", fontSize: 13, fontWeight: 700, margin: 0 }}>📥 Importar lista de precios</p>
@@ -967,33 +967,33 @@ export default function Productos() {
                 <div>
                   <label style={labelStyle}>Columna de laboratorio</label>
                   <select value={colLaboratorio} onChange={e => { setColLaboratorio(e.target.value); setPreview([]) }}
-                    style={{ width: "100%", padding: "9px 12px", background: "#1e293b", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 8, color: "white", fontSize: 13, outline: "none", cursor: "pointer" }}>
-                    <option value="" style={{ background: "#1e293b", color: "white" }}>— ninguna —</option>
-                    {columnas.map(c => <option key={c} value={c} style={{ background: "#1e293b", color: "white" }}>{c}</option>)}
+                    style={{ width: "100%", padding: "9px 12px", background: "#2a2718", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 8, color: "white", fontSize: 13, outline: "none", cursor: "pointer" }}>
+                    <option value="" style={{ background: "#2a2718", color: "white" }}>— ninguna —</option>
+                    {columnas.map(c => <option key={c} value={c} style={{ background: "#2a2718", color: "white" }}>{c}</option>)}
                   </select>
                 </div>
                 <div>
                   <label style={labelStyle}>Columna de categoría</label>
                   <select value={colCategoria} onChange={e => { setColCategoria(e.target.value); setPreview([]) }}
-                    style={{ width: "100%", padding: "9px 12px", background: "#1e293b", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 8, color: "white", fontSize: 13, outline: "none", cursor: "pointer" }}>
-                    <option value="" style={{ background: "#1e293b", color: "white" }}>— ninguna —</option>
-                    {columnas.map(c => <option key={c} value={c} style={{ background: "#1e293b", color: "white" }}>{c}</option>)}
+                    style={{ width: "100%", padding: "9px 12px", background: "#2a2718", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 8, color: "white", fontSize: 13, outline: "none", cursor: "pointer" }}>
+                    <option value="" style={{ background: "#2a2718", color: "white" }}>— ninguna —</option>
+                    {columnas.map(c => <option key={c} value={c} style={{ background: "#2a2718", color: "white" }}>{c}</option>)}
                   </select>
                 </div>
                 <div>
                   <label style={labelStyle}>Columna de nombre *</label>
                   <select value={colNombre} onChange={e => { setColNombre(e.target.value); setPreview([]) }}
-                    style={{ width: "100%", padding: "9px 12px", background: "#1e293b", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 8, color: "white", fontSize: 13, outline: "none", cursor: "pointer" }}>
-                    <option value="" style={{ background: "#1e293b", color: "white" }}>— elegir —</option>
-                    {columnas.map(c => <option key={c} value={c} style={{ background: "#1e293b", color: "white" }}>{c}</option>)}
+                    style={{ width: "100%", padding: "9px 12px", background: "#2a2718", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 8, color: "white", fontSize: 13, outline: "none", cursor: "pointer" }}>
+                    <option value="" style={{ background: "#2a2718", color: "white" }}>— elegir —</option>
+                    {columnas.map(c => <option key={c} value={c} style={{ background: "#2a2718", color: "white" }}>{c}</option>)}
                   </select>
                 </div>
                 <div>
                   <label style={labelStyle}>Columna de precio neto *</label>
                   <select value={colCosto} onChange={e => { setColCosto(e.target.value); setPreview([]) }}
-                    style={{ width: "100%", padding: "9px 12px", background: "#1e293b", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 8, color: "white", fontSize: 13, outline: "none", cursor: "pointer" }}>
-                    <option value="" style={{ background: "#1e293b", color: "white" }}>— elegir —</option>
-                    {columnas.map(c => <option key={c} value={c} style={{ background: "#1e293b", color: "white" }}>{c}</option>)}
+                    style={{ width: "100%", padding: "9px 12px", background: "#2a2718", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 8, color: "white", fontSize: 13, outline: "none", cursor: "pointer" }}>
+                    <option value="" style={{ background: "#2a2718", color: "white" }}>— elegir —</option>
+                    {columnas.map(c => <option key={c} value={c} style={{ background: "#2a2718", color: "white" }}>{c}</option>)}
                   </select>
                 </div>
                 <div>
@@ -1109,7 +1109,7 @@ export default function Productos() {
 
               {/* MODO EDICIÓN */}
               {p.id in editando ? (
-                <div style={{ background: "#0f172a", borderRadius: 10, padding: 18, border: "1px solid rgba(255,255,255,0.08)" }}>
+                <div style={{ background: "#1d1b12", borderRadius: 10, padding: 18, border: "1px solid rgba(255,255,255,0.08)" }}>
                   <p style={{ color: "#9ca3af", fontSize: 11, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 14 }}>
                     Editando: <span style={{ color: "white" }}>{p.nombre}</span>
                   </p>
@@ -1208,6 +1208,10 @@ export default function Productos() {
                             </span>
                             <span style={{ background: "#f4f2e6", border: "1px solid #cdd6a8", borderRadius: 6, padding: "2px 8px" }}>
                               Margen <b style={{ color: "#55692f" }}>{p.margen ?? 0}%</b>
+                            </span>
+                            <span style={{ color: "#d1d5db" }}>·</span>
+                            <span style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 6, padding: "2px 8px" }}>
+                              💲 Precio <b style={{ color: "#15803d" }}>{formatearPrecio(p.precio_venta)}</b>
                             </span>
                           </>
                         ) : (
@@ -1340,7 +1344,7 @@ export default function Productos() {
       {modalPrecios && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 16 }}
           onClick={() => !aplicandoPrecios && setModalPrecios(false)}>
-          <div style={{ background: "#0f172a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "32px 28px", width: "100%", maxWidth: 440, boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}
+          <div style={{ background: "#1d1b12", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "32px 28px", width: "100%", maxWidth: 440, boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}
             onClick={e => e.stopPropagation()}>
             <div style={{ fontSize: 28, marginBottom: 8 }}>💲</div>
             <h2 style={{ color: "white", fontSize: 18, fontWeight: 700, margin: "0 0 4px" }}>Actualizar precios</h2>
@@ -1474,7 +1478,7 @@ export default function Productos() {
       {/* ── MODAL ELIMINAR LOTE ── */}
       {confirmEliminarLote && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 16 }}>
-          <div style={{ background: "#0f172a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "36px 32px", width: "100%", maxWidth: 360, boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}>
+          <div style={{ background: "#1d1b12", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "36px 32px", width: "100%", maxWidth: 360, boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}>
             <h2 style={{ color: "white", fontSize: 17, fontWeight: 700, marginBottom: 8 }}>¿Eliminar lote?</h2>
             <p style={{ color: "#9ca3af", fontSize: 13, marginBottom: 24 }}>
               Vencimiento <span style={{ color: "white", fontWeight: 600 }}>{confirmEliminarLote.fecha_vencimiento}</span> · {confirmEliminarLote.cantidad} u.
@@ -1490,7 +1494,7 @@ export default function Productos() {
       {/* ── MODAL ELIMINAR PRODUCTO ── */}
       {confirmEliminar && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 16 }}>
-          <div style={{ background: "#0f172a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "36px 32px", width: "100%", maxWidth: 360, boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}>
+          <div style={{ background: "#1d1b12", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "36px 32px", width: "100%", maxWidth: 360, boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}>
             <h2 style={{ color: "white", fontSize: 17, fontWeight: 700, marginBottom: 8 }}>¿Eliminar producto?</h2>
             <p style={{ color: "#9ca3af", fontSize: 13, marginBottom: 24 }}>
               Vas a eliminar <span style={{ color: "white", fontWeight: 600 }}>{confirmEliminar.nombre}</span>. Esta acción no se puede deshacer.

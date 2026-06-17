@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 import { setEmpresa } from "@/lib/empresa"
 import Logo from "@/components/Logo"
-import { MODULOS, modulosActivos, modulosVisibles } from "@/lib/modulos"
+import { MODULOS, modulosActivos, modulosVisibles, RUBROS } from "@/lib/modulos"
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
@@ -17,6 +17,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const [modulos, setModulos] = useState<string[] | null>(null)
   const [modulosRol, setModulosRol] = useState<Record<string, string[]>>({})
   const [rol, setRol] = useState<string>("admin")
+  const [rubro, setRubro] = useState<string>("")
+  const [mostrarRubro, setMostrarRubro] = useState<boolean>(true)
   const [sidebarAbierto, setSidebarAbierto] = useState(false)
   const router = useRouter()
   // Refs para acceder siempre al valor actualizado dentro del callback (evitar stale closure)
@@ -43,9 +45,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         if (usuarioIdRef.current === session.user.id) return
         usuarioIdRef.current = session.user.id
         setUsuario(session.user)
-        const { data: org } = await supabase.from("organizaciones").select("nombre, direccion, telefono, email, logo_url, modulos, modulos_rol").maybeSingle()
+        const { data: org } = await supabase.from("organizaciones").select("nombre, direccion, telefono, email, logo_url, modulos, modulos_rol, rubro, mostrar_rubro").maybeSingle()
         if (org) {
           setOrgNombre(org.nombre); setEmpresa(org); setModulos(org.modulos); setModulosRol(org.modulos_rol || {})
+          setRubro(org.rubro || ""); setMostrarRubro(org.mostrar_rubro !== false)
           const { data: ou } = await supabase.from("org_usuarios").select("rol").maybeSingle()
           setRol(ou?.rol || "admin")
         } else if (!RUTAS_PUBLICAS.includes(pathnameRef.current)) {
@@ -77,7 +80,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       fontSize: "14px",
       marginBottom: "6px",
       transition: "all 0.2s ease",
-      background: active ? "#1f2937" : "transparent",
+      background: active ? "#2a2718" : "transparent",
       color: active ? "white" : "#9ca3af",
       borderLeft: active ? "3px solid #8a9a5b" : "3px solid transparent",
     }
@@ -232,7 +235,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const SidebarContent = () => (
     <div style={{
       width: "230px",
-      background: "#111",
+      background: "#14130d",
       color: "white",
       height: "100vh",
       display: "flex",
@@ -248,7 +251,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </div>
           <div style={{ overflow: "hidden" }}>
             <div style={{ fontWeight: "800", fontSize: "15px", letterSpacing: "1px", color: "white", lineHeight: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 150 }}>{orgNombre}</div>
-            <div style={{ fontSize: "9px", color: "#6f7d49", letterSpacing: "2px", marginTop: "3px", textTransform: "uppercase", fontWeight: "600" }}>Distribuidora</div>
+            {mostrarRubro && rubro && (
+              <div style={{ fontSize: "9px", color: "#6f7d49", letterSpacing: "2px", marginTop: "3px", textTransform: "uppercase", fontWeight: "600" }}>{RUBROS.find(r => r.key === rubro)?.label || rubro}</div>
+            )}
           </div>
         </div>
 
@@ -282,7 +287,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </div>
 
       {/* USER SECTION */}
-      <div style={{ borderTop: "1px solid #1f2937", padding: "14px 16px", display: "flex", alignItems: "center", gap: "10px" }}>
+      <div style={{ borderTop: "1px solid #2a2718", padding: "14px 16px", display: "flex", alignItems: "center", gap: "10px" }}>
         <div style={{
           width: "34px", height: "34px", borderRadius: "50%",
           background: "linear-gradient(135deg, #6f7d49, #4b5a2c)",
@@ -388,7 +393,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 {getPageIcon()}
               </div>
               <div>
-                <div style={{ fontWeight: "800", fontSize: "16px", color: "#0f172a", lineHeight: 1.2 }}>{getTitle()}</div>
+                <div style={{ fontWeight: "800", fontSize: "16px", color: "#1d1b12", lineHeight: 1.2 }}>{getTitle()}</div>
                 <div style={{ fontSize: "11px", color: "#94a3b8", marginTop: "1px", fontWeight: 500 }}>{orgNombre}</div>
               </div>
             </div>
@@ -430,7 +435,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           )}
 
           {/* CONTENT */}
-          <div className="main-content" style={{ padding: "30px", overflowY: "auto", flex: 1, background: "#f1f5f9" }}>
+          <div className="main-content" style={{ padding: "30px", overflowY: "auto", flex: 1, background: "#f5f2e8" }}>
             {children}
           </div>
         </main>

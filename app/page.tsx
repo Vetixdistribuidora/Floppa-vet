@@ -312,7 +312,7 @@ export default function Dashboard() {
                 <span style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", letterSpacing: 0.5, textTransform: "uppercase" }}>{k.titulo}</span>
                 <span style={{ fontSize: 18 }}>{k.icon}</span>
               </div>
-              <div style={{ fontSize: 24, fontWeight: 800, color: "#0f172a", lineHeight: 1 }}>{k.valor}</div>
+              <div style={{ fontSize: 24, fontWeight: 800, color: "#1d1b12", lineHeight: 1 }}>{k.valor}</div>
               <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 6 }}>
                 {k.sub}
                 {k.onClick && <span style={{ color: k.color, marginLeft: 6, fontWeight: 600 }}>Ver →</span>}
@@ -332,7 +332,7 @@ export default function Dashboard() {
               <button key={a.titulo}
                 onClick={() => abrirModal(a.tipo)}
                 style={{
-                  background: hayProblema ? "#0f172a" : "white",
+                  background: hayProblema ? "#1d1b12" : "white",
                   border: hayProblema ? "1px solid rgba(255,255,255,0.08)" : "1px solid #e2e8f0",
                   borderRadius: 14, padding: "16px 18px", cursor: "pointer",
                   textAlign: "left", transition: "transform 0.15s, box-shadow 0.15s",
@@ -377,7 +377,7 @@ export default function Dashboard() {
                 </div>
                 {/* Nombre */}
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: "#0f172a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.nombre}</div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: "#1d1b12", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.nombre}</div>
                   <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 1 }}>{fmt(p.total)} en ventas</div>
                 </div>
                 {/* Cantidad */}
@@ -448,7 +448,7 @@ export default function Dashboard() {
         </div>
 
         {lotesPorVencer.length > 0 && (
-          <div style={{ background: "#0f172a", borderRadius: 16, padding: 24, border: "1px solid rgba(255,255,255,0.06)", boxShadow: "0 4px 16px rgba(0,0,0,0.2)" }}>
+          <div style={{ background: "#1d1b12", borderRadius: 16, padding: 24, border: "1px solid rgba(255,255,255,0.06)", boxShadow: "0 4px 16px rgba(0,0,0,0.2)" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
               <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "white" }}>📅 Próximos vencimientos</h3>
               <button onClick={() => abrirModal("lotes")} style={{ background: "rgba(111,125,73,0.15)", border: "none", color: "#6f7d49", fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 6, cursor: "pointer" }}>
@@ -480,7 +480,7 @@ export default function Dashboard() {
       {modal && modal !== "detalleVenta" && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 16 }}
           onClick={cerrarModal}>
-          <div style={{ background: "#0f172a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "32px 28px", width: "100%", maxWidth: 520, maxHeight: "80vh", overflow: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}
+          <div style={{ background: "#1d1b12", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "32px 28px", width: "100%", maxWidth: 520, maxHeight: "80vh", overflow: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}
             onClick={e => e.stopPropagation()}>
 
             {/* Cuentas corrientes */}
@@ -696,7 +696,7 @@ export default function Dashboard() {
       {modal === "detalleVenta" && ventaDetalle && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 60, padding: 16 }}
           onClick={cerrarModal}>
-          <div style={{ background: "#0f172a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "32px 28px", width: "100%", maxWidth: 480, maxHeight: "80vh", overflow: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}
+          <div style={{ background: "#1d1b12", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "32px 28px", width: "100%", maxWidth: 480, maxHeight: "80vh", overflow: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}
             onClick={e => e.stopPropagation()}>
             <div style={{ marginBottom: 20 }}>
               <h2 style={{ color: "white", fontSize: 17, fontWeight: 700, margin: "0 0 4px" }}>

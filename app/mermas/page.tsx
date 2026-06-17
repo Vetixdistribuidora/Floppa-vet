@@ -385,7 +385,7 @@ export default function MermasPage() {
       {/* ── Header ────────────────────────────────────────────────────────────── */}
       <div className="mr-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24, gap: 16 }}>
         <div>
-          <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: "#0f172a" }}>📉 Control de Mermas</h1>
+          <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: "#1d1b12" }}>📉 Control de Mermas</h1>
           <p style={{ margin: "4px 0 0", color: "#64748b", fontSize: 13 }}>
             Registrá productos perdidos por vencimiento, daño, robo u otros motivos
           </p>
@@ -503,7 +503,7 @@ export default function MermasPage() {
                     <td style={{ padding: "9px 12px", color: "#374151", whiteSpace: "nowrap" }}>
                       {m.fecha ? new Date(m.fecha + "T00:00:00").toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "2-digit" }) : "—"}
                     </td>
-                    <td style={{ padding: "9px 12px", fontWeight: 600, color: "#0f172a", maxWidth: 200 }}>
+                    <td style={{ padding: "9px 12px", fontWeight: 600, color: "#1d1b12", maxWidth: 200 }}>
                       <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                         {m.producto_nombre}
                       </div>
@@ -621,7 +621,7 @@ export default function MermasPage() {
           }}>
             {/* Título */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
-              <h2 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: "#0f172a" }}>
+              <h2 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: "#1d1b12" }}>
                 {editandoId !== null ? "✏️ Editar merma" : "📉 Registrar merma"}
               </h2>
               <button onClick={() => setModalAbierto(false)} style={{
