@@ -36,7 +36,8 @@ function fmtFechaHora(s: string) {
 function fmtFecha(s: string) {
   return new Date(s).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric" })
 }
-const regVacio = () => ({ fecha_hora: nowLocal(), peso: "", temperatura: "", fc: "", fr: "", mucosas: "", medicacion: "", evolucion: "", aplicado_por: "", nota: "" })
+const medVacio = () => ({ medicamento: "", dosis: "", frecuencia: "" })
+const regVacio = () => ({ fecha_hora: nowLocal(), peso: "", temperatura: "", fc: "", fr: "", mucosas: "", meds: [medVacio()], evolucion: "", aplicado_por: "", nota: "" })
 
 export default function InternacionPage() {
   const [lista, setLista] = useState<any[]>([])
@@ -91,10 +92,29 @@ export default function InternacionPage() {
     await cargar(); if (data) abrirFicha(data)
   }
 
+  function setMed(i: number, campo: string, val: string) {
+    setReg((r: any) => ({ ...r, meds: r.meds.map((m: any, idx: number) => idx === i ? { ...m, [campo]: val } : m) }))
+  }
+  function addMed() { setReg((r: any) => ({ ...r, meds: [...r.meds, medVacio()] })) }
+  function removeMed(i: number) { setReg((r: any) => ({ ...r, meds: r.meds.length > 1 ? r.meds.filter((_: any, idx: number) => idx !== i) : r.meds })) }
+
+  function medsATexto(meds: any[]): string {
+    return meds
+      .filter(m => (m.medicamento || "").trim())
+      .map(m => {
+        const partes = [m.medicamento.trim()]
+        if ((m.dosis || "").trim()) partes.push(m.dosis.trim())
+        if ((m.frecuencia || "").trim()) partes.push("cada " + m.frecuencia.trim())
+        return "• " + partes.join(" · ")
+      })
+      .join("\n")
+  }
+
   async function agregarRegistro() {
     if (!activa) return
     const hayConst = reg.peso || reg.temperatura || reg.fc || reg.fr || reg.mucosas
-    const hayMed = reg.medicacion.trim()
+    const medsTxt = medsATexto(reg.meds)
+    const hayMed = !!medsTxt
     const hayEvo = reg.evolucion.trim()
     if (!hayConst && !hayMed && !hayEvo) { mostrar("Cargá al menos un dato (constante, medicación o evolución)", "error"); return }
     setGuardandoReg(true)
@@ -105,7 +125,7 @@ export default function InternacionPage() {
     }
     const filas: any[] = []
     if (hayConst) filas.push({ ...base, tipo: "constante", peso: reg.peso ? Number(reg.peso) : null, temperatura: reg.temperatura ? Number(reg.temperatura) : null, fc: reg.fc ? Number(reg.fc) : null, fr: reg.fr ? Number(reg.fr) : null, mucosas: reg.mucosas.trim() || null })
-    if (hayMed) filas.push({ ...base, tipo: "medicacion", tratamiento: reg.medicacion.trim() })
+    if (hayMed) filas.push({ ...base, tipo: "medicacion", tratamiento: medsTxt })
     if (hayEvo) filas.push({ ...base, tipo: "evolucion", tratamiento: reg.evolucion.trim() })
     if (reg.nota.trim() && filas.length) filas[0].nota = reg.nota.trim()
     const { data, error } = await supabase.from("internacion_registros").insert(filas).select("*")
@@ -259,16 +279,25 @@ export default function InternacionPage() {
                   </div>
                 </div>
 
-                {/* Medicación + Evolución */}
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }} className="grid-2col">
-                  <div>
-                    <label style={labelStyle}>💊 Medicación / tratamiento</label>
-                    <textarea value={reg.medicacion} onChange={e => setReg({ ...reg, medicacion: e.target.value })} rows={2} placeholder="Ej: Ringer 250ml IV, Tramadol 2mg/kg…" style={{ ...inputStyle, resize: "vertical" }} />
-                  </div>
-                  <div>
-                    <label style={labelStyle}>📝 Evolución</label>
-                    <textarea value={reg.evolucion} onChange={e => setReg({ ...reg, evolucion: e.target.value })} rows={2} placeholder="Estado general, observaciones…" style={{ ...inputStyle, resize: "vertical" }} />
-                  </div>
+                {/* Medicación: filas repetibles */}
+                <div style={{ marginTop: 4 }}>
+                  <label style={labelStyle}>💊 Medicación</label>
+                  {reg.meds.map((m: any, i: number) => (
+                    <div key={i} style={{ display: "flex", gap: 8, marginBottom: 6, alignItems: "center" }}>
+                      <input value={m.medicamento} onChange={e => setMed(i, "medicamento", e.target.value)} placeholder="Medicamento" style={{ ...inputStyle, flex: 2 }} />
+                      <input value={m.dosis} onChange={e => setMed(i, "dosis", e.target.value)} placeholder="Dosis (ej: 2mg/kg)" style={{ ...inputStyle, flex: 1 }} />
+                      <input value={m.frecuencia} onChange={e => setMed(i, "frecuencia", e.target.value)} placeholder="Cada cuánto (ej: 8h)" style={{ ...inputStyle, flex: 1 }} />
+                      <button type="button" onClick={() => removeMed(i)} disabled={reg.meds.length === 1} title="Quitar"
+                        style={{ background: reg.meds.length === 1 ? "#f8fafc" : "#fef2f2", border: `1px solid ${reg.meds.length === 1 ? "#e2e8f0" : "#fecaca"}`, color: reg.meds.length === 1 ? "#cbd5e1" : "#dc2626", borderRadius: 8, padding: "8px 11px", fontSize: 13, cursor: reg.meds.length === 1 ? "default" : "pointer", flexShrink: 0 }}>✕</button>
+                    </div>
+                  ))}
+                  <button type="button" onClick={addMed} style={{ background: "#eef0e0", border: "1px solid #cdd6a8", color: "#4b5a2c", borderRadius: 8, padding: "6px 12px", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>+ Agregar medicamento</button>
+                </div>
+
+                {/* Evolución */}
+                <div style={{ marginTop: 12 }}>
+                  <label style={labelStyle}>📝 Evolución</label>
+                  <textarea value={reg.evolucion} onChange={e => setReg({ ...reg, evolucion: e.target.value })} rows={2} placeholder="Estado general, observaciones…" style={{ ...inputStyle, resize: "vertical" }} />
                 </div>
                 <div style={{ marginTop: 10 }}>
                   <label style={labelStyle}>Nota</label>

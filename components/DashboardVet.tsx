@@ -40,6 +40,7 @@ export default function DashboardVet() {
   const [sanidad, setSanidad] = useState<any[]>([])
   const [cumples, setCumples] = useState<any[]>([])
   const [aCobrar, setACobrar] = useState<any[]>([])
+  const [sala, setSala] = useState<any[]>([])
   const [nPacientes, setNPacientes] = useState(0)
   const [nTutores, setNTutores] = useState(0)
 
@@ -50,16 +51,18 @@ export default function DashboardVet() {
     const hoy = hoyISO()
     const en7 = new Date(); en7.setDate(en7.getDate() + 7)
     const en7Str = en7.toLocaleDateString("sv-SE")
-    const [tt, ii, san, pac, tut, cob] = await Promise.all([
+    const [tt, ii, san, pac, tut, cob, sal] = await Promise.all([
       supabase.from("turnos").select("*, pacientes(nombre), clientes(nombre, apellido, telefono)").eq("fecha", hoy).order("hora"),
       supabase.from("internaciones").select("*, pacientes(nombre, especie)").eq("estado", "internado").order("fecha_ingreso", { ascending: false }),
       supabase.from("recordatorios").select("*, pacientes(nombre, fallecido, clientes(nombre, telefono))").neq("estado", "hecho").lte("fecha", en7Str).order("fecha"),
       supabase.from("pacientes").select("id, nombre, especie, fecha_nacimiento, clientes(nombre, apellido, telefono)").eq("fallecido", false),
       supabase.from("clientes").select("id", { count: "exact", head: true }),
       supabase.from("consultas").select("id, para_cobrar, cobrado, pacientes(nombre)").not("para_cobrar", "is", null).eq("cobrado", false),
+      supabase.from("sala_espera").select("*, pacientes(id, nombre, especie)").neq("estado", "atendido").order("check_in_at"),
     ])
     setTurnos(tt.data || [])
     setInternados(ii.data || [])
+    setSala(sal.data || [])
     setSanidad((san.data || []).filter((r: any) => !r.pacientes?.fallecido))
     const pacientes = pac.data || []
     setNPacientes(pacientes.length)
@@ -91,8 +94,11 @@ export default function DashboardVet() {
   const turnosPend = turnos.filter(t => t.estado === "reservado" || t.estado === "confirmado").length
   const sanVencidas = sanidad.filter(r => diasHasta(r.fecha) < 0).length
   const totalACobrar = aCobrar.reduce((s, c) => s + Number(c.para_cobrar || 0), 0)
+  const salaEsperando = sala.filter(s => s.estado === "esperando").length
+  const salaAtendiendo = sala.filter(s => s.estado === "atendiendo").length
 
   const kpis = [
+    { titulo: "En sala", valor: sala.length, sub: `${salaEsperando} esperando · ${salaAtendiendo} en atención`, icon: "🪑", color: "#0d9488", href: "/sala" },
     { titulo: "Turnos hoy", valor: turnos.length, sub: `${turnosPend} pendiente${turnosPend !== 1 ? "s" : ""}`, icon: "📅", color: "#38bdf8", href: "/turnos" },
     { titulo: "Internados", valor: internados.length, sub: "en seguimiento", icon: "🏥", color: "#fb7185", href: "/internacion" },
     { titulo: "Sanidad 7 días", valor: sanidad.length, sub: `${sanVencidas} vencida${sanVencidas !== 1 ? "s" : ""}`, icon: "💉", color: "#f59e0b", href: "/recordatorios" },
@@ -124,6 +130,29 @@ export default function DashboardVet() {
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }} className="grid-grafico">
+        {/* Sala de espera */}
+        <div style={card}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+            <h3 style={{ ...h3, margin: 0 }}>🪑 Sala de espera</h3>
+            <Link href="/sala" style={{ fontSize: 12.5, color: OLIVA, fontWeight: 700, textDecoration: "none" }}>Ver sala →</Link>
+          </div>
+          {sala.length === 0 ? <p style={{ color: "#94a3b8", fontSize: 13, margin: 0 }}>Sala vacía.</p> : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {sala.slice(0, 6).map((s, i) => (
+                <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 13, borderBottom: "1px solid #f1f5f9", paddingBottom: 7 }}>
+                  <span style={{ minWidth: 18, fontWeight: 800, color: s.prioridad === "urgente" ? "#dc2626" : "#94a3b8" }}>{s.estado === "atendiendo" ? "▶" : i + 1}</span>
+                  <span style={{ flex: 1, minWidth: 0 }}>
+                    <b style={{ color: "#1d1b12" }}>{s.pacientes?.nombre || s.nombre_libre || "Paciente"}</b>
+                    {s.motivo ? <span style={{ color: "#64748b" }}> · {s.motivo}</span> : ""}
+                  </span>
+                  {s.prioridad === "urgente" && <span style={{ background: "#fef2f2", color: "#dc2626", fontSize: 10, fontWeight: 800, padding: "1px 7px", borderRadius: 999 }}>URGENTE</span>}
+                  <span style={{ fontSize: 11, fontWeight: 700, color: s.estado === "atendiendo" ? "#0d9488" : "#94a3b8" }}>{s.estado === "atendiendo" ? "en atención" : "espera"}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
         {/* Turnos de hoy */}
         <div style={card}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>

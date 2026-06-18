@@ -28,16 +28,27 @@ function Toast({ mensaje, tipo }: { mensaje: string; tipo: "ok" | "error" }) {
 const labelStyle: React.CSSProperties = { display: "block", fontSize: 11, fontWeight: 700, color: "#64748b", letterSpacing: 0.4, marginBottom: 5, textTransform: "uppercase" }
 const inputStyle: React.CSSProperties = { width: "100%", padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 9, fontSize: 14, color: "#1d1b12", outline: "none", boxSizing: "border-box", background: "white" }
 
-function sumarDias(iso: string, n: number) {
-  const d = new Date(iso + "T00:00:00"); d.setDate(d.getDate() + n); return d.toISOString().split("T")[0]
-}
 function fechaLarga(iso: string) {
   return new Date(iso + "T00:00:00").toLocaleDateString("es-AR", { weekday: "long", day: "2-digit", month: "long" })
 }
+function isoLocal(d: Date) { return d.toLocaleDateString("sv-SE") }
+function mesNombre(d: Date) { return d.toLocaleDateString("es-AR", { month: "long", year: "numeric" }) }
+function celdasMes(ancla: Date): (Date | null)[] {
+  const y = ancla.getFullYear(), m = ancla.getMonth()
+  const off = (new Date(y, m, 1).getDay() + 6) % 7  // lunes = 0
+  const total = new Date(y, m + 1, 0).getDate()
+  const celdas: (Date | null)[] = []
+  for (let i = 0; i < off; i++) celdas.push(null)
+  for (let d = 1; d <= total; d++) celdas.push(new Date(y, m, d))
+  while (celdas.length % 7 !== 0) celdas.push(null)
+  return celdas
+}
+const DIAS_SEM = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"]
 const formVacio = () => ({ paciente_id: "", hora: "09:00", duracion: "30", tipo: "Consulta", profesional: "", notas: "" })
 
 export default function TurnosPage() {
   const [fecha, setFecha] = useState(hoyISO())
+  const [mesAncla, setMesAncla] = useState(() => { const d = new Date(); d.setDate(1); return d })
   const [turnos, setTurnos] = useState<any[]>([])
   const [pacientes, setPacientes] = useState<any[]>([])
   const [cargando, setCargando] = useState(false)
@@ -52,14 +63,28 @@ export default function TurnosPage() {
 
   async function cargar() {
     setCargando(true)
+    const y = mesAncla.getFullYear(), m = mesAncla.getMonth()
+    const desde = isoLocal(new Date(y, m, 1)), hasta = isoLocal(new Date(y, m + 1, 0))
     const [{ data: tt }, { data: pac }] = await Promise.all([
-      supabase.from("turnos").select("*, pacientes(nombre, especie), clientes(nombre, apellido, telefono)").eq("fecha", fecha).order("hora", { ascending: true }),
+      supabase.from("turnos").select("*, pacientes(nombre, especie), clientes(nombre, apellido, telefono)").gte("fecha", desde).lte("fecha", hasta).order("hora", { ascending: true }),
       supabase.from("pacientes").select("id, nombre, especie, cliente_id, clientes(id, nombre, apellido, telefono)").eq("fallecido", false).order("nombre"),
     ])
     setTurnos(tt || []); setPacientes(pac || [])
     setCargando(false)
   }
-  useEffect(() => { cargar() }, [fecha])
+  useEffect(() => { cargar() }, [mesAncla])
+
+  function irAFecha(iso: string) {
+    if (!iso) return
+    setFecha(iso)
+    const d = new Date(iso + "T00:00:00")
+    if (d.getMonth() !== mesAncla.getMonth() || d.getFullYear() !== mesAncla.getFullYear()) setMesAncla(new Date(d.getFullYear(), d.getMonth(), 1))
+  }
+  function moverMes(delta: number) { setMesAncla(prev => new Date(prev.getFullYear(), prev.getMonth() + delta, 1)) }
+
+  // Turnos por día del mes (para badges) y del día seleccionado
+  const turnosPorDia = turnos.reduce((acc: Record<string, number>, t: any) => { acc[t.fecha] = (acc[t.fecha] || 0) + 1; return acc }, {})
+  const turnosDia = turnos.filter(t => t.fecha === fecha)
 
   function abrirNuevo() { setEditId(null); setForm(formVacio()); setModal(true) }
   function abrirEditar(t: any) {
@@ -114,37 +139,66 @@ export default function TurnosPage() {
     if (!abrirWhatsApp(cli?.telefono, msg)) mostrar("El tutor no tiene teléfono cargado", "error")
   }
 
-  const atendidos = turnos.filter(t => t.estado === "atendido").length
-  const pendientes = turnos.filter(t => t.estado === "reservado" || t.estado === "confirmado").length
+  const atendidos = turnosDia.filter(t => t.estado === "atendido").length
+  const pendientes = turnosDia.filter(t => t.estado === "reservado" || t.estado === "confirmado").length
 
   return (
     <div>
       {toast && <Toast mensaje={toast.mensaje} tipo={toast.tipo} />}
 
-      {/* Navegación de día */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 16, flexWrap: "wrap" }}>
+      {/* Navegación de mes + filtro por fecha */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 14, flexWrap: "wrap" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <button onClick={() => setFecha(sumarDias(fecha, -1))} style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 9, padding: "8px 12px", fontSize: 15, cursor: "pointer", color: "#475569" }}>←</button>
-          <input type="date" value={fecha} onChange={e => setFecha(e.target.value)} style={{ ...inputStyle, width: "auto", padding: "8px 12px" }} />
-          <button onClick={() => setFecha(sumarDias(fecha, 1))} style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 9, padding: "8px 12px", fontSize: 15, cursor: "pointer", color: "#475569" }}>→</button>
-          {fecha !== hoyISO() && <button onClick={() => setFecha(hoyISO())} style={{ background: "#eef0e0", border: "1px solid #cdd6a8", borderRadius: 9, padding: "8px 12px", fontSize: 13, fontWeight: 700, cursor: "pointer", color: "#4b5a2c" }}>Hoy</button>}
+          <button onClick={() => moverMes(-1)} title="Mes anterior" style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 9, padding: "8px 12px", fontSize: 15, cursor: "pointer", color: "#475569" }}>←</button>
+          <span style={{ fontSize: 16, fontWeight: 800, color: "#1d1b12", textTransform: "capitalize", minWidth: 150, textAlign: "center" }}>{mesNombre(mesAncla)}</span>
+          <button onClick={() => moverMes(1)} title="Mes siguiente" style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 9, padding: "8px 12px", fontSize: 15, cursor: "pointer", color: "#475569" }}>→</button>
+          <button onClick={() => { setMesAncla(new Date(new Date().getFullYear(), new Date().getMonth(), 1)); setFecha(hoyISO()) }} style={{ background: "#eef0e0", border: "1px solid #cdd6a8", borderRadius: 9, padding: "8px 12px", fontSize: 13, fontWeight: 700, cursor: "pointer", color: "#4b5a2c" }}>Hoy</button>
         </div>
-        <button onClick={abrirNuevo} style={{ background: OLIVA, color: "white", border: "none", borderRadius: 10, padding: "11px 18px", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>+ Nuevo turno</button>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <input type="date" value={fecha} onChange={e => irAFecha(e.target.value)} title="Filtrar por fecha" style={{ ...inputStyle, width: "auto", padding: "8px 12px" }} />
+          <button onClick={abrirNuevo} style={{ background: OLIVA, color: "white", border: "none", borderRadius: 10, padding: "11px 18px", fontSize: 14, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>+ Nuevo turno</button>
+        </div>
+      </div>
+
+      {/* Calendario del mes */}
+      <div style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 14, padding: "12px 14px", marginBottom: 18 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 6, marginBottom: 6 }}>
+          {DIAS_SEM.map(d => <div key={d} style={{ textAlign: "center", fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase" }}>{d}</div>)}
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 6 }}>
+          {celdasMes(mesAncla).map((d, i) => {
+            if (!d) return <div key={i} />
+            const iso = isoLocal(d)
+            const n = turnosPorDia[iso] || 0
+            const sel = iso === fecha
+            const esHoy = iso === hoyISO()
+            return (
+              <button key={i} onClick={() => setFecha(iso)}
+                style={{ minHeight: 56, borderRadius: 10, padding: "6px 4px", cursor: "pointer", textAlign: "center", position: "relative",
+                  border: sel ? "2px solid #6f7d49" : esHoy ? "1px solid #cdd6a8" : "1px solid #eef0f3",
+                  background: sel ? "#eef0e0" : "white" }}>
+                <div style={{ fontSize: 13, fontWeight: esHoy || sel ? 800 : 600, color: sel ? "#4b5a2c" : "#1d1b12" }}>{d.getDate()}</div>
+                {n > 0 && <div style={{ marginTop: 4, fontSize: 10, fontWeight: 700, color: "white", background: "#6f7d49", borderRadius: 999, padding: "1px 6px", display: "inline-block" }}>{n}</div>}
+              </button>
+            )
+          })}
+        </div>
       </div>
 
       <div style={{ fontSize: 15, fontWeight: 800, color: "#1d1b12", textTransform: "capitalize", marginBottom: 4 }}>{fechaLarga(fecha)}</div>
-      <div style={{ fontSize: 13, color: "#64748b", marginBottom: 16 }}>{turnos.length} turno{turnos.length !== 1 ? "s" : ""} · {pendientes} pendiente{pendientes !== 1 ? "s" : ""} · {atendidos} atendido{atendidos !== 1 ? "s" : ""}</div>
+      <div style={{ fontSize: 13, color: "#64748b", marginBottom: 16 }}>{turnosDia.length} turno{turnosDia.length !== 1 ? "s" : ""} · {pendientes} pendiente{pendientes !== 1 ? "s" : ""} · {atendidos} atendido{atendidos !== 1 ? "s" : ""}</div>
 
       {cargando ? (
         <p style={{ color: "#94a3b8", textAlign: "center", padding: 40 }}>Cargando…</p>
-      ) : turnos.length === 0 ? (
-        <div style={{ textAlign: "center", padding: "60px 20px", color: "#94a3b8" }}>
+      ) : turnosDia.length === 0 ? (
+        <div style={{ textAlign: "center", padding: "40px 20px", color: "#94a3b8" }}>
           <div style={{ fontSize: 40, marginBottom: 12 }}>📅</div>
           <p style={{ fontWeight: 600, color: "#475569" }}>No hay turnos para este día</p>
+          <button onClick={abrirNuevo} style={{ marginTop: 10, background: "#eef0e0", border: "1px solid #cdd6a8", borderRadius: 9, padding: "8px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer", color: "#4b5a2c" }}>+ Agendar turno este día</button>
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          {turnos.map(t => {
+          {turnosDia.map(t => {
             const est = ESTADOS[t.estado] || ESTADOS.reservado
             const tutor = t.clientes ? `${t.clientes.nombre || ""} ${t.clientes.apellido || ""}`.trim() : ""
             return (

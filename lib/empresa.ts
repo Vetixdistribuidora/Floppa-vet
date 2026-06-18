@@ -42,13 +42,27 @@ export function empresaLogoUrl(): string | null {
   return e.logo_url || null
 }
 
-/** Encabezado para comprobantes: el logo del cliente si tiene, si no su nombre
- *  configurado como texto. Nunca usa un logo por defecto (evita marcas ajenas). */
+/** Logo de Floppa como SVG inline (mismo que se ve en la app), para impresión. */
+export function logoFloppaSVG(px = 64): string {
+  return `<svg width="${px}" height="${px}" viewBox="0 0 64 64" fill="none" style="display:block">`
+    + `<rect x="3" y="3" width="58" height="58" rx="17" fill="#ddcca8"/>`
+    + `<path d="M32 14 47 22 32 30 17 22Z" fill="#9aa86a"/>`
+    + `<path d="M17 22 32 30 32 48 17 40Z" fill="#6f7d49"/>`
+    + `<path d="M47 22 32 30 32 48 47 40Z" fill="#506037"/>`
+    + `<g stroke="#fff" stroke-width="1.8" stroke-linejoin="round" fill="none" opacity="0.9">`
+    + `<path d="M32 14 47 22 47 40 32 48 17 40 17 22Z"/><path d="M17 22 32 30 47 22"/><path d="M32 30V48"/></g></svg>`
+}
+
+/** Encabezado para comprobantes: el logo propio del cliente si tiene; si no, el
+ *  logo de Floppa (el de la app) junto al nombre configurado por el cliente.
+ *  Nunca usa marcas de terceros. */
 export function empresaEncabezadoHTML(alturaPx = 110): string {
   const url = empresaLogoUrl()
   if (url) return `<img src="${url}" class="logo" style="height:${alturaPx}px;display:block;object-fit:contain" alt=""/>`
-  const nombre = empresaNombre()
-  return `<div style="font-size:26px;font-weight:800;color:#5b6b34;letter-spacing:.5px;line-height:1.1">${nombre || "Mi negocio"}</div>`
+  const nombre = empresaNombre() || "Mi negocio"
+  const px = Math.round(alturaPx * 0.8)
+  return `<div style="display:flex;align-items:center;gap:12px">${logoFloppaSVG(px)}`
+    + `<div style="font-size:24px;font-weight:800;color:#5b6b34;letter-spacing:.5px;line-height:1.1">${nombre}</div></div>`
 }
 
 /** Bloque bajo el logo: dirección / teléfono / email (omite los vacíos) */

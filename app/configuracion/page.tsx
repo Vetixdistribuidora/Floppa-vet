@@ -1,8 +1,9 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { supabase } from "@/lib/supabase"
 import { setEmpresa } from "@/lib/empresa"
+import Logo from "@/components/Logo"
 import { MODULOS, modulosActivos, ROLES_CONFIGURABLES, RUBROS } from "@/lib/modulos"
 
 function fmt(n: number) {
@@ -28,6 +29,8 @@ export default function ConfiguracionPage() {
   const [mostrarRubroSel, setMostrarRubroSel] = useState(true)
   const [guardandoEmpresa, setGuardandoEmpresa] = useState(false)
   const [empresaGuardada, setEmpresaGuardada] = useState(false)
+  const [subiendoLogo, setSubiendoLogo] = useState(false)
+  const logoInputRef = useRef<HTMLInputElement>(null)
   const [esAdmin, setEsAdmin] = useState(false)
   const [usuarios, setUsuarios] = useState<any[]>([])
   const [inviteForm, setInviteForm] = useState({ email: "", password: "", rol: "recepcion" })
@@ -125,6 +128,31 @@ export default function ConfiguracionPage() {
     await supabase.from("organizaciones").update({ modulos_rol: payload }).eq("id", org.id)
     setModulosRolSel(payload)
     setGuardandoPermisos(false); setPermisosGuardados(true); setTimeout(() => setPermisosGuardados(false), 2500)
+  }
+
+  async function subirLogo(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file || !org) return
+    e.target.value = ""
+    setSubiendoLogo(true)
+    const ext = file.name.split(".").pop()
+    const path = `${org.id}.${ext}`
+    const { error: upErr } = await supabase.storage.from("logos").upload(path, file, { upsert: true })
+    if (upErr) { setError("No se pudo subir el logo: " + upErr.message); setSubiendoLogo(false); return }
+    const { data: urlData } = supabase.storage.from("logos").getPublicUrl(path)
+    const url = urlData.publicUrl + "?t=" + Date.now()
+    await supabase.from("organizaciones").update({ logo_url: url }).eq("id", org.id)
+    const next = { ...org, logo_url: url }
+    setOrg(next); setEmpresa({ nombre: next.nombre, direccion: next.direccion, telefono: next.telefono, email: next.email, logo_url: url })
+    setSubiendoLogo(false)
+  }
+  async function quitarLogo() {
+    if (!org) return
+    setSubiendoLogo(true)
+    await supabase.from("organizaciones").update({ logo_url: null }).eq("id", org.id)
+    const next = { ...org, logo_url: null }
+    setOrg(next); setEmpresa({ nombre: next.nombre, direccion: next.direccion, telefono: next.telefono, email: next.email, logo_url: null })
+    setSubiendoLogo(false)
   }
 
   async function guardarEmpresa() {
@@ -428,6 +456,32 @@ export default function ConfiguracionPage() {
         <p style={{ margin: "0 0 18px", color: "#64748b", fontSize: 13 }}>
           Aparecen en el encabezado y pie de los presupuestos, recibos y notas de crédito.
         </p>
+
+        {/* Logo del negocio */}
+        <input ref={logoInputRef} type="file" accept=".png,.jpg,.jpeg,.webp,.svg" style={{ display: "none" }} onChange={subirLogo} />
+        <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 18, padding: "12px 14px", border: "1px solid #e2e8f0", borderRadius: 12, background: "#faf9f1" }}>
+          <div style={{ width: 64, height: 64, flexShrink: 0, borderRadius: 12, overflow: "hidden", border: "1px solid #e2e8f0", background: "white", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            {org?.logo_url ? <img src={org.logo_url} alt="logo" style={{ width: "100%", height: "100%", objectFit: "contain" }} /> : <Logo size={44} />}
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#1d1b12" }}>Logo del negocio</div>
+            <div style={{ fontSize: 12, color: "#64748b", marginTop: 2 }}>
+              {org?.logo_url ? "Se usa en todos los comprobantes." : "Si no subís uno, los comprobantes usan el logo de Floppa con tu nombre."}
+            </div>
+            <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+              <button onClick={() => logoInputRef.current?.click()} disabled={subiendoLogo}
+                style={{ background: "#0f172a", border: "none", borderRadius: 8, color: "white", padding: "7px 14px", fontSize: 12.5, fontWeight: 700, cursor: subiendoLogo ? "wait" : "pointer" }}>
+                {subiendoLogo ? "Subiendo…" : org?.logo_url ? "Cambiar logo" : "Subir logo"}
+              </button>
+              {org?.logo_url && (
+                <button onClick={quitarLogo} disabled={subiendoLogo}
+                  style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 8, color: "#dc2626", padding: "7px 14px", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>
+                  Quitar
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
         {[
           { k: "nombre",    label: "Nombre / Razón social", ph: "Ej: Distribuidora Pérez" },
           { k: "direccion", label: "Dirección",             ph: "Ej: Av. San Martín 1234" },
