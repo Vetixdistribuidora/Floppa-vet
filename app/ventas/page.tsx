@@ -4,7 +4,7 @@ import { useEffect, useState, useRef, useCallback } from "react"
 import { supabase } from "../../lib/supabase"
 import { generarHTMLEImprimir } from "../../lib/impresion"
 import type { DatosImpresion } from "../../lib/impresion"
-import { empresaLogo, empresaInfoHTML, empresaNombre, empresaFooterHTML } from "../../lib/empresa"
+import { empresaEncabezadoHTML, empresaInfoHTML, empresaNombre, empresaFooterHTML } from "../../lib/empresa"
 import { getSaldoCliente } from "../../lib/saldo"
 // XLSX se carga de forma diferida (lazy) — solo cuando el usuario exporta
 
@@ -47,7 +47,6 @@ interface DatosRecibo {
 function generarReciboHTMLEImprimir(datos: DatosRecibo) {
   const { nroFactura, clienteSeleccionado, carrito, subtotal, ivaNum, total, esCuentaCorriente, metodoCobro, fecha: fechaParam } = datos
   const saldoCliente = Number(datos.saldoCliente || 0)
-  const logoUrl = empresaLogo()
   const fecha = fechaParam || new Date().toLocaleDateString("es-AR")
   const f = (n: number) => "$" + n.toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
   const filas = carrito.map((item: any) => {
@@ -101,7 +100,7 @@ thead th{background:#f1f5f9;padding:8px 8px;font-size:11px;font-weight:700;color
 <div class="page">
   <div class="header">
     <div>
-      <img src="${logoUrl}" class="logo"/>
+      ${empresaEncabezadoHTML(110)}
       <div class="empresa-info">${empresaInfoHTML()}</div>
     </div>
     <div class="header-right">
@@ -306,7 +305,6 @@ export default function Ventas() {
 
   // ── FUNCIONES NOTAS DE CRÉDITO ───────────────────────────────────────────────
   function imprimirNC(nc: any) {
-    const logoUrl = empresaLogo()
     const fecha = nc.fecha ? fechaLocal(nc.fecha) : new Date().toLocaleDateString("es-AR")
     const items: any[] = nc.items || []
     const f = (n: number) => "$" + n.toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
@@ -360,7 +358,7 @@ thead th:last-child{text-align:right}
 <div class="page">
   <div class="header">
     <div>
-      <img src="${logoUrl}" class="logo"/>
+      ${empresaEncabezadoHTML(110)}
       <div class="empresa-info">${empresaInfoHTML()}</div>
     </div>
     <div class="header-right">

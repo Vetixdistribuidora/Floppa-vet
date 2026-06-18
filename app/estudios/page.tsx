@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabase"
 import ComboBox from "@/components/ComboBox"
 
 const OLIVA = "#6f7d49"
-const TIPOS = ["Análisis de sangre", "Análisis de orina", "Ecografía", "Radiografía", "Informe", "Certificado", "Otro"]
+const TIPOS = ["Análisis de sangre", "Análisis de orina", "Ecografía", "Radiografía", "Citología", "Biopsia", "Cultivo", "Raspaje", "Informe", "Certificado", "Otro"]
 
 function Toast({ mensaje, tipo }: { mensaje: string; tipo: "ok" | "error" }) {
   return (

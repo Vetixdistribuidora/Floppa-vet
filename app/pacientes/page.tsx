@@ -73,6 +73,7 @@ export default function PacientesPage() {
   const [salaPac, setSalaPac] = useState<any>(null)
   const [salaForm, setSalaForm] = useState<any>({ motivo: "", prioridad: "normal" })
   const [salaGuardando, setSalaGuardando] = useState(false)
+  const [verFoto, setVerFoto] = useState<any>(null)
 
   function abrirSala(p: any) { setSalaPac(p); setSalaForm({ motivo: "", prioridad: "normal" }) }
   async function agregarASala() {
@@ -227,7 +228,7 @@ export default function PacientesPage() {
           {filtrados.map(p => (
             <div key={p.id} style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 14, padding: "16px 18px", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
               <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 8 }}>
-                <div onClick={() => abrirSelectorFoto(p.id)} title="Agregar / cambiar foto"
+                <div onClick={() => p.imagen_url ? setVerFoto(p) : abrirSelectorFoto(p.id)} title={p.imagen_url ? "Ver foto" : "Agregar foto"}
                   style={{ width: 52, height: 52, flexShrink: 0, borderRadius: 10, overflow: "hidden", border: "1px solid #e2e8f0", cursor: "pointer", background: "#f9fafb", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   {subiendoFoto === p.id
                     ? <span style={{ fontSize: 10, color: "#9ca3af" }}>…</span>
@@ -275,6 +276,18 @@ export default function PacientesPage() {
               )}
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Lightbox foto */}
+      {verFoto && (
+        <div onClick={() => setVerFoto(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", zIndex: 1100, padding: 24, gap: 16 }}>
+          <img src={verFoto.imagen_url} alt={verFoto.nombre} onClick={e => e.stopPropagation()} style={{ maxWidth: "90vw", maxHeight: "78vh", borderRadius: 14, boxShadow: "0 12px 48px rgba(0,0,0,0.5)", objectFit: "contain", background: "white" }} />
+          <div onClick={e => e.stopPropagation()} style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <span style={{ color: "white", fontWeight: 700, fontSize: 15 }}>{emojiEsp(verFoto.especie)} {verFoto.nombre}</span>
+            <button onClick={() => { const id = verFoto.id; setVerFoto(null); abrirSelectorFoto(id) }} style={{ background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.3)", color: "white", borderRadius: 9, padding: "8px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>📷 Cambiar foto</button>
+            <button onClick={() => setVerFoto(null)} style={{ background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.3)", color: "white", borderRadius: 9, padding: "8px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>Cerrar ✕</button>
+          </div>
         </div>
       )}
 

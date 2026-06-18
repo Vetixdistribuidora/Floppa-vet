@@ -34,6 +34,26 @@ export default function TutoresPage() {
   const [salaTutor, setSalaTutor] = useState<any>(null)
   const [salaForm, setSalaForm] = useState<any>({ paciente_id: "", motivo: "", prioridad: "normal" })
   const [salaGuardando, setSalaGuardando] = useState(false)
+  const [addPacTutor, setAddPacTutor] = useState<any>(null)
+  const [addPacForm, setAddPacForm] = useState<any>({ nombre: "", especie: "Perro", raza: "", sexo: "", nac: "" })
+  const [addPacGuardando, setAddPacGuardando] = useState(false)
+
+  function abrirAddPac(t: any) { setAddPacTutor(t); setAddPacForm({ nombre: "", especie: "Perro", raza: "", sexo: "", nac: "" }) }
+  async function guardarPaciente() {
+    if (!addPacForm.nombre.trim()) { mostrar("Poné el nombre de la mascota", "error"); return }
+    setAddPacGuardando(true)
+    const { error } = await supabase.from("pacientes").insert([{
+      cliente_id: addPacTutor.id,
+      nombre: addPacForm.nombre.trim(),
+      especie: addPacForm.especie || null,
+      raza: addPacForm.raza.trim() || null,
+      sexo: addPacForm.sexo || null,
+      fecha_nacimiento: addPacForm.nac || null,
+    }])
+    setAddPacGuardando(false)
+    if (error) { mostrar("Error: " + error.message, "error"); return }
+    setAddPacTutor(null); mostrar("Mascota agregada", "ok"); cargar()
+  }
 
   function mostrar(m: string, t: "ok" | "error") { setToast({ mensaje: m, tipo: t }); setTimeout(() => setToast(null), 3000) }
 
@@ -166,7 +186,7 @@ export default function TutoresPage() {
                 </div>
                 <div className="card-actions" style={{ display: "flex", gap: 6, flexShrink: 0 }}>
                   <button onClick={e => { e.stopPropagation(); abrirSala(t) }} title="Agregar a sala de espera" style={{ background: "#ccfbf1", border: "1px solid #99f6e4", borderRadius: 7, padding: "6px 10px", cursor: "pointer", fontSize: 13, color: "#0d9488", fontWeight: 700 }}>🪑</button>
-                  <button onClick={e => { e.stopPropagation(); router.push(`/pacientes?tutor=${t.id}`) }} title="Ver pacientes" style={{ background: "#f4f2e6", border: "1px solid #e6e8cf", borderRadius: 7, padding: "6px 10px", cursor: "pointer", fontSize: 13, color: "#6f7d49" }}>🐾</button>
+                  <button onClick={e => { e.stopPropagation(); abrirAddPac(t) }} title="Agregar mascota" style={{ background: "#f4f2e6", border: "1px solid #e6e8cf", borderRadius: 7, padding: "6px 10px", cursor: "pointer", fontSize: 13, color: "#6f7d49", fontWeight: 700 }}>🐾+</button>
                   <button onClick={e => { e.stopPropagation(); abrirEditar(t) }} title="Editar" style={{ background: "#f1f5f9", border: "1px solid #e2e8f0", borderRadius: 7, padding: "6px 10px", cursor: "pointer", fontSize: 13, color: "#475569" }}>✎</button>
                   <button onClick={e => { e.stopPropagation(); setConfirmEliminar(t) }} title="Eliminar" style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 7, padding: "6px 10px", cursor: "pointer", fontSize: 13, color: "#dc2626" }}>🗑</button>
                 </div>
@@ -242,6 +262,47 @@ export default function TutoresPage() {
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 22 }}>
               <button onClick={() => setModal(false)} style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 9, padding: "10px 18px", fontSize: 14, fontWeight: 600, color: "#475569", cursor: "pointer" }}>Cancelar</button>
               <button onClick={guardar} disabled={guardando} style={{ background: OLIVA, border: "none", borderRadius: 9, padding: "10px 22px", fontSize: 14, fontWeight: 700, color: "white", cursor: guardando ? "not-allowed" : "pointer" }}>{guardando ? "Guardando…" : "Guardar"}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal agregar mascota a un tutor */}
+      {addPacTutor && (
+        <div onClick={() => setAddPacTutor(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: "white", borderRadius: 18, padding: "26px 28px", width: "100%", maxWidth: 460 }}>
+            <h2 style={{ margin: "0 0 4px", fontSize: 19, fontWeight: 800, color: "#1d1b12" }}>🐾 Nueva mascota</h2>
+            <p style={{ margin: "0 0 18px", fontSize: 13, color: "#64748b" }}>Tutor: {`${addPacTutor.nombre || ""} ${addPacTutor.apellido || ""}`.trim()}</p>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+              <div>
+                <label style={labelStyle}>Nombre *</label>
+                <input value={addPacForm.nombre} onChange={e => setAddPacForm({ ...addPacForm, nombre: e.target.value })} placeholder="Ej: Firulais" style={inputStyle} autoFocus />
+              </div>
+              <div>
+                <label style={labelStyle}>Especie</label>
+                <select value={addPacForm.especie} onChange={e => setAddPacForm({ ...addPacForm, especie: e.target.value })} style={inputStyle}>
+                  {ESPECIES.map(e => <option key={e} value={e}>{e}</option>)}
+                </select>
+              </div>
+              <div>
+                <label style={labelStyle}>Raza</label>
+                <input value={addPacForm.raza} onChange={e => setAddPacForm({ ...addPacForm, raza: e.target.value })} placeholder="Ej: Caniche" style={inputStyle} />
+              </div>
+              <div>
+                <label style={labelStyle}>Sexo</label>
+                <select value={addPacForm.sexo} onChange={e => setAddPacForm({ ...addPacForm, sexo: e.target.value })} style={inputStyle}>
+                  <option value="">—</option>
+                  {SEXOS.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+              <div style={{ gridColumn: "1 / -1" }}>
+                <label style={labelStyle}>Nacimiento</label>
+                <input type="date" value={addPacForm.nac} onChange={e => setAddPacForm({ ...addPacForm, nac: e.target.value })} style={inputStyle} />
+              </div>
+            </div>
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 22 }}>
+              <button onClick={() => setAddPacTutor(null)} style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 9, padding: "10px 18px", fontSize: 14, fontWeight: 600, color: "#475569", cursor: "pointer" }}>Cancelar</button>
+              <button onClick={guardarPaciente} disabled={addPacGuardando} style={{ background: OLIVA, border: "none", borderRadius: 9, padding: "10px 22px", fontSize: 14, fontWeight: 700, color: "white", cursor: addPacGuardando ? "wait" : "pointer" }}>{addPacGuardando ? "Guardando…" : "Agregar mascota"}</button>
             </div>
           </div>
         </div>

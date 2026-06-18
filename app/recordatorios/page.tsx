@@ -7,7 +7,7 @@ import { abrirWhatsApp } from "@/lib/whatsapp"
 import { empresaNombre } from "@/lib/empresa"
 
 const OLIVA = "#6f7d49"
-const TIPOS = ["Vacuna Antirrábica", "Vacuna Quíntuple", "Vacuna Triple", "Desparasitación", "Suministro", "Control", "Turno", "Cirugía", "Otro"]
+const TIPOS = ["Vacuna Antirrábica", "Vacuna Quíntuple", "Vacuna Triple", "Vacuna Leucemia Felina", "Desparasitación", "Suministro", "Otro"]
 const hoyISO = () => new Date().toISOString().split("T")[0]
 
 function Toast({ mensaje, tipo }: { mensaje: string; tipo: "ok" | "error" }) {

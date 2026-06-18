@@ -2,7 +2,7 @@
 // Generación de HTML para impresión.
 // Compartido entre ventas, clientes, cuentas y deudores.
 
-import { empresaLogo, empresaInfoHTML, empresaNombre, empresaFooterHTML } from "./empresa"
+import { empresaEncabezadoHTML, empresaInfoHTML, empresaNombre, empresaFooterHTML } from "./empresa"
 
 export interface DatosImpresion {
   nroFactura: string
@@ -19,7 +19,6 @@ export interface DatosImpresion {
 
 export function generarHTMLEImprimir(datos: DatosImpresion, tipo: "presupuesto" | "remito" = "presupuesto") {
   const { nroFactura, clienteSeleccionado, carrito, subtotal, ivaNum, total, esCuentaCorriente, metodoCobro } = datos
-  const logoUrl = empresaLogo()
   const fecha = datos.fecha || new Date().toLocaleDateString("es-AR")
   const f = (num: number) => "$" + num.toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
   const esRemito = tipo === "remito"
@@ -45,7 +44,7 @@ export function generarHTMLEImprimir(datos: DatosImpresion, tipo: "presupuesto" 
   const totalesHTML = esRemito
     ? "<div class='totales'><div class='box'><p>Firma y aclaración: ___________________________</p></div></div>"
     : "<div class='totales'><div class='box'>" + metodoStr + "<p><b>Subtotal:</b> " + f(subtotal) + "</p><p><b>IVA (" + ivaNum + "%):</b> " + f(subtotal * ivaNum / 100) + "</p><h2><b>Total:</b> " + f(total) + "</h2></div></div>"
-  const html = "<!DOCTYPE html><html><head><meta name='viewport' content='width=device-width,initial-scale=1'/><style>@page{size:A4;margin:15mm}*{box-sizing:border-box}html,body{margin:0;padding:0;font-family:Arial;background:#e5e7eb}.acciones{display:flex;gap:10px;padding:12px 16px;background:#f8fafc;border-bottom:1px solid #e2e8f0;position:sticky;top:0;z-index:10}.page{width:180mm;min-height:267mm;margin:16px auto;background:white;padding:16px;display:flex;flex-direction:column;box-shadow:0 2px 8px rgba(0,0,0,.12)}.logo{height:130px;display:block}.empresa-info{font-size:11px;color:#555;margin-top:1px;line-height:1.5}.header{display:flex;justify-content:space-between;align-items:flex-start}.header-right{text-align:center;padding-top:4px}.header-right h2{margin:0;font-size:18px}.nro-factura{font-size:13px;color:#555;margin-top:4px}.cliente-row{margin-top:12px;padding:8px 12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:5px;font-size:12px;line-height:1.9}.contenido{flex:1}table{width:100%;margin-top:14px;border-collapse:collapse;table-layout:fixed}th{border:1px solid #ccc;padding:4px 4px;background:#eee;font-size:10px;white-space:nowrap;overflow:hidden}td{padding:5px 6px;text-align:center;font-size:11px;border-bottom:1px solid #f0f0f0;word-break:break-word}.totales{margin-top:16px;display:flex;justify-content:flex-end;page-break-inside:avoid;break-inside:avoid}.box{width:250px;border-top:2px solid #333;padding-top:8px}.box p{margin:4px 0;font-size:12px}.box h2{margin:10px 0 4px;font-size:20px}@media(max-width:640px){.page{width:100%;margin:0;padding:12px;min-height:auto;box-shadow:none;border-radius:0}.logo{height:70px}.acciones{gap:8px;padding:10px 12px}.acciones button{flex:1;font-size:15px!important;padding:14px 10px!important}th{font-size:9px;padding:3px 2px}td{font-size:10px;padding:4px 3px}.totales .box{width:100%}}@media print{body{background:white}.acciones{display:none}.page{width:100%;min-height:calc(297mm - 30mm);margin:0;padding:0;box-shadow:none}tr{page-break-inside:avoid;break-inside:avoid}.totales{break-inside:avoid;page-break-inside:avoid}}</style></head><body><div class='acciones'><button onclick='window.close();window.history.back();' style='background:#f1f5f9;border:1px solid #d1d5db;border-radius:8px;padding:10px 18px;font-size:14px;font-family:Arial;cursor:pointer;color:#374151;font-weight:600'>&#8592; Volver</button><button onclick='window.print()' style='background:#1d1b12;border:none;border-radius:8px;padding:10px 20px;font-size:14px;font-family:Arial;cursor:pointer;color:white;font-weight:700'>&#128438; Imprimir</button></div><div class='page'><div class='contenido'><div class='header'><div><img src='" + logoUrl + "' class='logo'/><div class='empresa-info'>" + empresaInfoHTML() + "</div></div><div class='header-right'><h2>" + titulo + "</h2><div class='nro-factura'><b style='font-size:15px;color:#111'>" + (nroFactura ? "N° 001-" + nroFactura : "Sin numerar") + "</b><br/><span style='font-size:12px;color:#555'>Fecha: " + fecha + "</span></div>" + badgeCC + "</div></div><div class='cliente-row'><b>Cliente:</b> " + clienteSeleccionado.nombre + " " + clienteSeleccionado.apellido + " &nbsp;|&nbsp; <b>CUIT:</b> " + (clienteSeleccionado.cuit || "-") + " &nbsp;|&nbsp; <b>Dir:</b> " + (clienteSeleccionado.localidad || "-") + " &nbsp;|&nbsp; <b>Tel:</b> " + (clienteSeleccionado.telefono || "-") + saldoInline + "</div><table><thead>" + theadCols + "</thead><tbody>" + filas + "</tbody></table></div>" + totalesHTML + "</div></body></html>"
+  const html = "<!DOCTYPE html><html><head><meta name='viewport' content='width=device-width,initial-scale=1'/><style>@page{size:A4;margin:15mm}*{box-sizing:border-box}html,body{margin:0;padding:0;font-family:Arial;background:#e5e7eb}.acciones{display:flex;gap:10px;padding:12px 16px;background:#f8fafc;border-bottom:1px solid #e2e8f0;position:sticky;top:0;z-index:10}.page{width:180mm;min-height:267mm;margin:16px auto;background:white;padding:16px;display:flex;flex-direction:column;box-shadow:0 2px 8px rgba(0,0,0,.12)}.logo{height:130px;display:block}.empresa-info{font-size:11px;color:#555;margin-top:1px;line-height:1.5}.header{display:flex;justify-content:space-between;align-items:flex-start}.header-right{text-align:center;padding-top:4px}.header-right h2{margin:0;font-size:18px}.nro-factura{font-size:13px;color:#555;margin-top:4px}.cliente-row{margin-top:12px;padding:8px 12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:5px;font-size:12px;line-height:1.9}.contenido{flex:1}table{width:100%;margin-top:14px;border-collapse:collapse;table-layout:fixed}th{border:1px solid #ccc;padding:4px 4px;background:#eee;font-size:10px;white-space:nowrap;overflow:hidden}td{padding:5px 6px;text-align:center;font-size:11px;border-bottom:1px solid #f0f0f0;word-break:break-word}.totales{margin-top:16px;display:flex;justify-content:flex-end;page-break-inside:avoid;break-inside:avoid}.box{width:250px;border-top:2px solid #333;padding-top:8px}.box p{margin:4px 0;font-size:12px}.box h2{margin:10px 0 4px;font-size:20px}@media(max-width:640px){.page{width:100%;margin:0;padding:12px;min-height:auto;box-shadow:none;border-radius:0}.logo{height:70px}.acciones{gap:8px;padding:10px 12px}.acciones button{flex:1;font-size:15px!important;padding:14px 10px!important}th{font-size:9px;padding:3px 2px}td{font-size:10px;padding:4px 3px}.totales .box{width:100%}}@media print{body{background:white}.acciones{display:none}.page{width:100%;min-height:calc(297mm - 30mm);margin:0;padding:0;box-shadow:none}tr{page-break-inside:avoid;break-inside:avoid}.totales{break-inside:avoid;page-break-inside:avoid}}</style></head><body><div class='acciones'><button onclick='window.close();window.history.back();' style='background:#f1f5f9;border:1px solid #d1d5db;border-radius:8px;padding:10px 18px;font-size:14px;font-family:Arial;cursor:pointer;color:#374151;font-weight:600'>&#8592; Volver</button><button onclick='window.print()' style='background:#1d1b12;border:none;border-radius:8px;padding:10px 20px;font-size:14px;font-family:Arial;cursor:pointer;color:white;font-weight:700'>&#128438; Imprimir</button></div><div class='page'><div class='contenido'><div class='header'><div>" + empresaEncabezadoHTML(110) + "<div class='empresa-info'>" + empresaInfoHTML() + "</div></div><div class='header-right'><h2>" + titulo + "</h2><div class='nro-factura'><b style='font-size:15px;color:#111'>" + (nroFactura ? "N° 001-" + nroFactura : "Sin numerar") + "</b><br/><span style='font-size:12px;color:#555'>Fecha: " + fecha + "</span></div>" + badgeCC + "</div></div><div class='cliente-row'><b>Cliente:</b> " + clienteSeleccionado.nombre + " " + clienteSeleccionado.apellido + " &nbsp;|&nbsp; <b>CUIT:</b> " + (clienteSeleccionado.cuit || "-") + " &nbsp;|&nbsp; <b>Dir:</b> " + (clienteSeleccionado.localidad || "-") + " &nbsp;|&nbsp; <b>Tel:</b> " + (clienteSeleccionado.telefono || "-") + saldoInline + "</div><table><thead>" + theadCols + "</thead><tbody>" + filas + "</tbody></table></div>" + totalesHTML + "</div></body></html>"
   const ventana = window.open("", "_blank")
   if (!ventana) { alert("Habilita ventanas emergentes"); return }
   ventana.document.write(html); ventana.document.close()
@@ -63,7 +62,6 @@ export function imprimirReciboCC(
   saldoAnterior: number,
   saldoTotalCliente?: number
 ) {
-  const logoUrl = empresaLogo()
   const fecha = pago.fecha
     ? (typeof pago.fecha === "string" ? new Date(pago.fecha).toLocaleDateString("es-AR") : new Date(pago.fecha).toLocaleDateString("es-AR"))
     : new Date().toLocaleDateString("es-AR")
@@ -78,7 +76,7 @@ export function imprimirReciboCC(
 <div class="acciones"><button onclick="window.close();window.history.back();" style="background:#f1f5f9;border:1px solid #d1d5db;border-radius:8px;padding:10px 18px;font-size:14px;font-family:Arial;cursor:pointer;color:#374151;font-weight:600">&#8592; Volver</button><button onclick="window.print()" style="background:#1d1b12;border:none;border-radius:8px;padding:10px 20px;font-size:14px;font-family:Arial;cursor:pointer;color:white;font-weight:700">&#128438; Imprimir</button></div>
 <div class="page">
   <div class="header">
-    <div><img src="${logoUrl}" class="logo"/><div class="empresa-info">${empresaInfoHTML()}</div></div>
+    <div>${empresaEncabezadoHTML(110)}<div class="empresa-info">${empresaInfoHTML()}</div></div>
     <div class="header-right"><div class="titulo">RECIBO DE COBRO</div><div class="nro-doc">N° ${nroRecibo}</div><div class="fecha-doc">Fecha: ${fecha}</div></div>
   </div>
   <div class="cliente-row"><b>Cliente:</b> ${cliente.nombre} ${cliente.apellido || ""} &nbsp;|&nbsp; <b>CUIT:</b> ${cliente.cuit || "-"} &nbsp;|&nbsp; <b>Tel:</b> ${cliente.telefono || "-"} &nbsp;|&nbsp; <b>Dir:</b> ${cliente.localidad || "-"}${saldoTotal > 0 ? ` &nbsp;|&nbsp; <b>Saldo c/c:</b> <span style="color:#b45309;">${f(saldoTotal)}</span>` : ""}</div>
@@ -117,7 +115,6 @@ export function imprimirReciboCobroMasivo(
   saldoTotalCliente?: number,
   creditoAplicado?: number
 ) {
-  const logoUrl = empresaLogo()
   const fecha = new Date().toLocaleDateString("es-AR")
   const f = (n: number) => "$" + n.toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
@@ -155,7 +152,7 @@ export function imprimirReciboCobroMasivo(
 <div class="acciones"><button onclick="window.close();window.history.back();" style="background:#f1f5f9;border:1px solid #d1d5db;border-radius:8px;padding:10px 18px;font-size:14px;font-family:Arial;cursor:pointer;color:#374151;font-weight:600">&#8592; Volver</button><button onclick="window.print()" style="background:#1d1b12;border:none;border-radius:8px;padding:10px 20px;font-size:14px;font-family:Arial;cursor:pointer;color:white;font-weight:700">&#128438; Imprimir</button></div>
 <div class="page">
   <div class="header">
-    <div><img src="${logoUrl}" class="logo"/><div class="empresa-info">${empresaInfoHTML()}</div></div>
+    <div>${empresaEncabezadoHTML(110)}<div class="empresa-info">${empresaInfoHTML()}</div></div>
     <div class="header-right">
       <div class="titulo">RECIBO DE COBRO</div>
       <div class="nro-doc">N° ${nroReciboBase}</div>

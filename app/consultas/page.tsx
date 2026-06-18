@@ -50,7 +50,7 @@ export default function ConsultasPage() {
     setCargando(true)
     const [{ data: con }, { data: pac }] = await Promise.all([
       supabase.from("consultas").select("*, pacientes(nombre, especie, cliente_id, clientes(nombre, apellido))").order("fecha", { ascending: false }),
-      supabase.from("pacientes").select("id, nombre, especie").order("nombre"),
+      supabase.from("pacientes").select("id, nombre, especie, clientes(nombre, apellido)").order("nombre"),
     ])
     setConsultas(con || [])
     setPacientes(pac || [])
@@ -149,7 +149,7 @@ export default function ConsultasPage() {
         <input value={busqueda} onChange={e => setBusqueda(e.target.value)} placeholder="Buscar por tutor, paciente o motivo…" style={{ ...inputStyle, maxWidth: 260, flex: 1 }} />
         <select value={filtroPaciente} onChange={e => setFiltroPaciente(e.target.value)} style={{ ...inputStyle, maxWidth: 240, flex: 1 }}>
           <option value="">Todos los pacientes</option>
-          {pacientes.map(p => <option key={p.id} value={p.id}>{p.nombre}{p.especie ? ` (${p.especie})` : ""}</option>)}
+          {pacientes.map(p => <option key={p.id} value={p.id}>{p.nombre}{p.especie ? ` (${p.especie})` : ""}{p.clientes ? ` — ${`${p.clientes.nombre || ""} ${p.clientes.apellido || ""}`.trim()}` : ""}</option>)}
         </select>
         <button onClick={abrirNueva}
           style={{ background: OLIVA, color: "white", border: "none", borderRadius: 10, padding: "11px 18px", fontSize: 14, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>
@@ -241,7 +241,7 @@ export default function ConsultasPage() {
                 <label style={labelStyle}>Paciente *</label>
                 <select value={form.paciente_id} onChange={e => setForm({ ...form, paciente_id: e.target.value })} style={inputStyle}>
                   <option value="">— Elegir —</option>
-                  {pacientes.map(p => <option key={p.id} value={p.id}>{p.nombre}{p.especie ? ` (${p.especie})` : ""}</option>)}
+                  {pacientes.map(p => <option key={p.id} value={p.id}>{p.nombre}{p.especie ? ` (${p.especie})` : ""}{p.clientes ? ` — ${`${p.clientes.nombre || ""} ${p.clientes.apellido || ""}`.trim()}` : ""}</option>)}
                 </select>
               </div>
               <div>

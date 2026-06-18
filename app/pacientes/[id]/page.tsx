@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import { supabase } from "@/lib/supabase"
-import { empresaLogo, empresaInfoHTML, empresaNombre } from "@/lib/empresa"
+import { empresaEncabezadoHTML, empresaInfoHTML, empresaNombre } from "@/lib/empresa"
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts"
 
 const OLIVA = "#6f7d49"
@@ -84,7 +84,7 @@ export default function FichaPaciente() {
       @media print{body{background:#fff}.acc{display:none}.pg{box-shadow:none;margin:0;max-width:100%}}</style></head><body>
       <div class="acc"><button onclick="window.print()" style="background:${OLIVA};color:#fff;border:none;border-radius:8px;padding:10px 20px;font-weight:700;cursor:pointer">🖨️ Imprimir</button>
       <button onclick="window.close()" style="background:#f1f5f9;border:1px solid #d1d5db;border-radius:8px;padding:10px 18px;cursor:pointer">Cerrar</button></div>
-      <div class="pg"><div class="hd"><div><img src="${empresaLogo()}" class="logo"/><div class="info">${empresaInfoHTML()}</div></div>
+      <div class="pg"><div class="hd"><div>${empresaEncabezadoHTML(90)}<div class="info">${empresaInfoHTML()}</div></div>
       <div style="text-align:right"><h1>Carnet de vacunación</h1><div class="sub">${empresaNombre()}</div></div></div>
       <div class="row"><b>Paciente:</b> ${p.nombre} &nbsp;|&nbsp; <b>Especie:</b> ${p.especie || "—"} &nbsp;|&nbsp; <b>Raza:</b> ${p.raza || "—"} &nbsp;|&nbsp; <b>Sexo:</b> ${p.sexo || "—"}<br/>
       <b>Nacimiento:</b> ${f(p.fecha_nacimiento)} &nbsp;|&nbsp; <b>Tutor:</b> ${dueño} &nbsp;|&nbsp; <b>Tel:</b> ${p.clientes?.telefono || "—"}</div>
