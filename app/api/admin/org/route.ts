@@ -25,14 +25,17 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   const token = (req.headers.get("authorization") || "").replace("Bearer ", "")
   if (!(await esOwner(token))) return Response.json({ error: "No autorizado" }, { status: 403 })
-  const { organizacion_id, rubro, modulos } = await req.json()
+  const { organizacion_id, rubro, modulos, precio_custom } = await req.json()
   if (!organizacion_id) return Response.json({ error: "Falta la organización" }, { status: 400 })
   const admin = createClient(SB_URL, SROLE, { auth: { persistSession: false } })
   await admin.from("organizaciones").update({ rubro, modulos }).eq("id", organizacion_id)
-  // El plan/precio sigue al rubro
+  // El plan sigue al rubro; precio_custom (si viene) pisa el precio del plan por cliente.
+  const patch: any = {}
   if (rubro) {
     const { data: plan } = await admin.from("planes").select("id").eq("rubro", rubro).maybeSingle()
-    if (plan) await admin.from("suscripciones").update({ plan_id: plan.id }).eq("organizacion_id", organizacion_id)
+    if (plan) patch.plan_id = plan.id
   }
+  if (precio_custom !== undefined) patch.precio_custom = (precio_custom === null || precio_custom === "") ? null : Number(precio_custom)
+  if (Object.keys(patch).length) await admin.from("suscripciones").update(patch).eq("organizacion_id", organizacion_id)
   return Response.json({ ok: true })
 }

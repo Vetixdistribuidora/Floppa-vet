@@ -56,7 +56,7 @@ export default function AdminPage() {
   }
 
   const [editor, setEditor] = useState<any>(null)
-  const [orgForm, setOrgForm] = useState<{ rubro: string; modulos: string[] }>({ rubro: "distribuidora", modulos: [] })
+  const [orgForm, setOrgForm] = useState<{ rubro: string; modulos: string[]; precio: string }>({ rubro: "distribuidora", modulos: [], precio: "" })
   const [cargandoOrg, setCargandoOrg] = useState(false)
   const [guardandoOrg, setGuardandoOrg] = useState(false)
 
@@ -66,17 +66,17 @@ export default function AdminPage() {
     const { data: { session } } = await supabase.auth.getSession()
     const res = await fetch(`/api/admin/org?org=${s.organizacion_id}`, { headers: { Authorization: `Bearer ${session?.access_token}` } })
     const org = await res.json()
-    setOrgForm({ rubro: org.rubro || "distribuidora", modulos: modulosActivos(org.modulos) })
+    setOrgForm({ rubro: org.rubro || "distribuidora", modulos: modulosActivos(org.modulos), precio: s.precio_custom != null ? String(s.precio_custom) : "" })
     setCargandoOrg(false)
   }
-  function aplicarRubroAdmin(rubro: string) { setOrgForm({ rubro, modulos: PRESETS_RUBRO[rubro] || orgForm.modulos }) }
+  function aplicarRubroAdmin(rubro: string) { setOrgForm(f => ({ ...f, rubro, modulos: PRESETS_RUBRO[rubro] || f.modulos })) }
   function toggleModAdmin(key: string) { setOrgForm(f => ({ ...f, modulos: f.modulos.includes(key) ? f.modulos.filter(k => k !== key) : [...f.modulos, key] })) }
   async function guardarPlan() {
     if (!editor) return
     setGuardandoOrg(true)
     const { data: { session } } = await supabase.auth.getSession()
-    await fetch("/api/admin/org", { method: "POST", headers: { Authorization: `Bearer ${session?.access_token}`, "Content-Type": "application/json" }, body: JSON.stringify({ organizacion_id: editor.organizacion_id, rubro: orgForm.rubro, modulos: orgForm.modulos }) })
-    setGuardandoOrg(false); setEditor(null)
+    await fetch("/api/admin/org", { method: "POST", headers: { Authorization: `Bearer ${session?.access_token}`, "Content-Type": "application/json" }, body: JSON.stringify({ organizacion_id: editor.organizacion_id, rubro: orgForm.rubro, modulos: orgForm.modulos, precio_custom: orgForm.precio }) })
+    setGuardandoOrg(false); setEditor(null); cargar()
   }
 
   const filtradas = suscripciones.filter(s =>
@@ -249,6 +249,14 @@ export default function AdminPage() {
                     )
                   })}
                 </div>
+                <label style={{ display: "block", fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", marginBottom: 6 }}>Precio mensual de este cliente</label>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
+                  <span style={{ color: "#64748b", fontSize: 14 }}>$</span>
+                  <input type="number" value={orgForm.precio} onChange={e => setOrgForm(f => ({ ...f, precio: e.target.value }))}
+                    placeholder={`Por defecto del plan (${RUBROS.find(r => r.key === orgForm.rubro)?.label || orgForm.rubro})`}
+                    style={{ flex: 1, padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 14, color: "#1d1b12", background: "white", boxSizing: "border-box" }} />
+                </div>
+                <p style={{ fontSize: 11.5, color: "#94a3b8", margin: "0 0 18px" }}>Dejalo vacío para usar el precio del plan. Si ponés un número, pisa el precio (ideal para Personalizado).</p>
                 <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
                   <button onClick={() => setEditor(null)} style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 9, padding: "10px 18px", fontSize: 14, fontWeight: 600, color: "#475569", cursor: "pointer" }}>Cancelar</button>
                   <button onClick={guardarPlan} disabled={guardandoOrg} style={{ background: "#1d1b12", border: "none", borderRadius: 9, padding: "10px 22px", fontSize: 14, fontWeight: 700, color: "white", cursor: guardandoOrg ? "wait" : "pointer" }}>{guardandoOrg ? "Guardando…" : "Guardar"}</button>

@@ -150,6 +150,11 @@ export default function OnboardingPage() {
             <div style={{ fontSize: 12, color: "#4b5563", marginTop: 10 }}>
               Definí los módulos y el plan. Podés cambiarlo después desde Configuración. Empezás con 15 días gratis.
             </div>
+            {rubro === "personalizado" && (
+              <div style={{ fontSize: 12, color: "#a8b67d", background: "rgba(138,154,91,0.10)", border: "1px solid rgba(138,154,91,0.25)", borderRadius: 10, padding: "10px 12px", marginTop: 10 }}>
+                Arrancás con lo esencial (productos, ventas, caja). Contanos qué combinación necesitás y habilitamos el resto de los módulos en tu plan.
+              </div>
+            )}
           </div>
 
           {error && (

@@ -66,9 +66,12 @@ export const MODULOS_TOGGLEABLES = MODULOS.filter(m => !m.core)
 
 // Presets por rubro: qué módulos vienen activos por defecto
 export const PRESETS_RUBRO: Record<string, string[]> = {
-  distribuidora: ["productos", "clientes", "ventas", "proveedores", "compras", "cuentas", "caja", "reportes", "deudores", "cheques", "mermas", "pedidos", "tienda-online"],
-  general:       ["productos", "clientes", "ventas", "caja", "reportes", "cuentas", "deudores"],
-  veterinaria:   ["sala", "turnos", "tutores", "pacientes", "consultas", "internacion", "estudios", "recordatorios", "cobros", "productos", "ventas", "caja", "reportes", "cuentas", "deudores"],
+  veterinaria:   ["sala", "turnos", "internacion", "productos", "tutores", "pacientes", "consultas", "estudios", "recordatorios", "cobros", "ventas", "caja"],
+  general:       ["productos", "clientes", "ventas", "proveedores", "compras", "caja", "reportes", "deudores"],
+  distribuidora: ["productos", "clientes", "ventas", "proveedores", "compras", "cuentas", "caja", "reportes", "deudores", "tienda-online", "pedidos", "cheques", "mermas"],
+  // Personalizado: arranca con un mínimo usable; el admin de Floppa habilita el
+  // resto de los módulos que el cliente pidió.
+  personalizado: ["productos", "ventas", "caja"],
 }
 
 export const DEFAULT_MODULOS = PRESETS_RUBRO.distribuidora
@@ -77,6 +80,7 @@ export const RUBROS = [
   { key: "distribuidora", label: "Distribuidora / Mayorista" },
   { key: "general", label: "Comercio general" },
   { key: "veterinaria", label: "Veterinaria" },
+  { key: "personalizado", label: "Personalizado" },
 ]
 
 /** Devuelve la lista de módulos activos de una org (con fallback al default). */
