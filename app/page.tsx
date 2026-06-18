@@ -120,7 +120,7 @@ function DashboardComercial() {
         .gte("fecha", inicioMesStr).neq("estado", "anulada").order("id", { ascending: false }),
       // Solo traer productos con stock bajo o sin stock — evita cargar 9000+ filas
       // para luego filtrar. Supabase devuelve máx 1000 sin paginación explícita.
-      supabase.from("productos").select("id, nombre, stock").or("stock.is.null,stock.lte.5"),
+      supabase.from("productos").select("id, nombre, stock").eq("es_servicio", false).or("stock.is.null,stock.lte.5"),
       supabase.from("pagos_cuenta_corriente").select("venta_id, monto").gte("fecha", inicioHoyUTC),
       supabase.from("pagos_cuenta_corriente").select("venta_id, monto").gte("fecha", inicioMesStr),
       // Ventas del MISMO tramo del mes anterior (para Crecimiento)
