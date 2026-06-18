@@ -110,30 +110,36 @@ export default function TutoresPage() {
           <p style={{ fontWeight: 600, color: "#475569" }}>{tutores.length === 0 ? "Todavía no hay tutores" : "Sin resultados"}</p>
         </div>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 14 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {filtrados.map(t => {
             const mascotas = (t.pacientes || []).map((p: any) => p.nombre)
+            const nombreCompleto = `${t.nombre || ""} ${t.apellido || ""}`.trim()
+            const inicial = (t.nombre || "?").charAt(0).toUpperCase()
             return (
-              <div key={t.id} style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 14, padding: "16px 18px", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ fontWeight: 700, fontSize: 15.5, color: "#1d1b12" }}>
-                      {`${t.nombre || ""} ${t.apellido || ""}`.trim()}
-                      {mascotas.length > 0 && (
-                        <span style={{ fontWeight: 600, color: "#7c3aed", fontSize: 13 }}> 🐾 {mascotas.join(", ")}</span>
-                      )}
-                    </div>
-                    <div style={{ fontSize: 12.5, color: "#64748b", marginTop: 4, display: "flex", gap: 14, flexWrap: "wrap" }}>
-                      {t.telefono && <span>📞 {t.telefono}</span>}
-                      {t.email && <span>📧 {t.email}</span>}
-                      {t.localidad && <span>📍 {t.localidad}</span>}
-                    </div>
+              <div key={t.id} className="card-row" style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 14, padding: "14px 18px", boxShadow: "0 1px 4px rgba(0,0,0,0.04)", display: "flex", alignItems: "center", gap: 14 }}>
+                <div style={{ width: 44, height: 44, borderRadius: "50%", background: "#eef0e0", color: "#4b5a2c", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 18, flexShrink: 0 }}>{inicial}</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                    <span style={{ fontWeight: 700, fontSize: 15.5, color: "#1d1b12" }}>{nombreCompleto || "Sin nombre"}</span>
+                    {mascotas.length > 0 && (
+                      <span style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+                        {mascotas.map((m: string, i: number) => (
+                          <span key={i} style={{ background: "#f4f2e6", border: "1px solid #e6e8cf", color: "#6f7d49", fontSize: 11.5, fontWeight: 700, padding: "2px 9px", borderRadius: 999 }}>🐾 {m}</span>
+                        ))}
+                      </span>
+                    )}
                   </div>
-                  <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
-                    <Link href={`/pacientes`} title="Ver pacientes" style={{ background: "#f4f2e6", border: "1px solid #e6e8cf", borderRadius: 7, padding: "4px 9px", cursor: "pointer", fontSize: 12, color: "#6f7d49", textDecoration: "none" }}>🐾</Link>
-                    <button onClick={() => abrirEditar(t)} title="Editar" style={{ background: "#f1f5f9", border: "1px solid #e2e8f0", borderRadius: 7, padding: "4px 9px", cursor: "pointer", fontSize: 12, color: "#475569" }}>✎</button>
-                    <button onClick={() => setConfirmEliminar(t)} title="Eliminar" style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 7, padding: "4px 9px", cursor: "pointer", fontSize: 12, color: "#dc2626" }}>🗑</button>
+                  <div style={{ fontSize: 12.5, color: "#64748b", marginTop: 4, display: "flex", gap: 16, flexWrap: "wrap" }}>
+                    {t.telefono && <span>📞 {t.telefono}</span>}
+                    {t.email && <span>📧 {t.email}</span>}
+                    {t.localidad && <span>📍 {t.localidad}</span>}
+                    {!t.telefono && !t.email && !t.localidad && <span style={{ color: "#cbd5e1", fontStyle: "italic" }}>Sin datos de contacto</span>}
                   </div>
+                </div>
+                <div className="card-actions" style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                  <Link href={`/pacientes`} title="Ver pacientes" style={{ background: "#f4f2e6", border: "1px solid #e6e8cf", borderRadius: 7, padding: "6px 10px", cursor: "pointer", fontSize: 13, color: "#6f7d49", textDecoration: "none" }}>🐾</Link>
+                  <button onClick={() => abrirEditar(t)} title="Editar" style={{ background: "#f1f5f9", border: "1px solid #e2e8f0", borderRadius: 7, padding: "6px 10px", cursor: "pointer", fontSize: 13, color: "#475569" }}>✎</button>
+                  <button onClick={() => setConfirmEliminar(t)} title="Eliminar" style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 7, padding: "6px 10px", cursor: "pointer", fontSize: 13, color: "#dc2626" }}>🗑</button>
                 </div>
               </div>
             )
