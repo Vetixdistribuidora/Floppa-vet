@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react"
 import Link from "next/link"
 import { supabase } from "@/lib/supabase"
+import ComboBox from "@/components/ComboBox"
 
 const OLIVA = "#6f7d49"
 const hoyISO = () => new Date().toISOString().split("T")[0]
@@ -63,7 +64,6 @@ export default function ConsultasPage() {
   const [sanidad, setSanidad] = useState<any[]>([])
   const [orgId, setOrgId] = useState<string | null>(null)
   const [productosCat, setProductosCat] = useState<any[]>([])
-  const [cobrarSel, setCobrarSel] = useState("")
   const [modalEst, setModalEst] = useState(false)
   const [formEst, setFormEst] = useState<any>({ paciente_id: "", titulo: "", tipo: "Ecografía" })
   const [archivoEst, setArchivoEst] = useState<File | null>(null)
@@ -101,12 +101,12 @@ export default function ConsultasPage() {
   }, [])
 
   function abrirNueva() {
-    setEditId(null); setCobrarSel("")
+    setEditId(null)
     setForm({ ...formVacio(), paciente_id: filtroPaciente || "" })
     setModal(true)
   }
   function abrirEditar(c: any) {
-    setEditId(c.id); setCobrarSel("")
+    setEditId(c.id)
     setForm({
       paciente_id: String(c.paciente_id), fecha: c.fecha || hoyISO(),
       motivo: c.motivo || "", diagnostico: c.diagnostico || "", tratamiento: c.tratamiento || "",
@@ -116,8 +116,8 @@ export default function ConsultasPage() {
     setModal(true)
   }
 
-  function agregarCobrarItem() {
-    const p = productosCat.find(x => String(x.id) === cobrarSel)
+  function agregarCobrarItem(pid: string) {
+    const p = productosCat.find(x => String(x.id) === pid)
     if (!p) return
     setForm((f: any) => {
       const ex = f.cobrarItems.find((i: any) => i.producto_id === p.id)
@@ -126,7 +126,6 @@ export default function ConsultasPage() {
         : [...f.cobrarItems, { producto_id: p.id, nombre: p.nombre, precio: p.precio_venta, cantidad: 1 }]
       return { ...f, cobrarItems: items, para_cobrar: resumenItems(items) }
     })
-    setCobrarSel("")
   }
   function setCobrarCant(pid: number, cant: number) {
     setForm((f: any) => { const items = f.cobrarItems.map((i: any) => i.producto_id === pid ? { ...i, cantidad: Math.max(1, cant) } : i); return { ...f, cobrarItems: items, para_cobrar: resumenItems(items) } })
@@ -405,12 +404,14 @@ export default function ConsultasPage() {
               </div>
               <div style={{ gridColumn: "1 / -1", background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 10, padding: "12px 14px" }}>
                 <label style={{ ...labelStyle, color: "#b45309" }}>💲 Para cobrar (recepción lo pasa a la venta sin tipear)</label>
-                <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
-                  <select value={cobrarSel} onChange={e => setCobrarSel(e.target.value)} style={{ ...inputStyle, flex: 1 }}>
-                    <option value="">+ Agregar producto / servicio…</option>
-                    {productosCat.map(p => <option key={p.id} value={p.id}>{p.nombre}{p.es_servicio ? " (servicio)" : ""} — ${Math.round(p.precio_venta).toLocaleString("es-AR")}</option>)}
-                  </select>
-                  <button type="button" onClick={agregarCobrarItem} disabled={!cobrarSel} style={{ background: "#b45309", color: "white", border: "none", borderRadius: 9, padding: "0 16px", fontSize: 14, fontWeight: 700, cursor: cobrarSel ? "pointer" : "default", opacity: cobrarSel ? 1 : 0.5 }}>Agregar</button>
+                <div style={{ marginTop: 4 }}>
+                  <ComboBox
+                    options={productosCat.map(p => ({ value: String(p.id), label: `${p.nombre}${p.es_servicio ? " (servicio)" : ""} — $${Math.round(p.precio_venta).toLocaleString("es-AR")}` }))}
+                    value=""
+                    onChange={(v) => { if (v) agregarCobrarItem(v) }}
+                    allowEmpty={false}
+                    placeholder="Buscar o elegir producto / servicio…"
+                  />
                 </div>
                 {form.cobrarItems.length > 0 ? (
                   <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 10 }}>
