@@ -31,12 +31,33 @@ export default function TutoresPage() {
   const [form, setForm] = useState<any>(FORM_VACIO)
   const [guardando, setGuardando] = useState(false)
   const [confirmEliminar, setConfirmEliminar] = useState<any>(null)
+  const [salaTutor, setSalaTutor] = useState<any>(null)
+  const [salaForm, setSalaForm] = useState<any>({ paciente_id: "", motivo: "", prioridad: "normal" })
+  const [salaGuardando, setSalaGuardando] = useState(false)
 
   function mostrar(m: string, t: "ok" | "error") { setToast({ mensaje: m, tipo: t }); setTimeout(() => setToast(null), 3000) }
 
+  function abrirSala(t: any) {
+    const pacs = t.pacientes || []
+    setSalaTutor(t)
+    setSalaForm({ paciente_id: pacs.length === 1 ? String(pacs[0].id) : "", motivo: "", prioridad: "normal" })
+  }
+  async function agregarASala() {
+    if (!salaForm.paciente_id) { mostrar("Elegí la mascota que viene", "error"); return }
+    setSalaGuardando(true)
+    const { error } = await supabase.from("sala_espera").insert([{
+      paciente_id: Number(salaForm.paciente_id),
+      motivo: salaForm.motivo.trim() || null,
+      prioridad: salaForm.prioridad,
+    }])
+    setSalaGuardando(false)
+    if (error) { mostrar("Error: " + error.message, "error"); return }
+    setSalaTutor(null); mostrar("Agregado a la sala de espera", "ok")
+  }
+
   async function cargar() {
     setCargando(true)
-    const { data } = await supabase.from("clientes").select("id, nombre, apellido, telefono, email, localidad, created_at, pacientes(nombre)").order("nombre")
+    const { data } = await supabase.from("clientes").select("id, nombre, apellido, telefono, email, localidad, pacientes(id, nombre, especie)").order("nombre")
     setTutores(data || [])
     setCargando(false)
   }
@@ -140,10 +161,11 @@ export default function TutoresPage() {
                     {!t.telefono && !t.email && !t.localidad && <span style={{ color: "#cbd5e1", fontStyle: "italic" }}>Sin datos de contacto</span>}
                   </div>
                   <div style={{ fontSize: 11.5, color: "#94a3b8", marginTop: 4 }}>
-                    {mascotas.length} mascota{mascotas.length !== 1 ? "s" : ""}{t.created_at ? ` · alta ${new Date(t.created_at).toLocaleDateString("es-AR")}` : ""}
+                    {mascotas.length} mascota{mascotas.length !== 1 ? "s" : ""}
                   </div>
                 </div>
                 <div className="card-actions" style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                  <button onClick={e => { e.stopPropagation(); abrirSala(t) }} title="Agregar a sala de espera" style={{ background: "#ccfbf1", border: "1px solid #99f6e4", borderRadius: 7, padding: "6px 10px", cursor: "pointer", fontSize: 13, color: "#0d9488", fontWeight: 700 }}>🪑</button>
                   <button onClick={e => { e.stopPropagation(); router.push(`/pacientes?tutor=${t.id}`) }} title="Ver pacientes" style={{ background: "#f4f2e6", border: "1px solid #e6e8cf", borderRadius: 7, padding: "6px 10px", cursor: "pointer", fontSize: 13, color: "#6f7d49" }}>🐾</button>
                   <button onClick={e => { e.stopPropagation(); abrirEditar(t) }} title="Editar" style={{ background: "#f1f5f9", border: "1px solid #e2e8f0", borderRadius: 7, padding: "6px 10px", cursor: "pointer", fontSize: 13, color: "#475569" }}>✎</button>
                   <button onClick={e => { e.stopPropagation(); setConfirmEliminar(t) }} title="Eliminar" style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 7, padding: "6px 10px", cursor: "pointer", fontSize: 13, color: "#dc2626" }}>🗑</button>
@@ -220,6 +242,48 @@ export default function TutoresPage() {
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 22 }}>
               <button onClick={() => setModal(false)} style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 9, padding: "10px 18px", fontSize: 14, fontWeight: 600, color: "#475569", cursor: "pointer" }}>Cancelar</button>
               <button onClick={guardar} disabled={guardando} style={{ background: OLIVA, border: "none", borderRadius: 9, padding: "10px 22px", fontSize: 14, fontWeight: 700, color: "white", cursor: guardando ? "not-allowed" : "pointer" }}>{guardando ? "Guardando…" : "Guardar"}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal agregar a sala */}
+      {salaTutor && (
+        <div onClick={() => setSalaTutor(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: "white", borderRadius: 18, padding: "26px 28px", width: "100%", maxWidth: 440 }}>
+            <h2 style={{ margin: "0 0 4px", fontSize: 19, fontWeight: 800, color: "#1d1b12" }}>🪑 Agregar a la sala</h2>
+            <p style={{ margin: "0 0 18px", fontSize: 13, color: "#64748b" }}>Tutor: {`${salaTutor.nombre || ""} ${salaTutor.apellido || ""}`.trim()}</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              <div>
+                <label style={labelStyle}>Mascota *</label>
+                {(salaTutor.pacientes || []).length === 0 ? (
+                  <p style={{ fontSize: 13, color: "#dc2626", margin: 0 }}>Este tutor no tiene mascotas cargadas. Agregá una en Pacientes primero.</p>
+                ) : (
+                  <select value={salaForm.paciente_id} onChange={e => setSalaForm({ ...salaForm, paciente_id: e.target.value })} style={inputStyle}>
+                    <option value="">— Elegir mascota —</option>
+                    {(salaTutor.pacientes || []).map((p: any) => <option key={p.id} value={String(p.id)}>{p.nombre}{p.especie ? ` (${p.especie})` : ""}</option>)}
+                  </select>
+                )}
+              </div>
+              <div>
+                <label style={labelStyle}>Motivo</label>
+                <input value={salaForm.motivo} onChange={e => setSalaForm({ ...salaForm, motivo: e.target.value })} placeholder="Ej: Control, vacuna, vómitos…" style={inputStyle} />
+              </div>
+              <div>
+                <label style={labelStyle}>Prioridad</label>
+                <div style={{ display: "flex", gap: 8 }}>
+                  {[["normal", "Normal", "#0d9488"], ["urgente", "Urgente", "#dc2626"]].map(([v, lab, col]) => (
+                    <button key={v} type="button" onClick={() => setSalaForm({ ...salaForm, prioridad: v })}
+                      style={{ flex: 1, padding: "10px", borderRadius: 9, cursor: "pointer", fontWeight: 700, fontSize: 13.5, border: salaForm.prioridad === v ? `2px solid ${col}` : "1px solid #e2e8f0", background: salaForm.prioridad === v ? `${col}15` : "white", color: salaForm.prioridad === v ? col : "#64748b" }}>
+                      {lab}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 22 }}>
+              <button onClick={() => setSalaTutor(null)} style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 9, padding: "10px 18px", fontSize: 14, fontWeight: 600, color: "#475569", cursor: "pointer" }}>Cancelar</button>
+              <button onClick={agregarASala} disabled={salaGuardando || (salaTutor.pacientes || []).length === 0} style={{ background: "#0d9488", border: "none", borderRadius: 9, padding: "10px 22px", fontSize: 14, fontWeight: 700, color: "white", cursor: salaGuardando ? "wait" : "pointer", opacity: (salaTutor.pacientes || []).length === 0 ? 0.5 : 1 }}>{salaGuardando ? "Agregando…" : "Agregar a sala"}</button>
             </div>
           </div>
         </div>
