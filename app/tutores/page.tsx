@@ -16,7 +16,9 @@ function Toast({ mensaje, tipo }: { mensaje: string; tipo: "ok" | "error" }) {
 
 const labelStyle: React.CSSProperties = { display: "block", fontSize: 11, fontWeight: 700, color: "#64748b", letterSpacing: 0.4, marginBottom: 5, textTransform: "uppercase" }
 const inputStyle: React.CSSProperties = { width: "100%", padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 9, fontSize: 14, color: "#1d1b12", outline: "none", boxSizing: "border-box", background: "white" }
-const FORM_VACIO = { nombre: "", apellido: "", telefono: "", email: "", localidad: "" }
+const ESPECIES = ["Perro", "Gato", "Conejo", "Ave", "Roedor", "Otro"]
+const SEXOS = ["Macho", "Hembra"]
+const FORM_VACIO = { nombre: "", apellido: "", telefono: "", email: "", localidad: "", pacNombre: "", pacEspecie: "Perro", pacRaza: "", pacSexo: "", pacNac: "" }
 
 export default function TutoresPage() {
   const [tutores, setTutores] = useState<any[]>([])
@@ -42,7 +44,7 @@ export default function TutoresPage() {
   function abrirNuevo() { setEditId(null); setForm(FORM_VACIO); setModal(true) }
   function abrirEditar(t: any) {
     setEditId(t.id)
-    setForm({ nombre: t.nombre || "", apellido: t.apellido || "", telefono: t.telefono || "", email: t.email || "", localidad: t.localidad || "" })
+    setForm({ ...FORM_VACIO, nombre: t.nombre || "", apellido: t.apellido || "", telefono: t.telefono || "", email: t.email || "", localidad: t.localidad || "" })
     setModal(true)
   }
 
@@ -55,8 +57,22 @@ export default function TutoresPage() {
         const { error } = await supabase.from("clientes").update(payload).eq("id", editId); if (error) throw error
         mostrar("Tutor actualizado", "ok")
       } else {
-        const { error } = await supabase.from("clientes").insert([payload]); if (error) throw error
-        mostrar("Tutor agregado", "ok")
+        const { data: nuevo, error } = await supabase.from("clientes").insert([payload]).select("id").single(); if (error) throw error
+        // Si cargó una primera mascota, crearla en pacientes ligada al tutor
+        if (form.pacNombre.trim() && nuevo?.id) {
+          const { error: ePac } = await supabase.from("pacientes").insert([{
+            cliente_id: nuevo.id,
+            nombre: form.pacNombre.trim(),
+            especie: form.pacEspecie || null,
+            raza: form.pacRaza.trim() || null,
+            sexo: form.pacSexo || null,
+            fecha_nacimiento: form.pacNac || null,
+          }])
+          if (ePac) { mostrar("Tutor creado, pero falló la mascota: " + ePac.message, "error"); setModal(false); cargar(); return }
+          mostrar("Tutor y mascota agregados", "ok")
+        } else {
+          mostrar("Tutor agregado", "ok")
+        }
       }
       setModal(false); cargar()
     } catch (e: any) { mostrar("Error: " + (e?.message || "desconocido"), "error") } finally { setGuardando(false) }
@@ -152,6 +168,42 @@ export default function TutoresPage() {
                 <input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="Ej: tutor@email.com" style={inputStyle} />
               </div>
             </div>
+
+            {/* Primera mascota — solo al crear un tutor nuevo */}
+            {!editId && (
+              <div style={{ marginTop: 18, border: "1px solid #e6e8cf", background: "#faf9f1", borderRadius: 12, padding: "14px 16px" }}>
+                <div style={{ fontSize: 12.5, fontWeight: 800, color: "#4b5a2c", marginBottom: 4 }}>🐾 Primera mascota <span style={{ color: "#94a3b8", fontWeight: 500 }}>(opcional)</span></div>
+                <div style={{ fontSize: 11.5, color: "#94a3b8", marginBottom: 12 }}>Si la cargás, se crea automáticamente en Pacientes ligada a este tutor.</div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                  <div>
+                    <label style={labelStyle}>Nombre de la mascota</label>
+                    <input value={form.pacNombre} onChange={e => setForm({ ...form, pacNombre: e.target.value })} placeholder="Ej: Firulais" style={inputStyle} />
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Especie</label>
+                    <select value={form.pacEspecie} onChange={e => setForm({ ...form, pacEspecie: e.target.value })} style={inputStyle}>
+                      {ESPECIES.map(e => <option key={e} value={e}>{e}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Raza</label>
+                    <input value={form.pacRaza} onChange={e => setForm({ ...form, pacRaza: e.target.value })} placeholder="Ej: Caniche" style={inputStyle} />
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Sexo</label>
+                    <select value={form.pacSexo} onChange={e => setForm({ ...form, pacSexo: e.target.value })} style={inputStyle}>
+                      <option value="">—</option>
+                      {SEXOS.map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  </div>
+                  <div style={{ gridColumn: "1 / -1" }}>
+                    <label style={labelStyle}>Nacimiento</label>
+                    <input type="date" value={form.pacNac} onChange={e => setForm({ ...form, pacNac: e.target.value })} style={inputStyle} />
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 22 }}>
               <button onClick={() => setModal(false)} style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 9, padding: "10px 18px", fontSize: 14, fontWeight: 600, color: "#475569", cursor: "pointer" }}>Cancelar</button>
               <button onClick={guardar} disabled={guardando} style={{ background: OLIVA, border: "none", borderRadius: 9, padding: "10px 22px", fontSize: 14, fontWeight: 700, color: "white", cursor: guardando ? "not-allowed" : "pointer" }}>{guardando ? "Guardando…" : "Guardar"}</button>
