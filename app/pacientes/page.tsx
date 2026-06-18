@@ -227,12 +227,6 @@ export default function PacientesPage() {
                     {conCobro.has(p.id) && <span style={{ background: "#fff7ed", border: "1px solid #fed7aa", color: "#c2410c", fontSize: 10.5, fontWeight: 800, padding: "2px 7px", borderRadius: 999 }}>💲 A cobrar</span>}
                     {p.fallecido && <span style={{ background: "#f1f5f9", border: "1px solid #e2e8f0", color: "#64748b", fontSize: 10.5, fontWeight: 800, padding: "2px 7px", borderRadius: 999 }}>🕊 Fallecido</span>}
                   </div>
-                  <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 2 }}>{p.especie || "—"}</div>
-                  {(p.etiquetas || []).length > 0 && (
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 6 }}>
-                      {p.etiquetas.map((et: string) => <span key={et} style={{ background: "#eef0e0", color: "#4b5a2c", fontSize: 10.5, fontWeight: 700, padding: "2px 8px", borderRadius: 999 }}>{et}</span>)}
-                    </div>
-                  )}
                 </div>
                 <div style={{ display: "flex", gap: 6 }}>
                   <Link href={`/consultas?paciente=${p.id}`} title="Historia clínica" style={{ background: "#f4f2e6", border: "1px solid #e6e8cf", borderRadius: 7, padding: "4px 9px", cursor: "pointer", fontSize: 12, color: "#6f7d49", textDecoration: "none" }}>📋</Link>
@@ -240,6 +234,10 @@ export default function PacientesPage() {
                   <button onClick={() => abrirEditar(p)} title="Editar" style={{ background: "#f1f5f9", border: "1px solid #e2e8f0", borderRadius: 7, padding: "4px 9px", cursor: "pointer", fontSize: 12, color: "#475569" }}>✎</button>
                   <button onClick={() => setConfirmEliminar(p)} title="Eliminar" style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 7, padding: "4px 9px", cursor: "pointer", fontSize: 12, color: "#dc2626" }}>🗑</button>
                 </div>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginTop: 2 }}>
+                <span style={{ fontSize: 12.5, color: "#475569", fontWeight: 600 }}>{p.especie || "—"}</span>
+                {(p.etiquetas || []).map((et: string) => <span key={et} style={{ background: "#eef0e0", color: "#4b5a2c", fontSize: 10.5, fontWeight: 700, padding: "2px 8px", borderRadius: 999 }}>{et}</span>)}
               </div>
               <div style={{ display: "flex", gap: 14, flexWrap: "wrap", fontSize: 12.5, color: "#475569", marginTop: 8 }}>
                 <span><b style={{ color: "#4b5a2c", fontWeight: 800 }}>Edad:</b> {edadDe(p.fecha_nacimiento)}</span>
