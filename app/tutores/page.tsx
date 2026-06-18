@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 
 const OLIVA = "#6f7d49"
@@ -21,6 +21,7 @@ const SEXOS = ["Macho", "Hembra"]
 const FORM_VACIO = { nombre: "", apellido: "", telefono: "", email: "", localidad: "", pacNombre: "", pacEspecie: "Perro", pacRaza: "", pacSexo: "", pacNac: "" }
 
 export default function TutoresPage() {
+  const router = useRouter()
   const [tutores, setTutores] = useState<any[]>([])
   const [busqueda, setBusqueda] = useState("")
   const [cargando, setCargando] = useState(false)
@@ -35,7 +36,7 @@ export default function TutoresPage() {
 
   async function cargar() {
     setCargando(true)
-    const { data } = await supabase.from("clientes").select("id, nombre, apellido, telefono, email, localidad, pacientes(nombre)").order("nombre")
+    const { data } = await supabase.from("clientes").select("id, nombre, apellido, telefono, email, localidad, created_at, pacientes(nombre)").order("nombre")
     setTutores(data || [])
     setCargando(false)
   }
@@ -116,7 +117,10 @@ export default function TutoresPage() {
             const nombreCompleto = `${t.nombre || ""} ${t.apellido || ""}`.trim()
             const inicial = (t.nombre || "?").charAt(0).toUpperCase()
             return (
-              <div key={t.id} className="card-row" style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 14, padding: "14px 18px", boxShadow: "0 1px 4px rgba(0,0,0,0.04)", display: "flex", alignItems: "center", gap: 14 }}>
+              <div key={t.id} className="card-row" onClick={() => router.push(`/pacientes?tutor=${t.id}`)} title="Ver mascotas de este tutor"
+                style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 14, padding: "14px 18px", boxShadow: "0 1px 4px rgba(0,0,0,0.04)", display: "flex", alignItems: "center", gap: 14, cursor: "pointer", transition: "box-shadow .15s, transform .15s" }}
+                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = "0 4px 14px rgba(0,0,0,0.08)"; (e.currentTarget as HTMLDivElement).style.transform = "translateY(-1px)" }}
+                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = "0 1px 4px rgba(0,0,0,0.04)"; (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)" }}>
                 <div style={{ width: 44, height: 44, borderRadius: "50%", background: "#eef0e0", color: "#4b5a2c", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 18, flexShrink: 0 }}>{inicial}</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
@@ -135,11 +139,14 @@ export default function TutoresPage() {
                     {t.localidad && <span>📍 {t.localidad}</span>}
                     {!t.telefono && !t.email && !t.localidad && <span style={{ color: "#cbd5e1", fontStyle: "italic" }}>Sin datos de contacto</span>}
                   </div>
+                  <div style={{ fontSize: 11.5, color: "#94a3b8", marginTop: 4 }}>
+                    {mascotas.length} mascota{mascotas.length !== 1 ? "s" : ""}{t.created_at ? ` · alta ${new Date(t.created_at).toLocaleDateString("es-AR")}` : ""}
+                  </div>
                 </div>
                 <div className="card-actions" style={{ display: "flex", gap: 6, flexShrink: 0 }}>
-                  <Link href={`/pacientes`} title="Ver pacientes" style={{ background: "#f4f2e6", border: "1px solid #e6e8cf", borderRadius: 7, padding: "6px 10px", cursor: "pointer", fontSize: 13, color: "#6f7d49", textDecoration: "none" }}>🐾</Link>
-                  <button onClick={() => abrirEditar(t)} title="Editar" style={{ background: "#f1f5f9", border: "1px solid #e2e8f0", borderRadius: 7, padding: "6px 10px", cursor: "pointer", fontSize: 13, color: "#475569" }}>✎</button>
-                  <button onClick={() => setConfirmEliminar(t)} title="Eliminar" style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 7, padding: "6px 10px", cursor: "pointer", fontSize: 13, color: "#dc2626" }}>🗑</button>
+                  <button onClick={e => { e.stopPropagation(); router.push(`/pacientes?tutor=${t.id}`) }} title="Ver pacientes" style={{ background: "#f4f2e6", border: "1px solid #e6e8cf", borderRadius: 7, padding: "6px 10px", cursor: "pointer", fontSize: 13, color: "#6f7d49" }}>🐾</button>
+                  <button onClick={e => { e.stopPropagation(); abrirEditar(t) }} title="Editar" style={{ background: "#f1f5f9", border: "1px solid #e2e8f0", borderRadius: 7, padding: "6px 10px", cursor: "pointer", fontSize: 13, color: "#475569" }}>✎</button>
+                  <button onClick={e => { e.stopPropagation(); setConfirmEliminar(t) }} title="Eliminar" style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 7, padding: "6px 10px", cursor: "pointer", fontSize: 13, color: "#dc2626" }}>🗑</button>
                 </div>
               </div>
             )

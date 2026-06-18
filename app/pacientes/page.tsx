@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import Link from "next/link"
 import { supabase } from "@/lib/supabase"
 import ComboBox from "@/components/ComboBox"
@@ -66,6 +66,33 @@ export default function PacientesPage() {
   const [guardando, setGuardando] = useState(false)
   const [confirmEliminar, setConfirmEliminar] = useState<any>(null)
   const [conCobro, setConCobro] = useState<Set<number>>(new Set())
+  const [subiendoFoto, setSubiendoFoto] = useState<number | null>(null)
+  const [filtroTutor, setFiltroTutor] = useState<string | null>(null)
+  const inputFotoRef = useRef<HTMLInputElement>(null)
+  const pacienteFotoRef = useRef<number | null>(null)
+
+  // Si se llega con ?tutor=<id> (desde Tutores), filtrar a sus mascotas
+  useEffect(() => {
+    const t = new URLSearchParams(window.location.search).get("tutor")
+    if (t) setFiltroTutor(t)
+  }, [])
+
+  function abrirSelectorFoto(id: number) { pacienteFotoRef.current = id; inputFotoRef.current?.click() }
+  async function subirFoto(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file || !pacienteFotoRef.current) return
+    const id = pacienteFotoRef.current; e.target.value = ""
+    const ext = file.name.split(".").pop()
+    setSubiendoFoto(id)
+    const { error: upErr } = await supabase.storage.from("pacientes").upload(`${id}.${ext}`, file, { upsert: true })
+    if (upErr) { mostrar("Error subiendo la foto", "error"); setSubiendoFoto(null); return }
+    const { data: urlData } = supabase.storage.from("pacientes").getPublicUrl(`${id}.${ext}`)
+    const url = urlData.publicUrl + "?t=" + Date.now()
+    const { error: updErr } = await supabase.from("pacientes").update({ imagen_url: url }).eq("id", id)
+    if (updErr) mostrar("Error guardando la foto", "error")
+    else { mostrar("Foto actualizada", "ok"); setPacientes(prev => prev.map(p => p.id === id ? { ...p, imagen_url: url } : p)) }
+    setSubiendoFoto(null)
+  }
 
   function mostrar(m: string, t: "ok" | "error") { setToast({ mensaje: m, tipo: t }); setTimeout(() => setToast(null), 3000) }
 
@@ -131,15 +158,31 @@ export default function PacientesPage() {
   }
 
   const filtrados = pacientes.filter(p => {
+    if (filtroTutor && String(p.cliente_id) !== filtroTutor) return false
     const q = busqueda.toLowerCase()
     const dueño = p.clientes ? `${p.clientes.nombre || ""} ${p.clientes.apellido || ""}` : ""
     return p.nombre?.toLowerCase().includes(q) || p.especie?.toLowerCase().includes(q) ||
       p.raza?.toLowerCase().includes(q) || dueño.toLowerCase().includes(q)
   })
 
+  const tutorFiltrado = filtroTutor ? clientes.find(c => String(c.id) === filtroTutor) : null
+  function limpiarFiltroTutor() {
+    setFiltroTutor(null)
+    window.history.replaceState(null, "", "/pacientes")
+  }
+
   return (
     <div>
       {toast && <Toast mensaje={toast.mensaje} tipo={toast.tipo} />}
+      <input ref={inputFotoRef} type="file" accept=".jpg,.jpeg,.webp,.png" style={{ display: "none" }} onChange={subirFoto} />
+
+      {/* Banner: filtrando por tutor */}
+      {tutorFiltrado && (
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, background: "#f4f2e6", border: "1px solid #e6e8cf", borderRadius: 10, padding: "10px 14px", marginBottom: 14, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 13.5, color: "#4b5a2c", fontWeight: 700 }}>🐾 Mostrando mascotas de {`${tutorFiltrado.nombre || ""} ${tutorFiltrado.apellido || ""}`.trim()}</span>
+          <button onClick={limpiarFiltroTutor} style={{ background: "white", border: "1px solid #e6e8cf", borderRadius: 8, padding: "5px 12px", fontSize: 12.5, fontWeight: 700, color: "#6f7d49", cursor: "pointer" }}>Ver todos ✕</button>
+        </div>
+      )}
 
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 18, flexWrap: "wrap" }}>
@@ -166,8 +209,16 @@ export default function PacientesPage() {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))", gap: 14 }}>
           {filtrados.map(p => (
             <div key={p.id} style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 14, padding: "16px 18px", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
-                <div style={{ minWidth: 0 }}>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 8 }}>
+                <div onClick={() => abrirSelectorFoto(p.id)} title="Agregar / cambiar foto"
+                  style={{ width: 52, height: 52, flexShrink: 0, borderRadius: 10, overflow: "hidden", border: "1px solid #e2e8f0", cursor: "pointer", background: "#f9fafb", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  {subiendoFoto === p.id
+                    ? <span style={{ fontSize: 10, color: "#9ca3af" }}>…</span>
+                    : p.imagen_url
+                      ? <img src={p.imagen_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      : <span style={{ fontSize: 24 }}>{emojiEsp(p.especie)}</span>}
+                </div>
+                <div style={{ minWidth: 0, flex: 1 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                     <Link href={`/pacientes/${p.id}`} title="Ver ficha completa" style={{ fontWeight: 700, fontSize: 16, color: "#4b5a2c", textDecoration: "none" }}>
                       <span>{emojiEsp(p.especie)}</span> {p.nombre}
