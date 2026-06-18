@@ -40,7 +40,10 @@ function fechaCorta(f: string | null) {
 const labelStyle: React.CSSProperties = { display: "block", fontSize: 11, fontWeight: 700, color: "#64748b", letterSpacing: 0.4, marginBottom: 5, textTransform: "uppercase" }
 const inputStyle: React.CSSProperties = { width: "100%", padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 9, fontSize: 14, color: "#1d1b12", outline: "none", boxSizing: "border-box", background: "white" }
 
-const formVacio = () => ({ paciente_id: "", fecha: hoyISO(), motivo: "", diagnostico: "", tratamiento: "", peso: "", temperatura: "", notas: "", para_cobrar: "" })
+const formVacio = () => ({ paciente_id: "", fecha: hoyISO(), motivo: "", diagnostico: "", tratamiento: "", peso: "", temperatura: "", notas: "", para_cobrar: "", cobrarItems: [] as any[] })
+function resumenItems(items: any[]): string {
+  return (items || []).filter(i => i.producto_id).map(i => `${i.cantidad > 1 ? i.cantidad + "x " : ""}${i.nombre}`).join(", ")
+}
 
 export default function ConsultasPage() {
   const [consultas, setConsultas] = useState<any[]>([])
@@ -48,6 +51,7 @@ export default function ConsultasPage() {
   const [filtroPaciente, setFiltroPaciente] = useState("")
   const [busqueda, setBusqueda] = useState("")
   const [filtroFecha, setFiltroFecha] = useState(hoyISO()) // por defecto, las consultas de hoy
+  const [filtroTipo, setFiltroTipo] = useState<"todos" | "consulta" | "estudio" | "sanidad">("todos")
   const [cargando, setCargando] = useState(false)
   const [toast, setToast] = useState<any>(null)
   const [modal, setModal] = useState(false)
@@ -58,6 +62,8 @@ export default function ConsultasPage() {
   const [estudios, setEstudios] = useState<any[]>([])
   const [sanidad, setSanidad] = useState<any[]>([])
   const [orgId, setOrgId] = useState<string | null>(null)
+  const [productosCat, setProductosCat] = useState<any[]>([])
+  const [cobrarSel, setCobrarSel] = useState("")
   const [modalEst, setModalEst] = useState(false)
   const [formEst, setFormEst] = useState<any>({ paciente_id: "", titulo: "", tipo: "Ecografía" })
   const [archivoEst, setArchivoEst] = useState<File | null>(null)
@@ -83,6 +89,8 @@ export default function ConsultasPage() {
     setEstudios(est || [])
     setSanidad(san || [])
     setOrgId((org as any)?.id ?? null)
+    const { data: prods } = await supabase.from("productos").select("id, nombre, precio_venta, es_servicio").order("nombre")
+    setProductosCat(prods || [])
     setCargando(false)
   }
   useEffect(() => {
@@ -93,23 +101,44 @@ export default function ConsultasPage() {
   }, [])
 
   function abrirNueva() {
-    setEditId(null)
+    setEditId(null); setCobrarSel("")
     setForm({ ...formVacio(), paciente_id: filtroPaciente || "" })
     setModal(true)
   }
   function abrirEditar(c: any) {
-    setEditId(c.id)
+    setEditId(c.id); setCobrarSel("")
     setForm({
       paciente_id: String(c.paciente_id), fecha: c.fecha || hoyISO(),
       motivo: c.motivo || "", diagnostico: c.diagnostico || "", tratamiento: c.tratamiento || "",
       peso: c.peso ?? "", temperatura: c.temperatura ?? "", notas: c.notas || "", para_cobrar: c.para_cobrar || "",
+      cobrarItems: Array.isArray(c.cobrar_items) ? c.cobrar_items : [],
     })
     setModal(true)
+  }
+
+  function agregarCobrarItem() {
+    const p = productosCat.find(x => String(x.id) === cobrarSel)
+    if (!p) return
+    setForm((f: any) => {
+      const ex = f.cobrarItems.find((i: any) => i.producto_id === p.id)
+      const items = ex
+        ? f.cobrarItems.map((i: any) => i.producto_id === p.id ? { ...i, cantidad: i.cantidad + 1 } : i)
+        : [...f.cobrarItems, { producto_id: p.id, nombre: p.nombre, precio: p.precio_venta, cantidad: 1 }]
+      return { ...f, cobrarItems: items, para_cobrar: resumenItems(items) }
+    })
+    setCobrarSel("")
+  }
+  function setCobrarCant(pid: number, cant: number) {
+    setForm((f: any) => { const items = f.cobrarItems.map((i: any) => i.producto_id === pid ? { ...i, cantidad: Math.max(1, cant) } : i); return { ...f, cobrarItems: items, para_cobrar: resumenItems(items) } })
+  }
+  function quitarCobrarItem(pid: number) {
+    setForm((f: any) => { const items = f.cobrarItems.filter((i: any) => i.producto_id !== pid); return { ...f, cobrarItems: items, para_cobrar: resumenItems(items) } })
   }
 
   async function guardar() {
     if (!form.paciente_id) { mostrar("Elegí el paciente", "error"); return }
     setGuardando(true)
+    const items = form.cobrarItems || []
     const payload = {
       paciente_id: Number(form.paciente_id), fecha: form.fecha || hoyISO(),
       motivo: form.motivo.trim() || null, diagnostico: form.diagnostico.trim() || null,
@@ -117,7 +146,8 @@ export default function ConsultasPage() {
       peso: form.peso === "" ? null : Number(form.peso),
       temperatura: form.temperatura === "" ? null : Number(form.temperatura),
       notas: form.notas.trim() || null,
-      para_cobrar: form.para_cobrar.trim() || null,
+      para_cobrar: (items.length ? resumenItems(items) : form.para_cobrar.trim()) || null,
+      cobrar_items: items.length ? items : null,
     }
     try {
       if (editId) {
@@ -193,8 +223,10 @@ export default function ConsultasPage() {
     ...estudios.map(e => ({ kind: "estudio", id: "e" + e.id, fecha: (e.created_at || "").slice(0, 10), paciente_id: e.paciente_id, data: e })),
     ...sanidad.map(s => ({ kind: "sanidad", id: "s" + s.id, fecha: s.fecha_aplicacion || s.fecha, paciente_id: s.paciente_id, data: s })),
   ].filter(ev => {
-    if (filtroFecha && ev.fecha !== filtroFecha) return false
+    // Si hay un paciente elegido, mostramos TODO su historial (ignora la fecha)
+    if (filtroFecha && !filtroPaciente && ev.fecha !== filtroFecha) return false
     if (filtroPaciente && String(ev.paciente_id) !== filtroPaciente) return false
+    if (filtroTipo !== "todos" && ev.kind !== filtroTipo) return false
     const pac = ev.data.pacientes
     const nombrePac = pac?.nombre || ""
     const tutor = pac?.clientes ? `${pac.clientes.nombre || ""} ${pac.clientes.apellido || ""}` : ""
@@ -230,9 +262,15 @@ export default function ConsultasPage() {
         </div>
       </div>
 
+      <div style={{ display: "flex", gap: 6, marginBottom: 14, flexWrap: "wrap" }}>
+        {([["todos", "Todos"], ["consulta", "📋 Consultas"], ["estudio", "📎 Estudios"], ["sanidad", "💉 Sanidad"]] as const).map(([k, lab]) => (
+          <button key={k} onClick={() => setFiltroTipo(k)} style={{ border: `1px solid ${filtroTipo === k ? "#6f7d49" : "#e2e8f0"}`, background: filtroTipo === k ? "#eef0e0" : "white", color: filtroTipo === k ? "#4b5a2c" : "#64748b", borderRadius: 8, padding: "6px 13px", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>{lab}</button>
+        ))}
+      </div>
+
       {pacienteFiltrado && (
         <div style={{ background: "#f4f2e6", border: "1px solid #e6e8cf", borderRadius: 10, padding: "10px 16px", marginBottom: 16, fontSize: 13.5, color: "#4b5a2c", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span>📋 Historia clínica de <b>{pacienteFiltrado.nombre}</b> — {eventos.length} registro(s)</span>
+          <span>📋 Historia clínica de <b>{pacienteFiltrado.nombre}</b> — {eventos.length} registro(s) (historial completo)</span>
           <button onClick={() => setFiltroPaciente("")} style={{ background: "transparent", border: "none", color: "#6f7d49", cursor: "pointer", fontWeight: 700, fontSize: 13 }}>Ver todas ✕</button>
         </div>
       )}
@@ -306,7 +344,7 @@ export default function ConsultasPage() {
                       </div>
                       <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
                         {!c.cobrado && c.pacientes?.cliente_id && (
-                          <Link href={`/ventas?cliente=${c.pacientes.cliente_id}&cobrar=${encodeURIComponent(c.para_cobrar)}`}
+                          <Link href={`/ventas?cliente=${c.pacientes.cliente_id}&consulta=${c.id}&cobrar=${encodeURIComponent(c.para_cobrar)}`}
                             title="Cobrar en Ventas (abre con el tutor cargado)"
                             style={{ background: "#1d1b12", color: "white", borderRadius: 7, padding: "5px 12px", fontSize: 12, fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap" }}>Cobrar →</Link>
                         )}
@@ -365,9 +403,29 @@ export default function ConsultasPage() {
                 <label style={labelStyle}>Tratamiento</label>
                 <textarea value={form.tratamiento} onChange={e => setForm({ ...form, tratamiento: e.target.value })} rows={2} style={{ ...inputStyle, resize: "vertical" }} />
               </div>
-              <div style={{ gridColumn: "1 / -1" }}>
-                <label style={{ ...labelStyle, color: "#b45309" }}>💲 Para cobrar (lo ve recepción)</label>
-                <textarea value={form.para_cobrar} onChange={e => setForm({ ...form, para_cobrar: e.target.value })} rows={2} placeholder="Ej: Consulta + inyectable + medicación X" style={{ ...inputStyle, resize: "vertical", background: "#fffbeb", borderColor: "#fde68a" }} />
+              <div style={{ gridColumn: "1 / -1", background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 10, padding: "12px 14px" }}>
+                <label style={{ ...labelStyle, color: "#b45309" }}>💲 Para cobrar (recepción lo pasa a la venta sin tipear)</label>
+                <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+                  <select value={cobrarSel} onChange={e => setCobrarSel(e.target.value)} style={{ ...inputStyle, flex: 1 }}>
+                    <option value="">+ Agregar producto / servicio…</option>
+                    {productosCat.map(p => <option key={p.id} value={p.id}>{p.nombre}{p.es_servicio ? " (servicio)" : ""} — ${Math.round(p.precio_venta).toLocaleString("es-AR")}</option>)}
+                  </select>
+                  <button type="button" onClick={agregarCobrarItem} disabled={!cobrarSel} style={{ background: "#b45309", color: "white", border: "none", borderRadius: 9, padding: "0 16px", fontSize: 14, fontWeight: 700, cursor: cobrarSel ? "pointer" : "default", opacity: cobrarSel ? 1 : 0.5 }}>Agregar</button>
+                </div>
+                {form.cobrarItems.length > 0 ? (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 10 }}>
+                    {form.cobrarItems.map((it: any) => (
+                      <div key={it.producto_id} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, background: "white", border: "1px solid #fde68a", borderRadius: 8, padding: "6px 10px" }}>
+                        <span style={{ flex: 1, minWidth: 0, color: "#1d1b12", fontWeight: 600 }}>{it.nombre}</span>
+                        <span style={{ color: "#94a3b8", fontSize: 12 }}>${Math.round(it.precio).toLocaleString("es-AR")}</span>
+                        <input type="number" min={1} value={it.cantidad} onChange={e => setCobrarCant(it.producto_id, Number(e.target.value))} style={{ width: 56, padding: "5px 8px", border: "1px solid #e2e8f0", borderRadius: 7, fontSize: 13, textAlign: "center" }} />
+                        <button type="button" onClick={() => quitarCobrarItem(it.producto_id)} style={{ background: "#fef2f2", border: "1px solid #fecaca", color: "#dc2626", borderRadius: 7, padding: "4px 9px", cursor: "pointer", fontSize: 12 }}>✕</button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ fontSize: 11.5, color: "#94a3b8", marginTop: 8 }}>Elegí los productos/servicios usados. Recepción los cobra con un clic, sin tipear.</div>
+                )}
               </div>
               <div>
                 <label style={labelStyle}>Peso (kg)</label>

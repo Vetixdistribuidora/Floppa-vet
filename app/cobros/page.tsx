@@ -91,7 +91,7 @@ export default function CobrosPage() {
                 </div>
                 <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
                   {!c.cobrado && c.pacientes?.cliente_id && (
-                    <Link href={`/ventas?cliente=${c.pacientes.cliente_id}&cobrar=${encodeURIComponent(c.para_cobrar)}`}
+                    <Link href={`/ventas?cliente=${c.pacientes.cliente_id}&consulta=${c.id}&cobrar=${encodeURIComponent(c.para_cobrar)}`}
                       style={{ background: "#1d1b12", color: "white", borderRadius: 8, padding: "8px 14px", fontSize: 13, fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap" }}>Cobrar →</Link>
                   )}
                   {!c.cobrado

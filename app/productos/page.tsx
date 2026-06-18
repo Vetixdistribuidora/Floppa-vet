@@ -235,6 +235,7 @@ export default function Productos() {
   const [colLaboratorio, setColLaboratorio] = useState("")
   const [colCategoria, setColCategoria] = useState("")
   const [esVet, setEsVet] = useState(false)
+  const [esServicio, setEsServicio] = useState(false)
   const [rawRows, setRawRows] = useState<any[]>([])
   const [laboratorio, setLaboratorio] = useState("")
   const [fleteProducto, setFleteProducto] = useState("")
@@ -328,19 +329,18 @@ export default function Productos() {
 
   async function exportarStock() {
     const XLSX = await import("xlsx")
-    const data = productos.map(p => ({
+    const data = productosFiltrados.map(p => ({
       "Nombre": p.nombre,
       "Laboratorio": p.laboratorio || "",
+      "Categoría": p.categoria || "",
       "Precio Neto ($)": p.costo,
-      "IVA (%)": p.margen,
-      "Flete (%)": p.flete ?? 0,
-      "Costo ($)": p.costo,
+      "Margen (%)": p.margen,
       "Precio Venta ($)": p.precio_venta,
-      "Stock (u.)": p.stock,
-      "Capital ($)": Math.round(p.precio_venta * p.stock * 100) / 100,
+      "Stock (u.)": p.es_servicio ? "servicio" : p.stock,
+      "Capital ($)": p.es_servicio ? 0 : Math.round(p.precio_venta * (p.stock || 0) * 100) / 100,
     }))
     const ws = XLSX.utils.json_to_sheet(data)
-    ws["!cols"] = [{ wch: 40 }, { wch: 22 }, { wch: 14 }, { wch: 10 }, { wch: 10 }, { wch: 14 }, { wch: 16 }, { wch: 12 }, { wch: 14 }]
+    ws["!cols"] = [{ wch: 40 }, { wch: 22 }, { wch: 18 }, { wch: 14 }, { wch: 11 }, { wch: 16 }, { wch: 12 }, { wch: 14 }]
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, "Stock")
     XLSX.writeFile(wb, `stock_${new Date().toISOString().slice(0, 10)}.xlsx`)
@@ -348,13 +348,14 @@ export default function Productos() {
 
   async function exportarListaPrecios() {
     const XLSX = await import("xlsx")
-    const data = productos.filter(p => p.stock > 0).map(p => ({
+    const data = productosFiltrados.map(p => ({
       "Producto": p.nombre,
-      "Precio Vet. ($)": Math.round(p.precio_venta * 1.30 * 100) / 100,
-      "Precio Prod. ($)": Math.round(p.precio_venta * 1.58 * 100) / 100,
+      "Laboratorio": p.laboratorio || "",
+      "Categoría": p.categoria || "",
+      "Precio ($)": p.precio_venta,
     }))
     const ws = XLSX.utils.json_to_sheet(data)
-    ws["!cols"] = [{ wch: 45 }, { wch: 16 }, { wch: 16 }]
+    ws["!cols"] = [{ wch: 45 }, { wch: 22 }, { wch: 18 }, { wch: 14 }]
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, "Lista de Precios")
     XLSX.writeFile(wb, `lista_precios_${new Date().toISOString().slice(0, 10)}.xlsx`)
@@ -367,7 +368,7 @@ export default function Productos() {
       // Luego el while loop sigue pidiendo el resto de productos mientras lotes ya está listo
       const [primeraPageData, lotesData] = await Promise.all([
         supabase.from("productos")
-          .select("id, nombre, costo, margen, flete, perdida, precio_venta, stock, categoria, laboratorio, imagen_url")
+          .select("id, nombre, costo, margen, flete, perdida, precio_venta, stock, categoria, laboratorio, imagen_url, es_servicio")
           .order("nombre")
           .range(0, 999)
           .then(r => r.data || []),
@@ -384,7 +385,7 @@ export default function Productos() {
       while (primeraPageData.length === 1000) {
         const { data } = await supabase
           .from("productos")
-          .select("id, nombre, costo, margen, flete, perdida, precio_venta, stock, categoria, laboratorio, imagen_url")
+          .select("id, nombre, costo, margen, flete, perdida, precio_venta, stock, categoria, laboratorio, imagen_url, es_servicio")
           .order("nombre")
           .range(desde, desde + 999)
         if (!data?.length) break
@@ -453,8 +454,8 @@ export default function Productos() {
   }, [mostrarAgregar])
 
   async function agregar() {
-    if (!nombre.trim() || costo === "" || margen === "" || stock === "") { mostrarToast("⚠️ Completá todos los campos", "error"); return }
-    if (Number(stock) < 0) { mostrarToast("⚠️ El stock no puede ser negativo", "error"); return }
+    if (!nombre.trim() || costo === "" || margen === "" || (stock === "" && !esServicio)) { mostrarToast("⚠️ Completá todos los campos", "error"); return }
+    if (!esServicio && Number(stock) < 0) { mostrarToast("⚠️ El stock no puede ser negativo", "error"); return }
     if (Number(costo) < 0) { mostrarToast("⚠️ El precio neto no puede ser negativo", "error"); return }
     setGuardandoAgregar(true)
     try {
@@ -463,7 +464,7 @@ export default function Productos() {
       const fleteNum   = Number(fleteProducto) || 0
       const perdidaNum = Number(perdidaProducto) || 0
       const precioVenta = Math.round(costoNum * (1 + ivaNum / 100) * (1 + fleteNum / 100) * (1 + perdidaNum / 100) * 100) / 100
-      const { data, error } = await supabase.from("productos").insert([{ nombre, costo: costoNum, margen: ivaNum, flete: fleteNum, perdida: perdidaNum, precio_venta: precioVenta, stock: Number(stock), categoria: categoria.trim(), laboratorio: laboratorio.trim() }]).select()
+      const { data, error } = await supabase.from("productos").insert([{ nombre, costo: costoNum, margen: ivaNum, flete: fleteNum, perdida: perdidaNum, precio_venta: precioVenta, stock: esServicio ? 0 : Number(stock), categoria: categoria.trim(), laboratorio: laboratorio.trim(), es_servicio: esServicio }]).select()
       if (error) { mostrarToast("❌ " + error.message, "error"); return }
       supabase.rpc("registrar_auditoria", { accion: "crear", tabla: "productos", registro_id: data?.[0]?.id || 0 }) // fire-and-forget
       mostrarToast("✅ Producto agregado", "ok")
@@ -472,7 +473,7 @@ export default function Productos() {
         setProductos(prev => [...prev, data[0]].sort((a, b) => a.nombre.localeCompare(b.nombre, "es")))
       }
       localStorage.removeItem("floppa_borrador_producto")
-      setNombre(""); setCosto(""); setMargen(""); setFleteProducto(""); setPerdidaProducto(""); setStock(""); setCategoria(""); setLaboratorio("")
+      setNombre(""); setCosto(""); setMargen(""); setFleteProducto(""); setPerdidaProducto(""); setStock(""); setCategoria(""); setLaboratorio(""); setEsServicio(false)
       setMostrarAgregar(false)
     } catch (e: any) {
       mostrarToast("❌ Error: " + (e?.message || "error desconocido"), "error")
@@ -497,7 +498,7 @@ export default function Productos() {
       const stockOriginal = productos.find((p: any) => p.id === productoId)?.stock
       const stockValido = !(e.stock === "" || e.stock == null || isNaN(Number(e.stock)))
       const stockCambiado = stockValido && Number(e.stock) !== Number(stockOriginal ?? NaN)
-      const campos: any = { nombre: e.nombre, costo: costoNum, margen: ivaNum, flete: fleteNum, perdida: perdidaNum, precio_venta: precioVenta, categoria: e.categoria || "", laboratorio: e.laboratorio || "" }
+      const campos: any = { nombre: e.nombre, costo: costoNum, margen: ivaNum, flete: fleteNum, perdida: perdidaNum, precio_venta: precioVenta, categoria: e.categoria || "", laboratorio: e.laboratorio || "", es_servicio: !!e.es_servicio }
       if (stockCambiado) campos.stock = Number(e.stock)
       const { error } = await supabase.from("productos").update(campos).eq("id", productoId)
       if (error) { mostrarToast("❌ " + error.message, "error"); return }
@@ -897,10 +898,14 @@ export default function Productos() {
               style={{ flex: "1 1 90px", minWidth: 0, padding: "10px 14px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", color: "white", fontSize: 13, outline: "none" }} />}
             {!esVet && <input placeholder="% Pérdida" value={perdidaProducto} onChange={e => setPerdidaProducto(e.target.value)} type="number"
               style={{ flex: "1 1 90px", minWidth: 0, padding: "10px 14px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", color: "white", fontSize: 13, outline: "none" }} />}
-            <input placeholder="Stock" value={stock} onChange={e => setStock(e.target.value)} type="number"
-              style={{ flex: "1 1 90px", minWidth: 0, padding: "10px 14px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", color: "white", fontSize: 13, outline: "none" }} />
+            {!esServicio && <input placeholder="Stock" value={stock} onChange={e => setStock(e.target.value)} type="number"
+              style={{ flex: "1 1 90px", minWidth: 0, padding: "10px 14px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", color: "white", fontSize: 13, outline: "none" }} />}
             <input placeholder="Categoría" value={categoria} onChange={e => setCategoria(e.target.value)} type="text"
               style={{ flex: "2 1 130px", minWidth: 0, padding: "10px 14px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", color: "white", fontSize: 13, outline: "none" }} />
+            <label style={{ display: "flex", alignItems: "center", gap: 6, color: "#cbd5e1", fontSize: 12.5, fontWeight: 600, cursor: "pointer", flex: "1 1 140px", whiteSpace: "nowrap" }}>
+              <input type="checkbox" checked={esServicio} onChange={e => setEsServicio(e.target.checked)} style={{ width: 16, height: 16, accentColor: "#6f7d49", cursor: "pointer" }} />
+              Servicio (sin stock)
+            </label>
             <button onClick={agregar} style={{ ...btnPrimario, flexShrink: 0 }}>Guardar</button>
           </div>
         </div>
@@ -1150,6 +1155,10 @@ export default function Productos() {
                         style={inputStyle} />
                     </div>
                   </div>
+                  <label style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 12, color: "#cbd5e1", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+                    <input type="checkbox" checked={!!ep?.es_servicio} onChange={ev => setEditando(prev => ({ ...prev, [p.id]: { ...prev[p.id], es_servicio: ev.target.checked } }))} style={{ width: 16, height: 16, accentColor: "#6f7d49", cursor: "pointer" }} />
+                    Servicio (no controla stock · ej. Consulta, Inyectable)
+                  </label>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 14, flexWrap: "wrap", gap: 10 }}>
                     <span style={{ color: "#a8b67d", fontSize: 13 }}>
                       💵 Precio de venta: <b style={{ color: "white" }}>{formatearPrecio(precioEstimado)}</b>
@@ -1193,7 +1202,9 @@ export default function Productos() {
                             {p.categoria}
                           </span>
                         )}
-                        {(p.stock == null || p.stock === 0) ? (
+                        {p.es_servicio ? (
+                          <span style={{ background: "#eef2ff", color: "#4338ca", fontSize: "10px", fontWeight: "700", padding: "1px 6px", borderRadius: "5px", border: "1px solid #c7d2fe" }}>🩺 Servicio</span>
+                        ) : (p.stock == null || p.stock === 0) ? (
                           <span style={{ background: "#fef2f2", color: "#dc2626", fontSize: "10px", fontWeight: "700", padding: "1px 6px", borderRadius: "5px", border: "1px solid #fecaca" }}>🚫 Sin stock</span>
                         ) : p.stock <= 5 ? (
                           <span style={{ background: "#fff3cd", color: "#92400e", fontSize: "10px", fontWeight: "600", padding: "1px 6px", borderRadius: "5px", border: "1px solid #fbbf24" }}>⚠️ Stock bajo</span>
@@ -1225,7 +1236,7 @@ export default function Productos() {
                           </>
                         )}
                         <span style={{ color: "#d1d5db" }}>·</span>
-                        <span>Stock: <b style={{ color: p.stock === 0 ? "#dc2626" : p.stock <= 5 ? "#92400e" : "#374151" }}>{p.stock}</b></span>
+                        {p.es_servicio ? <span style={{ color: "#4338ca" }}>🩺 Servicio</span> : <span>Stock: <b style={{ color: p.stock === 0 ? "#dc2626" : p.stock <= 5 ? "#92400e" : "#374151" }}>{p.stock}</b></span>}
                       </div>
                     </div>
 

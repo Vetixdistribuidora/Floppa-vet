@@ -201,6 +201,29 @@ export default function Ventas() {
     if (cid || cobrar) preselCobroRef.current = true
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clientes])
+
+  // Precargar el carrito con los productos elegidos en la consulta (?consulta=ID)
+  const preselConsultaRef = useRef(false)
+  useEffect(() => {
+    if (preselConsultaRef.current) return
+    const cid = new URLSearchParams(window.location.search).get("consulta")
+    if (!cid) return
+    preselConsultaRef.current = true
+    ;(async () => {
+      const { data: con } = await supabase.from("consultas").select("cobrar_items").eq("id", cid).maybeSingle()
+      const items = (con as any)?.cobrar_items
+      if (!Array.isArray(items) || !items.length) return
+      const ids = items.map((i: any) => i.producto_id)
+      const { data: prods } = await supabase.from("productos").select("id, nombre, precio_venta, stock, es_servicio").in("id", ids)
+      const mapa = new Map((prods || []).map((p: any) => [p.id, p]))
+      setCarrito(items.map((it: any) => {
+        const p: any = mapa.get(it.producto_id)
+        return { producto_id: it.producto_id, nombre: it.nombre || p?.nombre || "Producto", cantidad: it.cantidad || 1, precio: p?.precio_venta ?? it.precio ?? 0, bonificacion: 0, descuento: 0, tipoDescuento: "pesos", stockDisponible: p?.es_servicio ? 999999 : (p?.stock ?? 0), es_servicio: !!p?.es_servicio }
+      }))
+      setTab("nueva")
+    })()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
   const [clienteDropdown, setClienteDropdown] = useState(false)
   const [clienteIndice, setClienteIndice] = useState(-1)
   const inputProductoRef = useRef<HTMLInputElement>(null)
@@ -680,7 +703,7 @@ thead th:last-child{text-align:right}
       const [{ data: c }, primeraPageData, { data: ultima }] = await Promise.all([
         supabase.from("clientes").select("*").order("nombre"),
         supabase.from("productos")
-          .select("id, nombre, precio_venta, stock, categoria, laboratorio")
+          .select("id, nombre, precio_venta, stock, categoria, laboratorio, es_servicio")
           .order("nombre")
           .range(0, 999)
           .then(r => r.data || []),
@@ -693,7 +716,7 @@ thead th:last-child{text-align:right}
       while (primeraPageData.length === 1000) {
         const { data } = await supabase
           .from("productos")
-          .select("id, nombre, precio_venta, stock, categoria, laboratorio")
+          .select("id, nombre, precio_venta, stock, categoria, laboratorio, es_servicio")
           .order("nombre")
           .range(desde, desde + 999)
         if (!data?.length) break
@@ -722,7 +745,7 @@ thead th:last-child{text-align:right}
       while (true) {
         const { data } = await supabase
           .from("productos")
-          .select("id, nombre, precio_venta, stock, categoria, laboratorio")
+          .select("id, nombre, precio_venta, stock, categoria, laboratorio, es_servicio")
           .order("nombre")
           .range(desde, desde + 999)
         if (!data?.length) break
@@ -1060,15 +1083,16 @@ thead th:last-child{text-align:right}
     const cant = Number(cantidad)
     const enCarrito = carrito.find(i => i.producto_id === producto.id)
     const cantidadEnCarrito = enCarrito?.cantidad || 0
-    const stockDisponible = producto.stock - cantidadEnCarrito
-    if (cant > stockDisponible) { mostrarToast("Stock insuficiente. Disponible: " + stockDisponible, "error"); return }
+    const stockTope = producto.es_servicio ? 999999 : producto.stock
+    const stockDisponible = stockTope - cantidadEnCarrito
+    if (!producto.es_servicio && cant > stockDisponible) { mostrarToast("Stock insuficiente. Disponible: " + stockDisponible, "error"); return }
     const base = producto.precio_venta
     const porcentaje = clienteSeleccionado?.porcentaje || 0
     const precioFinal = Math.round((base + (base * porcentaje / 100)) * 100) / 100
     if (enCarrito) {
       setCarrito(carrito.map(i => i.producto_id === producto.id ? { ...i, cantidad: i.cantidad + cant } : i))
     } else {
-      setCarrito([...carrito, { producto_id: producto.id, nombre: producto.nombre, cantidad: cant, precio: precioFinal, bonificacion: 0, descuento: 0, tipoDescuento: "pesos", stockDisponible: producto.stock }])
+      setCarrito([...carrito, { producto_id: producto.id, nombre: producto.nombre, cantidad: cant, precio: precioFinal, bonificacion: 0, descuento: 0, tipoDescuento: "pesos", stockDisponible: stockTope, es_servicio: !!producto.es_servicio }])
     }
     setProductoId(""); setBusquedaProducto(""); setCantidad("1")
   }
@@ -1102,7 +1126,7 @@ thead th:last-child{text-align:right}
     if (!clienteId || carrito.length === 0) { mostrarToast("Faltan datos", "error"); return }
     for (const item of carrito) {
       const producto = productos.find(p => p.id === item.producto_id)
-      if (producto && item.cantidad > producto.stock) { mostrarToast("Sin stock para: " + item.nombre, "error"); return }
+      if (producto && !producto.es_servicio && item.cantidad > producto.stock) { mostrarToast("Sin stock para: " + item.nombre, "error"); return }
     }
     setGuardando(true)
     try {
@@ -1157,6 +1181,7 @@ thead th:last-child{text-align:right}
       for (const item of carrito) {
         const producto = productos.find(p => p.id === item.producto_id)
         if (!producto) continue
+        if (producto.es_servicio) continue  // los servicios no descuentan stock
         // Leer el stock FRESCO de la base antes de descontar (evita pisar stock que cambió
         // por una compra u otra venta mientras esta página estaba abierta con datos viejos)
         const { data: prodFresh } = await supabase.from("productos").select("stock").eq("id", item.producto_id).single()
@@ -1385,8 +1410,8 @@ thead th:last-child{text-align:right}
                           onMouseDown={() => { setProductoId(String(p.id)); setBusquedaProducto(p.nombre); setProductoIndice(-1); setTimeout(() => inputCantidadRef.current?.focus(), 50) }}
                           style={{ padding: "9px 14px", cursor: "pointer", fontSize: 13, borderBottom: "1px solid #f1f5f9", display: "flex", justifyContent: "space-between", alignItems: "center", background: idx === productoIndice ? "#f4f2e6" : "white" }}>
                           <span style={{ color: "#111827", fontWeight: 500 }}>{p.nombre}</span>
-                          <span style={{ color: p.stock === 0 ? "#ef4444" : "#6b7280", fontSize: 12, marginLeft: 8, flexShrink: 0 }}>
-                            {p.stock === 0 ? "Sin stock" : `Stock: ${p.stock}`} · ${p.precio_venta?.toLocaleString("es-AR")}
+                          <span style={{ color: p.es_servicio ? "#4338ca" : p.stock === 0 ? "#ef4444" : "#6b7280", fontSize: 12, marginLeft: 8, flexShrink: 0 }}>
+                            {p.es_servicio ? "Servicio" : p.stock === 0 ? "Sin stock" : `Stock: ${p.stock}`} · ${p.precio_venta?.toLocaleString("es-AR")}
                           </span>
                         </div>
                       ))}
