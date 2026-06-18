@@ -7,7 +7,7 @@ import { abrirWhatsApp } from "@/lib/whatsapp"
 import { empresaNombre } from "@/lib/empresa"
 
 const OLIVA = "#6f7d49"
-const TIPOS = ["Vacuna Antirrábica", "Vacuna Quíntuple", "Vacuna Triple", "Vacuna Leucemia Felina", "Desparasitación", "Suministro", "Otro"]
+const TIPOS = ["Vacuna Antirrábica", "Vacuna Quíntuple", "Vacuna Triple", "Vacuna Leucemia Felina", "Desparasitación Interna", "Desparasitación Externa", "Medicación", "Otro"]
 const hoyISO = () => new Date().toISOString().split("T")[0]
 
 function Toast({ mensaje, tipo }: { mensaje: string; tipo: "ok" | "error" }) {
@@ -249,10 +249,6 @@ export default function RecordatoriosPage() {
                 <label style={labelStyle}>Próxima dosis / fecha del recordatorio *</label>
                 <input type="date" value={form.fecha} onChange={e => setForm({ ...form, fecha: e.target.value })} style={inputStyle} />
                 <div style={{ fontSize: 11.5, color: "#94a3b8", marginTop: 5 }}>En esta fecha aparece como recordatorio y se le avisa al tutor.</div>
-              </div>
-              <div style={{ gridColumn: "1 / -1" }}>
-                <label style={labelStyle}>Descripción</label>
-                <input value={form.descripcion} onChange={e => setForm({ ...form, descripcion: e.target.value })} placeholder="Ej: Antirrábica, pipeta antipulgas…" style={inputStyle} />
               </div>
               <div style={{ gridColumn: "1 / -1" }}>
                 <label style={labelStyle}>Notas</label>

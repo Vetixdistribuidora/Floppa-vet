@@ -1,11 +1,23 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import Link from "next/link"
 import { supabase } from "@/lib/supabase"
 
 const OLIVA = "#6f7d49"
 const hoyISO = () => new Date().toISOString().split("T")[0]
+const TIPOS_EST = ["Análisis de sangre", "Análisis de orina", "Ecografía", "Radiografía", "Citología", "Biopsia", "Cultivo", "Raspaje", "Informe", "Certificado", "Otro"]
+const TIPOS_SAN = ["Vacuna Antirrábica", "Vacuna Quíntuple", "Vacuna Triple", "Vacuna Leucemia Felina", "Desparasitación Interna", "Desparasitación Externa", "Medicación", "Otro"]
+function iconoEst(t: string | null, nombre: string | null) {
+  const n = (nombre || "").toLowerCase(), tt = (t || "").toLowerCase()
+  if (n.endsWith(".pdf")) return "📄"
+  if (/\.(jpg|jpeg|png|gif|webp|bmp)$/.test(n)) return "🖼️"
+  if (tt.includes("radio")) return "🩻"
+  if (tt.includes("eco")) return "🖼️"
+  if (tt.includes("citolog") || tt.includes("biopsia") || tt.includes("cultivo") || tt.includes("raspaje")) return "🧫"
+  if (tt.includes("análisis") || tt.includes("analisis")) return "🧪"
+  return "📄"
+}
 
 function Toast({ mensaje, tipo }: { mensaje: string; tipo: "ok" | "error" }) {
   return (
@@ -43,17 +55,34 @@ export default function ConsultasPage() {
   const [form, setForm] = useState<any>(formVacio())
   const [guardando, setGuardando] = useState(false)
   const [confirmEliminar, setConfirmEliminar] = useState<any>(null)
+  const [estudios, setEstudios] = useState<any[]>([])
+  const [sanidad, setSanidad] = useState<any[]>([])
+  const [orgId, setOrgId] = useState<string | null>(null)
+  const [modalEst, setModalEst] = useState(false)
+  const [formEst, setFormEst] = useState<any>({ paciente_id: "", titulo: "", tipo: "Ecografía" })
+  const [archivoEst, setArchivoEst] = useState<File | null>(null)
+  const [subiendoEst, setSubiendoEst] = useState(false)
+  const fileEstRef = useRef<HTMLInputElement>(null)
+  const [modalSan, setModalSan] = useState(false)
+  const [formSan, setFormSan] = useState<any>({ paciente_id: "", tipo: "Vacuna Antirrábica", fecha_aplicacion: hoyISO(), fecha: "", notas: "" })
+  const [guardandoSan, setGuardandoSan] = useState(false)
 
   function mostrar(m: string, t: "ok" | "error") { setToast({ mensaje: m, tipo: t }); setTimeout(() => setToast(null), 3000) }
 
   async function cargar() {
     setCargando(true)
-    const [{ data: con }, { data: pac }] = await Promise.all([
+    const [{ data: con }, { data: pac }, { data: est }, { data: san }, { data: org }] = await Promise.all([
       supabase.from("consultas").select("*, pacientes(nombre, especie, cliente_id, clientes(nombre, apellido))").order("fecha", { ascending: false }),
       supabase.from("pacientes").select("id, nombre, especie, clientes(nombre, apellido)").order("nombre"),
+      supabase.from("estudios").select("*, pacientes(nombre, especie)").order("created_at", { ascending: false }),
+      supabase.from("recordatorios").select("*, pacientes(nombre, especie)").order("fecha", { ascending: false }),
+      supabase.from("organizaciones").select("id").maybeSingle(),
     ])
     setConsultas(con || [])
     setPacientes(pac || [])
+    setEstudios(est || [])
+    setSanidad(san || [])
+    setOrgId((org as any)?.id ?? null)
     setCargando(false)
   }
   useEffect(() => {
@@ -120,16 +149,59 @@ export default function ConsultasPage() {
     setConfirmEliminar(null)
   }
 
-  const filtradas = consultas.filter(c => {
-    if (filtroFecha && c.fecha !== filtroFecha) return false
-    if (filtroPaciente && String(c.paciente_id) !== filtroPaciente) return false
-    if (!busqueda.trim()) return true
-    const q = busqueda.toLowerCase()
-    const pac = c.pacientes
-    const nombrePac = (pac?.nombre || "").toLowerCase()
-    const tutor = pac?.clientes ? `${pac.clientes.nombre || ""} ${pac.clientes.apellido || ""}`.toLowerCase() : ""
-    return nombrePac.includes(q) || tutor.includes(q) || (c.motivo || "").toLowerCase().includes(q)
-  })
+  function abrirEstudioModal() { setFormEst({ paciente_id: filtroPaciente || "", titulo: "", tipo: "Ecografía" }); setArchivoEst(null); if (fileEstRef.current) fileEstRef.current.value = ""; setModalEst(true) }
+  function abrirSanidadModal() { setFormSan({ paciente_id: filtroPaciente || "", tipo: "Vacuna Antirrábica", fecha_aplicacion: hoyISO(), fecha: "", notas: "" }); setModalSan(true) }
+
+  async function descargarEstudio(e: any) {
+    const win = window.open("", "_blank")
+    const { data, error } = await supabase.storage.from("estudios").createSignedUrl(e.archivo_path, 3600)
+    if (error || !data?.signedUrl) { if (win) win.close(); mostrar("No se pudo abrir el archivo", "error"); return }
+    if (win) win.location.href = data.signedUrl; else window.open(data.signedUrl, "_blank")
+  }
+
+  async function subirEstudio() {
+    if (!formEst.paciente_id) { mostrar("Elegí el paciente", "error"); return }
+    if (!archivoEst) { mostrar("Elegí un archivo", "error"); return }
+    if (!orgId) { mostrar("No se pudo identificar la organización", "error"); return }
+    if (archivoEst.size > 25 * 1024 * 1024) { mostrar("El archivo supera los 25 MB", "error"); return }
+    setSubiendoEst(true)
+    try {
+      const safe = archivoEst.name.replace(/[^\w.\-]+/g, "_")
+      const path = `${orgId}/${formEst.paciente_id}/${Date.now()}_${safe}`
+      const { error: upErr } = await supabase.storage.from("estudios").upload(path, archivoEst, { upsert: false })
+      if (upErr) throw upErr
+      const { error: insErr } = await supabase.from("estudios").insert([{ paciente_id: Number(formEst.paciente_id), titulo: formEst.titulo.trim() || archivoEst.name, tipo: formEst.tipo, archivo_path: path, archivo_nombre: archivoEst.name, tamano: archivoEst.size }])
+      if (insErr) { await supabase.storage.from("estudios").remove([path]); throw insErr }
+      mostrar("Estudio agregado", "ok"); setModalEst(false); cargar()
+    } catch (e: any) { mostrar("Error al subir: " + (e?.message || "desconocido"), "error") } finally { setSubiendoEst(false) }
+  }
+
+  async function guardarSanidad() {
+    if (!formSan.paciente_id) { mostrar("Elegí el paciente", "error"); return }
+    setGuardandoSan(true)
+    const payload = { paciente_id: Number(formSan.paciente_id), tipo: formSan.tipo || null, fecha_aplicacion: formSan.fecha_aplicacion || null, fecha: formSan.fecha || formSan.fecha_aplicacion || hoyISO(), notas: formSan.notas.trim() || null }
+    const { error } = await supabase.from("recordatorios").insert([payload])
+    setGuardandoSan(false)
+    if (error) { mostrar("Error: " + error.message, "error"); return }
+    mostrar("Registro de sanidad agregado", "ok"); setModalSan(false); cargar()
+  }
+
+  // Lista unificada: consultas + estudios + sanidad
+  const coincideBusq = (txt: string) => !busqueda.trim() || txt.toLowerCase().includes(busqueda.toLowerCase())
+  const eventos = [
+    ...consultas.map(c => ({ kind: "consulta", id: "c" + c.id, fecha: c.fecha, paciente_id: c.paciente_id, data: c })),
+    ...estudios.map(e => ({ kind: "estudio", id: "e" + e.id, fecha: (e.created_at || "").slice(0, 10), paciente_id: e.paciente_id, data: e })),
+    ...sanidad.map(s => ({ kind: "sanidad", id: "s" + s.id, fecha: s.fecha_aplicacion || s.fecha, paciente_id: s.paciente_id, data: s })),
+  ].filter(ev => {
+    if (filtroFecha && ev.fecha !== filtroFecha) return false
+    if (filtroPaciente && String(ev.paciente_id) !== filtroPaciente) return false
+    const pac = ev.data.pacientes
+    const nombrePac = pac?.nombre || ""
+    const tutor = pac?.clientes ? `${pac.clientes.nombre || ""} ${pac.clientes.apellido || ""}` : ""
+    const extra = ev.kind === "consulta" ? (ev.data.motivo || "") : ev.kind === "estudio" ? (ev.data.titulo || "") + (ev.data.tipo || "") : (ev.data.tipo || "")
+    return coincideBusq(nombrePac) || coincideBusq(tutor) || coincideBusq(extra)
+  }).sort((a, b) => String(b.fecha || "").localeCompare(String(a.fecha || "")))
+
   const pacienteFiltrado = pacientes.find(p => String(p.id) === filtroPaciente)
 
   return (
@@ -151,33 +223,66 @@ export default function ConsultasPage() {
           <option value="">Todos los pacientes</option>
           {pacientes.map(p => <option key={p.id} value={p.id}>{p.nombre}{p.especie ? ` (${p.especie})` : ""}{p.clientes ? ` — ${`${p.clientes.nombre || ""} ${p.clientes.apellido || ""}`.trim()}` : ""}</option>)}
         </select>
-        <button onClick={abrirNueva}
-          style={{ background: OLIVA, color: "white", border: "none", borderRadius: 10, padding: "11px 18px", fontSize: 14, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>
-          + Nueva consulta
-        </button>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <button onClick={abrirSanidadModal} style={{ background: "#fff7ed", color: "#c2410c", border: "1px solid #fed7aa", borderRadius: 10, padding: "11px 14px", fontSize: 13.5, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>+ Sanidad</button>
+          <button onClick={abrirEstudioModal} style={{ background: "#ecfeff", color: "#0891b2", border: "1px solid #a5f3fc", borderRadius: 10, padding: "11px 14px", fontSize: 13.5, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>+ Estudio</button>
+          <button onClick={abrirNueva} style={{ background: OLIVA, color: "white", border: "none", borderRadius: 10, padding: "11px 18px", fontSize: 14, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>+ Consulta</button>
+        </div>
       </div>
 
       {pacienteFiltrado && (
         <div style={{ background: "#f4f2e6", border: "1px solid #e6e8cf", borderRadius: 10, padding: "10px 16px", marginBottom: 16, fontSize: 13.5, color: "#4b5a2c", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span>📋 Historia clínica de <b>{pacienteFiltrado.nombre}</b> — {filtradas.length} consulta(s)</span>
+          <span>📋 Historia clínica de <b>{pacienteFiltrado.nombre}</b> — {eventos.length} registro(s)</span>
           <button onClick={() => setFiltroPaciente("")} style={{ background: "transparent", border: "none", color: "#6f7d49", cursor: "pointer", fontWeight: 700, fontSize: 13 }}>Ver todas ✕</button>
         </div>
       )}
 
       {cargando ? (
         <p style={{ color: "#94a3b8", textAlign: "center", padding: 40 }}>Cargando…</p>
-      ) : filtradas.length === 0 ? (
+      ) : eventos.length === 0 ? (
         <div style={{ textAlign: "center", padding: "60px 20px", color: "#94a3b8" }}>
           <div style={{ fontSize: 40, marginBottom: 12 }}>📋</div>
-          <p style={{ fontWeight: 600, color: "#475569" }}>{consultas.length === 0 ? "Todavía no hay consultas" : "Sin consultas para este paciente"}</p>
+          <p style={{ fontWeight: 600, color: "#475569" }}>Sin registros para este filtro</p>
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          {filtradas.map(c => {
+          {eventos.map(ev => {
+            // ── Estudio ──
+            if (ev.kind === "estudio") {
+              const e = ev.data
+              return (
+                <div key={ev.id} style={{ background: "white", border: "1px solid #e2e8f0", borderLeft: "4px solid #0891b2", borderRadius: 14, padding: "13px 18px", boxShadow: "0 1px 4px rgba(0,0,0,0.04)", display: "flex", alignItems: "center", gap: 12 }}>
+                  <div style={{ fontSize: 26 }}>{iconoEst(e.tipo, e.archivo_nombre)}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 700, fontSize: 14.5, color: "#1d1b12" }}>📎 {e.titulo} <span style={{ fontWeight: 500, color: "#0891b2", fontSize: 12.5 }}>· {e.tipo}</span></div>
+                    <div style={{ fontSize: 12.5, color: "#64748b", marginTop: 2 }}>{e.pacientes?.nombre || "Paciente"} · 🗓 {fechaCorta(ev.fecha)}</div>
+                  </div>
+                  <button onClick={() => descargarEstudio(e)} style={{ background: "#ecfeff", border: "1px solid #a5f3fc", borderRadius: 8, padding: "7px 13px", cursor: "pointer", fontSize: 13, color: "#0891b2", fontWeight: 700, flexShrink: 0 }}>⬇ Abrir</button>
+                </div>
+              )
+            }
+            // ── Sanidad ──
+            if (ev.kind === "sanidad") {
+              const s = ev.data
+              return (
+                <div key={ev.id} style={{ background: "white", border: "1px solid #e2e8f0", borderLeft: "4px solid #f59e0b", borderRadius: 14, padding: "13px 18px", boxShadow: "0 1px 4px rgba(0,0,0,0.04)", display: "flex", alignItems: "center", gap: 12 }}>
+                  <div style={{ fontSize: 26 }}>💉</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 700, fontSize: 14.5, color: "#1d1b12" }}>{s.tipo || "Sanidad"}</div>
+                    <div style={{ fontSize: 12.5, color: "#64748b", marginTop: 2 }}>
+                      {s.pacientes?.nombre || "Paciente"} · 🗓 {fechaCorta(ev.fecha)}{s.fecha ? ` · próxima ${fechaCorta(s.fecha)}` : ""}{s.notas ? ` · ${s.notas}` : ""}
+                    </div>
+                  </div>
+                  <Link href="/recordatorios" style={{ background: "#fff7ed", border: "1px solid #fed7aa", borderRadius: 8, padding: "6px 12px", fontSize: 12.5, color: "#c2410c", fontWeight: 700, textDecoration: "none", flexShrink: 0 }}>Sanidad →</Link>
+                </div>
+              )
+            }
+            // ── Consulta ──
+            const c = ev.data
             const pac = c.pacientes
             const dueño = pac?.clientes ? `${pac.clientes.nombre || ""} ${pac.clientes.apellido || ""}`.trim() : ""
             return (
-              <div key={c.id} style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 14, padding: "16px 18px", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
+              <div key={ev.id} style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 14, padding: "16px 18px", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10, gap: 10 }}>
                   <div>
                     <div style={{ fontWeight: 700, fontSize: 15, color: "#1d1b12" }}>
@@ -282,6 +387,83 @@ export default function ConsultasPage() {
               <button onClick={guardar} disabled={guardando} style={{ background: OLIVA, border: "none", borderRadius: 9, padding: "10px 22px", fontSize: 14, fontWeight: 700, color: "white", cursor: guardando ? "not-allowed" : "pointer" }}>
                 {guardando ? "Guardando…" : "Guardar"}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal subir estudio */}
+      {modalEst && (
+        <div onClick={() => setModalEst(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 }}>
+          <div onClick={ev => ev.stopPropagation()} style={{ background: "white", borderRadius: 18, padding: "26px 28px", width: "100%", maxWidth: 480 }}>
+            <h2 style={{ margin: "0 0 18px", fontSize: 19, fontWeight: 800, color: "#1d1b12" }}>📎 Agregar estudio</h2>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+              <div style={{ gridColumn: "1 / -1" }}>
+                <label style={labelStyle}>Paciente *</label>
+                <select value={formEst.paciente_id} onChange={e => setFormEst({ ...formEst, paciente_id: e.target.value })} style={inputStyle}>
+                  <option value="">— Elegir —</option>
+                  {pacientes.map(p => <option key={p.id} value={p.id}>{p.nombre}{p.especie ? ` (${p.especie})` : ""}{p.clientes ? ` — ${`${p.clientes.nombre || ""} ${p.clientes.apellido || ""}`.trim()}` : ""}</option>)}
+                </select>
+              </div>
+              <div>
+                <label style={labelStyle}>Tipo</label>
+                <select value={formEst.tipo} onChange={e => setFormEst({ ...formEst, tipo: e.target.value })} style={inputStyle}>
+                  {TIPOS_EST.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </div>
+              <div>
+                <label style={labelStyle}>Título</label>
+                <input value={formEst.titulo} onChange={e => setFormEst({ ...formEst, titulo: e.target.value })} placeholder="Opcional" style={inputStyle} />
+              </div>
+              <div style={{ gridColumn: "1 / -1" }}>
+                <label style={labelStyle}>Archivo *</label>
+                <input ref={fileEstRef} type="file" onChange={e => setArchivoEst(e.target.files?.[0] || null)} accept=".pdf,.jpg,.jpeg,.png,.webp,.gif,.doc,.docx,.xls,.xlsx,.dcm" style={{ ...inputStyle, padding: "8px 10px" }} />
+                <div style={{ fontSize: 11.5, color: "#94a3b8", marginTop: 5 }}>PDF, imágenes, documentos… hasta 25 MB.</div>
+              </div>
+            </div>
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 22 }}>
+              <button onClick={() => setModalEst(false)} style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 9, padding: "10px 18px", fontSize: 14, fontWeight: 600, color: "#475569", cursor: "pointer" }}>Cancelar</button>
+              <button onClick={subirEstudio} disabled={subiendoEst} style={{ background: "#0891b2", border: "none", borderRadius: 9, padding: "10px 22px", fontSize: 14, fontWeight: 700, color: "white", cursor: subiendoEst ? "wait" : "pointer" }}>{subiendoEst ? "Subiendo…" : "Agregar"}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal sanidad */}
+      {modalSan && (
+        <div onClick={() => setModalSan(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 }}>
+          <div onClick={ev => ev.stopPropagation()} style={{ background: "white", borderRadius: 18, padding: "26px 28px", width: "100%", maxWidth: 480 }}>
+            <h2 style={{ margin: "0 0 18px", fontSize: 19, fontWeight: 800, color: "#1d1b12" }}>💉 Agregar a sanidad</h2>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+              <div style={{ gridColumn: "1 / -1" }}>
+                <label style={labelStyle}>Paciente *</label>
+                <select value={formSan.paciente_id} onChange={e => setFormSan({ ...formSan, paciente_id: e.target.value })} style={inputStyle}>
+                  <option value="">— Elegir —</option>
+                  {pacientes.map(p => <option key={p.id} value={p.id}>{p.nombre}{p.especie ? ` (${p.especie})` : ""}{p.clientes ? ` — ${`${p.clientes.nombre || ""} ${p.clientes.apellido || ""}`.trim()}` : ""}</option>)}
+                </select>
+              </div>
+              <div>
+                <label style={labelStyle}>Tipo</label>
+                <select value={formSan.tipo} onChange={e => setFormSan({ ...formSan, tipo: e.target.value })} style={inputStyle}>
+                  {TIPOS_SAN.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </div>
+              <div>
+                <label style={labelStyle}>Fecha aplicada</label>
+                <input type="date" value={formSan.fecha_aplicacion} onChange={e => setFormSan({ ...formSan, fecha_aplicacion: e.target.value })} style={inputStyle} />
+              </div>
+              <div style={{ gridColumn: "1 / -1" }}>
+                <label style={labelStyle}>Próxima dosis / recordatorio</label>
+                <input type="date" value={formSan.fecha} onChange={e => setFormSan({ ...formSan, fecha: e.target.value })} style={inputStyle} />
+              </div>
+              <div style={{ gridColumn: "1 / -1" }}>
+                <label style={labelStyle}>Notas</label>
+                <input value={formSan.notas} onChange={e => setFormSan({ ...formSan, notas: e.target.value })} placeholder="Opcional" style={inputStyle} />
+              </div>
+            </div>
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 22 }}>
+              <button onClick={() => setModalSan(false)} style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 9, padding: "10px 18px", fontSize: 14, fontWeight: 600, color: "#475569", cursor: "pointer" }}>Cancelar</button>
+              <button onClick={guardarSanidad} disabled={guardandoSan} style={{ background: "#f59e0b", border: "none", borderRadius: 9, padding: "10px 22px", fontSize: 14, fontWeight: 700, color: "white", cursor: guardandoSan ? "wait" : "pointer" }}>{guardandoSan ? "Guardando…" : "Agregar"}</button>
             </div>
           </div>
         </div>

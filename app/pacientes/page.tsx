@@ -36,7 +36,7 @@ function edadDe(fecha: string | null): string {
   return `${años} año${años !== 1 ? "s" : ""}${m ? ` ${m}m` : ""}`
 }
 
-const ETIQUETAS_SUGERIDAS = ["Reproductor", "Donante", "Castrado/a", "Gestante", "Con crías", "Agresivo"]
+const ETIQUETAS_SUGERIDAS = ["Reproductor", "Donante", "Castrado/a", "Gestante", "Con crías", "Geronte", "Agresivo"]
 
 // Próximo cumpleaños: día/mes y cuántos días faltan
 function cumpleInfo(fecha: string | null) {

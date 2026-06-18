@@ -49,7 +49,7 @@ export default function InternacionPage() {
   const [toast, setToast] = useState<any>(null)
 
   const [modalNueva, setModalNueva] = useState(false)
-  const [formNueva, setFormNueva] = useState<any>({ paciente_id: "", motivo: "", notas: "" })
+  const [formNueva, setFormNueva] = useState<any>({ paciente_id: "", motivo: "", notas: "", jaula: "" })
   const [guardandoNueva, setGuardandoNueva] = useState(false)
 
   const [reg, setReg] = useState<any>(regVacio())
@@ -83,11 +83,11 @@ export default function InternacionPage() {
     if (!formNueva.paciente_id) { mostrar("Elegí el paciente", "error"); return }
     setGuardandoNueva(true)
     const pac = pacientes.find(p => String(p.id) === formNueva.paciente_id)
-    const payload = { paciente_id: Number(formNueva.paciente_id), cliente_id: pac?.cliente_id ?? null, motivo: formNueva.motivo.trim() || null, notas: formNueva.notas.trim() || null, estado: "internado" }
+    const payload = { paciente_id: Number(formNueva.paciente_id), cliente_id: pac?.cliente_id ?? null, motivo: formNueva.motivo.trim() || null, notas: formNueva.notas.trim() || null, jaula: formNueva.jaula.trim() || null, estado: "internado" }
     const { data, error } = await supabase.from("internaciones").insert([payload]).select("*, pacientes(nombre, especie, raza), clientes(nombre, apellido, telefono)").single()
     setGuardandoNueva(false)
     if (error) { mostrar("Error: " + error.message, "error"); return }
-    setModalNueva(false); setFormNueva({ paciente_id: "", motivo: "", notas: "" })
+    setModalNueva(false); setFormNueva({ paciente_id: "", motivo: "", notas: "", jaula: "" })
     mostrar("Paciente internado", "ok")
     await cargar(); if (data) abrirFicha(data)
   }
@@ -211,7 +211,7 @@ export default function InternacionPage() {
               const sel = activa?.id === i.id
               return (
                 <div key={i.id} onClick={() => abrirFicha(i)} style={{ background: sel ? "#f4f2e6" : "white", border: `1px solid ${sel ? "#cdd6a8" : "#e2e8f0"}`, borderLeft: sel ? "3px solid #6f7d49" : "3px solid transparent", borderRadius: 12, padding: "12px 14px", cursor: "pointer" }}>
-                  <div style={{ fontWeight: 700, fontSize: 14, color: "#1d1b12" }}>🐾 {i.pacientes?.nombre || "—"}</div>
+                  <div style={{ fontWeight: 700, fontSize: 14, color: "#1d1b12" }}>🐾 {i.pacientes?.nombre || "—"}{i.jaula && <span style={{ color: "#0d9488", fontWeight: 800 }}> · Jaula {i.jaula}</span>}</div>
                   <div style={{ fontSize: 12, color: "#64748b", marginTop: 2 }}>{i.motivo || "Sin motivo"}</div>
                   <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 4 }}>
                     {i.estado === "internado" ? `Ingresó ${fmtFecha(i.fecha_ingreso)}` : `Alta ${i.fecha_egreso ? fmtFecha(i.fecha_egreso) : ""}`}
@@ -235,6 +235,7 @@ export default function InternacionPage() {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, flexWrap: "wrap" }}>
                 <div>
                   <div style={{ fontSize: 19, fontWeight: 800, color: "#1d1b12" }}>🐾 {activa.pacientes?.nombre}
+                    {activa.jaula && <span style={{ fontSize: 19, fontWeight: 800, color: "#0d9488" }}> · 🏠 Jaula {activa.jaula}</span>}
                     <span style={{ fontSize: 13, fontWeight: 500, color: "#64748b" }}> {activa.pacientes?.especie ? `· ${activa.pacientes.especie}` : ""}{activa.pacientes?.raza ? ` ${activa.pacientes.raza}` : ""}</span>
                   </div>
                   <div style={{ fontSize: 13, color: "#475569", marginTop: 4 }}>
@@ -425,9 +426,15 @@ export default function InternacionPage() {
                   emptyLabel="— Elegir —"
                 />
               </div>
-              <div>
-                <label style={labelStyle}>Motivo de internación</label>
-                <input value={formNueva.motivo} onChange={e => setFormNueva({ ...formNueva, motivo: e.target.value })} placeholder="Ej: Postquirúrgico, gastroenteritis…" style={inputStyle} />
+              <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 12 }}>
+                <div>
+                  <label style={labelStyle}>Motivo de internación</label>
+                  <input value={formNueva.motivo} onChange={e => setFormNueva({ ...formNueva, motivo: e.target.value })} placeholder="Ej: Postquirúrgico, gastroenteritis…" style={inputStyle} />
+                </div>
+                <div>
+                  <label style={labelStyle}>Jaula</label>
+                  <input value={formNueva.jaula} onChange={e => setFormNueva({ ...formNueva, jaula: e.target.value })} placeholder="Ej: 3 / A2" style={inputStyle} />
+                </div>
               </div>
               <div>
                 <label style={labelStyle}>Notas</label>

@@ -26,11 +26,14 @@ function fechaCorta(f: string) {
 }
 function iconoTipo(t: string | null, nombre: string | null) {
   const n = (nombre || "").toLowerCase()
+  const tt = (t || "").toLowerCase()
   if (n.endsWith(".pdf")) return "📄"
   if (/\.(jpg|jpeg|png|gif|webp|bmp)$/.test(n)) return "🖼️"
-  if ((t || "").toLowerCase().includes("radio")) return "🩻"
-  if ((t || "").toLowerCase().includes("eco")) return "🔬"
-  return "📎"
+  if (tt.includes("radio")) return "🩻"
+  if (tt.includes("eco")) return "🖼️"
+  if (tt.includes("citolog") || tt.includes("biopsia") || tt.includes("cultivo") || tt.includes("raspaje")) return "🧫"
+  if (tt.includes("análisis") || tt.includes("analisis") || tt.includes("sangre") || tt.includes("orina")) return "🧪"
+  return "📄"
 }
 
 const labelStyle: React.CSSProperties = { display: "block", fontSize: 11, fontWeight: 700, color: "#64748b", letterSpacing: 0.4, marginBottom: 5, textTransform: "uppercase" }
@@ -106,9 +109,13 @@ export default function EstudiosPage() {
   }
 
   async function descargar(e: any) {
+    // Abrir la ventana en el mismo gesto del clic (si no, el navegador la bloquea
+    // porque el window.open quedaría después de un await).
+    const win = window.open("", "_blank")
     const { data, error } = await supabase.storage.from("estudios").createSignedUrl(e.archivo_path, 3600)
-    if (error || !data?.signedUrl) { mostrar("No se pudo abrir el archivo", "error"); return }
-    window.open(data.signedUrl, "_blank")
+    if (error || !data?.signedUrl) { if (win) win.close(); mostrar("No se pudo abrir el archivo: " + (error?.message || ""), "error"); return }
+    if (win) win.location.href = data.signedUrl
+    else window.open(data.signedUrl, "_blank")
   }
 
   async function eliminar() {
