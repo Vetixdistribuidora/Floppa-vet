@@ -26,13 +26,17 @@ function nowLocal() {
   const d = new Date(); const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000)
   return local.toISOString().slice(0, 16)
 }
+function toLocalInput(iso: string) {
+  const d = new Date(iso); const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000)
+  return local.toISOString().slice(0, 16)
+}
 function fmtFechaHora(s: string) {
   return new Date(s).toLocaleString("es-AR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })
 }
 function fmtFecha(s: string) {
   return new Date(s).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric" })
 }
-const regVacio = () => ({ tipo: "constante", fecha_hora: nowLocal(), peso: "", temperatura: "", fc: "", fr: "", mucosas: "", tratamiento: "", aplicado_por: "", nota: "" })
+const regVacio = () => ({ fecha_hora: nowLocal(), peso: "", temperatura: "", fc: "", fr: "", mucosas: "", medicacion: "", evolucion: "", aplicado_por: "", nota: "" })
 
 export default function InternacionPage() {
   const [lista, setLista] = useState<any[]>([])
@@ -50,6 +54,10 @@ export default function InternacionPage() {
   const [reg, setReg] = useState<any>(regVacio())
   const [guardandoReg, setGuardandoReg] = useState(false)
   const [confirmAlta, setConfirmAlta] = useState(false)
+  const [editReg, setEditReg] = useState<any | null>(null)
+  const [guardandoEdit, setGuardandoEdit] = useState(false)
+  const [confirmDelReg, setConfirmDelReg] = useState<any | null>(null)
+  const [confirmDelInt, setConfirmDelInt] = useState(false)
 
   function mostrar(m: string, t: "ok" | "error") { setToast({ mensaje: m, tipo: t }); setTimeout(() => setToast(null), 3000) }
 
@@ -85,29 +93,68 @@ export default function InternacionPage() {
 
   async function agregarRegistro() {
     if (!activa) return
-    const esConstante = reg.tipo === "constante"
-    if (esConstante && !reg.peso && !reg.temperatura && !reg.fc && !reg.fr && !reg.mucosas) { mostrar("Cargá al menos una constante", "error"); return }
-    if (!esConstante && !reg.tratamiento.trim() && !reg.nota.trim()) { mostrar("Escribí el detalle", "error"); return }
+    const hayConst = reg.peso || reg.temperatura || reg.fc || reg.fr || reg.mucosas
+    const hayMed = reg.medicacion.trim()
+    const hayEvo = reg.evolucion.trim()
+    if (!hayConst && !hayMed && !hayEvo) { mostrar("Cargá al menos un dato (constante, medicación o evolución)", "error"); return }
     setGuardandoReg(true)
-    const payload: any = {
+    const base = {
       internacion_id: activa.id,
       fecha_hora: reg.fecha_hora ? new Date(reg.fecha_hora).toISOString() : new Date().toISOString(),
-      tipo: reg.tipo,
-      peso: reg.peso ? Number(reg.peso) : null,
-      temperatura: reg.temperatura ? Number(reg.temperatura) : null,
-      fc: reg.fc ? Number(reg.fc) : null,
-      fr: reg.fr ? Number(reg.fr) : null,
-      mucosas: reg.mucosas.trim() || null,
-      tratamiento: reg.tratamiento.trim() || null,
       aplicado_por: reg.aplicado_por.trim() || null,
-      nota: reg.nota.trim() || null,
     }
-    const { data, error } = await supabase.from("internacion_registros").insert([payload]).select("*").single()
+    const filas: any[] = []
+    if (hayConst) filas.push({ ...base, tipo: "constante", peso: reg.peso ? Number(reg.peso) : null, temperatura: reg.temperatura ? Number(reg.temperatura) : null, fc: reg.fc ? Number(reg.fc) : null, fr: reg.fr ? Number(reg.fr) : null, mucosas: reg.mucosas.trim() || null })
+    if (hayMed) filas.push({ ...base, tipo: "medicacion", tratamiento: reg.medicacion.trim() })
+    if (hayEvo) filas.push({ ...base, tipo: "evolucion", tratamiento: reg.evolucion.trim() })
+    if (reg.nota.trim() && filas.length) filas[0].nota = reg.nota.trim()
+    const { data, error } = await supabase.from("internacion_registros").insert(filas).select("*")
     setGuardandoReg(false)
     if (error) { mostrar("Error: " + error.message, "error"); return }
-    setRegistros(prev => [data, ...prev])
-    setReg({ ...regVacio(), tipo: reg.tipo, aplicado_por: reg.aplicado_por })
-    mostrar("Registro agregado", "ok")
+    setRegistros(prev => [...(data || []), ...prev].sort((a, b) => String(b.fecha_hora).localeCompare(String(a.fecha_hora))))
+    setReg({ ...regVacio(), aplicado_por: reg.aplicado_por })
+    mostrar(`${filas.length} registro${filas.length > 1 ? "s" : ""} agregado${filas.length > 1 ? "s" : ""}`, "ok")
+  }
+
+  async function guardarEdicionReg() {
+    if (!editReg) return
+    setGuardandoEdit(true)
+    const payload: any = {
+      fecha_hora: editReg.fecha_hora ? new Date(editReg.fecha_hora).toISOString() : new Date().toISOString(),
+      aplicado_por: (editReg.aplicado_por || "").trim() || null,
+      nota: (editReg.nota || "").trim() || null,
+    }
+    if (editReg.tipo === "constante") {
+      Object.assign(payload, {
+        peso: editReg.peso !== "" && editReg.peso != null ? Number(editReg.peso) : null,
+        temperatura: editReg.temperatura !== "" && editReg.temperatura != null ? Number(editReg.temperatura) : null,
+        fc: editReg.fc !== "" && editReg.fc != null ? Number(editReg.fc) : null,
+        fr: editReg.fr !== "" && editReg.fr != null ? Number(editReg.fr) : null,
+        mucosas: (editReg.mucosas || "").trim() || null,
+      })
+    } else {
+      payload.tratamiento = (editReg.tratamiento || "").trim() || null
+    }
+    const { data, error } = await supabase.from("internacion_registros").update(payload).eq("id", editReg.id).select("*").single()
+    setGuardandoEdit(false)
+    if (error) { mostrar("Error: " + error.message, "error"); return }
+    setRegistros(prev => prev.map(r => r.id === editReg.id ? data : r))
+    setEditReg(null); mostrar("Registro actualizado", "ok")
+  }
+
+  async function eliminarReg() {
+    if (!confirmDelReg) return
+    const { error } = await supabase.from("internacion_registros").delete().eq("id", confirmDelReg.id)
+    if (error) { mostrar("Error al eliminar", "error") }
+    else { setRegistros(prev => prev.filter(r => r.id !== confirmDelReg.id)); mostrar("Registro eliminado", "ok") }
+    setConfirmDelReg(null)
+  }
+
+  async function eliminarInternacion() {
+    if (!activa) return
+    const { error } = await supabase.from("internaciones").delete().eq("id", activa.id)
+    if (error) { mostrar("Error al eliminar", "error"); setConfirmDelInt(false); return }
+    setConfirmDelInt(false); setActiva(null); mostrar("Internación eliminada", "ok"); cargar()
   }
 
   async function darDeAlta() {
@@ -178,51 +225,58 @@ export default function InternacionPage() {
                     Ingreso: {fmtFechaHora(activa.fecha_ingreso)}{activa.estado !== "internado" && activa.fecha_egreso ? ` · Alta: ${fmtFechaHora(activa.fecha_egreso)}` : ""}
                   </div>
                 </div>
-                {activa.estado === "internado"
-                  ? <button onClick={() => setConfirmAlta(true)} style={{ background: "#dcfce7", border: "1px solid #86efac", color: "#15803d", borderRadius: 9, padding: "9px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>✓ Dar de alta</button>
-                  : <span style={{ background: "#f1f5f9", border: "1px solid #e2e8f0", color: "#64748b", borderRadius: 9, padding: "7px 14px", fontSize: 12.5, fontWeight: 700 }}>Dado de alta</span>}
+                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                  {activa.estado === "internado"
+                    ? <button onClick={() => setConfirmAlta(true)} style={{ background: "#dcfce7", border: "1px solid #86efac", color: "#15803d", borderRadius: 9, padding: "9px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>✓ Dar de alta</button>
+                    : <span style={{ background: "#f1f5f9", border: "1px solid #e2e8f0", color: "#64748b", borderRadius: 9, padding: "7px 14px", fontSize: 12.5, fontWeight: 700 }}>Dado de alta</span>}
+                  <button onClick={() => setConfirmDelInt(true)} title="Eliminar internación" style={{ background: "#fef2f2", border: "1px solid #fecaca", color: "#dc2626", borderRadius: 9, padding: "9px 12px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>🗑</button>
+                </div>
               </div>
             </div>
 
-            {/* Form de nuevo registro (solo si internado) */}
+            {/* Form de nuevo registro (solo si internado) — todo junto */}
             {activa.estado === "internado" && (
               <div style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 14, padding: "16px 20px" }}>
-                <div style={{ display: "flex", gap: 6, marginBottom: 14, flexWrap: "wrap" }}>
-                  {Object.entries(TIPO_REG).map(([k, v]) => (
-                    <button key={k} onClick={() => setReg({ ...reg, tipo: k })} style={{ border: `1px solid ${reg.tipo === k ? v.color : "#e2e8f0"}`, background: reg.tipo === k ? v.bg : "white", color: reg.tipo === k ? v.color : "#64748b", borderRadius: 8, padding: "7px 14px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>{v.icon} {v.label}</button>
-                  ))}
-                </div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 12 }}>
-                  <div>
-                    <label style={labelStyle}>Fecha y hora</label>
-                    <input type="datetime-local" value={reg.fecha_hora} onChange={e => setReg({ ...reg, fecha_hora: e.target.value })} style={inputStyle} />
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, marginBottom: 12, flexWrap: "wrap" }}>
+                  <h3 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: "#1d1b12" }}>+ Agregar a la hoja</h3>
+                  <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                    <div><label style={{ ...labelStyle, marginBottom: 2 }}>Fecha y hora</label>
+                      <input type="datetime-local" value={reg.fecha_hora} onChange={e => setReg({ ...reg, fecha_hora: e.target.value })} style={{ ...inputStyle, width: "auto", padding: "7px 10px" }} /></div>
+                    <div><label style={{ ...labelStyle, marginBottom: 2 }}>Aplicado por</label>
+                      <input value={reg.aplicado_por} onChange={e => setReg({ ...reg, aplicado_por: e.target.value })} placeholder="Quién" style={{ ...inputStyle, width: 140, padding: "7px 10px" }} /></div>
                   </div>
-                  {reg.tipo === "constante" ? (
-                    <>
-                      <div><label style={labelStyle}>Peso (kg)</label><input type="number" value={reg.peso} onChange={e => setReg({ ...reg, peso: e.target.value })} style={inputStyle} /></div>
-                      <div><label style={labelStyle}>Temp (°C)</label><input type="number" value={reg.temperatura} onChange={e => setReg({ ...reg, temperatura: e.target.value })} style={inputStyle} /></div>
-                      <div><label style={labelStyle}>FC (lpm)</label><input type="number" value={reg.fc} onChange={e => setReg({ ...reg, fc: e.target.value })} style={inputStyle} /></div>
-                      <div><label style={labelStyle}>FR (rpm)</label><input type="number" value={reg.fr} onChange={e => setReg({ ...reg, fr: e.target.value })} style={inputStyle} /></div>
-                      <div><label style={labelStyle}>Mucosas</label><input value={reg.mucosas} onChange={e => setReg({ ...reg, mucosas: e.target.value })} placeholder="rosadas…" style={inputStyle} /></div>
-                    </>
-                  ) : (
-                    <div style={{ gridColumn: "1 / -1" }}>
-                      <label style={labelStyle}>{reg.tipo === "medicacion" ? "Medicación / tratamiento aplicado" : "Evolución"}</label>
-                      <textarea value={reg.tratamiento} onChange={e => setReg({ ...reg, tratamiento: e.target.value })} rows={2} placeholder={reg.tipo === "medicacion" ? "Ej: Ringer 250ml IV, Tramadol 2mg/kg…" : "Estado general, observaciones…"} style={{ ...inputStyle, resize: "vertical" }} />
-                    </div>
-                  )}
-                  <div>
-                    <label style={labelStyle}>Aplicado por</label>
-                    <input value={reg.aplicado_por} onChange={e => setReg({ ...reg, aplicado_por: e.target.value })} placeholder="Quién" style={inputStyle} />
-                  </div>
-                  {reg.tipo === "constante" && (
-                    <div style={{ gridColumn: "1 / -1" }}>
-                      <label style={labelStyle}>Nota</label>
-                      <input value={reg.nota} onChange={e => setReg({ ...reg, nota: e.target.value })} style={inputStyle} />
-                    </div>
-                  )}
                 </div>
-                <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 14 }}>
+
+                {/* Constantes */}
+                <div style={{ border: "1px solid #dbeafe", background: "#f8fbff", borderRadius: 10, padding: "10px 12px", marginBottom: 10 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: "#1d4ed8", marginBottom: 8 }}>🌡 Constantes <span style={{ color: "#94a3b8", fontWeight: 500 }}>(opcional)</span></div>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(96px, 1fr))", gap: 10 }}>
+                    <div><label style={labelStyle}>Peso (kg)</label><input type="number" value={reg.peso} onChange={e => setReg({ ...reg, peso: e.target.value })} style={inputStyle} /></div>
+                    <div><label style={labelStyle}>Temp (°C)</label><input type="number" value={reg.temperatura} onChange={e => setReg({ ...reg, temperatura: e.target.value })} style={inputStyle} /></div>
+                    <div><label style={labelStyle}>FC (lpm)</label><input type="number" value={reg.fc} onChange={e => setReg({ ...reg, fc: e.target.value })} style={inputStyle} /></div>
+                    <div><label style={labelStyle}>FR (rpm)</label><input type="number" value={reg.fr} onChange={e => setReg({ ...reg, fr: e.target.value })} style={inputStyle} /></div>
+                    <div><label style={labelStyle}>Mucosas</label><input value={reg.mucosas} onChange={e => setReg({ ...reg, mucosas: e.target.value })} placeholder="rosadas…" style={inputStyle} /></div>
+                  </div>
+                </div>
+
+                {/* Medicación + Evolución */}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }} className="grid-2col">
+                  <div>
+                    <label style={labelStyle}>💊 Medicación / tratamiento</label>
+                    <textarea value={reg.medicacion} onChange={e => setReg({ ...reg, medicacion: e.target.value })} rows={2} placeholder="Ej: Ringer 250ml IV, Tramadol 2mg/kg…" style={{ ...inputStyle, resize: "vertical" }} />
+                  </div>
+                  <div>
+                    <label style={labelStyle}>📝 Evolución</label>
+                    <textarea value={reg.evolucion} onChange={e => setReg({ ...reg, evolucion: e.target.value })} rows={2} placeholder="Estado general, observaciones…" style={{ ...inputStyle, resize: "vertical" }} />
+                  </div>
+                </div>
+                <div style={{ marginTop: 10 }}>
+                  <label style={labelStyle}>Nota</label>
+                  <input value={reg.nota} onChange={e => setReg({ ...reg, nota: e.target.value })} placeholder="Opcional" style={inputStyle} />
+                </div>
+
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 14, gap: 10, flexWrap: "wrap" }}>
+                  <span style={{ fontSize: 11.5, color: "#94a3b8" }}>Cargá lo que tengas: se guarda cada parte en la hoja con esta misma hora.</span>
                   <button onClick={agregarRegistro} disabled={guardandoReg} style={{ background: OLIVA, border: "none", borderRadius: 9, padding: "10px 22px", fontSize: 14, fontWeight: 700, color: "white", cursor: guardandoReg ? "not-allowed" : "pointer" }}>{guardandoReg ? "Guardando…" : "+ Agregar a la hoja"}</button>
                 </div>
               </div>
@@ -254,6 +308,10 @@ export default function InternacionPage() {
                           {r.nota && <div style={{ fontSize: 12.5, color: "#64748b", marginTop: 3 }}>{r.nota}</div>}
                           {r.aplicado_por && <div style={{ fontSize: 11.5, color: "#94a3b8", marginTop: 3 }}>👤 {r.aplicado_por}</div>}
                         </div>
+                        <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                          <button onClick={() => setEditReg({ ...r, fecha_hora: toLocalInput(r.fecha_hora), peso: r.peso ?? "", temperatura: r.temperatura ?? "", fc: r.fc ?? "", fr: r.fr ?? "", mucosas: r.mucosas ?? "", tratamiento: r.tratamiento ?? "", aplicado_por: r.aplicado_por ?? "", nota: r.nota ?? "" })} style={{ background: "#f1f5f9", border: "1px solid #e2e8f0", borderRadius: 7, padding: "4px 9px", cursor: "pointer", fontSize: 12, color: "#475569", height: "fit-content" }}>✎</button>
+                          <button onClick={() => setConfirmDelReg(r)} style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 7, padding: "4px 9px", cursor: "pointer", fontSize: 12, color: "#dc2626", height: "fit-content" }}>🗑</button>
+                        </div>
                       </div>
                     )
                   })}
@@ -263,6 +321,64 @@ export default function InternacionPage() {
           </div>
         )}
       </div>
+
+      {/* Modal editar registro */}
+      {editReg && (
+        <div onClick={() => setEditReg(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: "white", borderRadius: 18, padding: "26px 28px", width: "100%", maxWidth: 460, maxHeight: "90vh", overflowY: "auto" }}>
+            <h2 style={{ margin: "0 0 18px", fontSize: 18, fontWeight: 800, color: "#1d1b12" }}>Editar {(TIPO_REG[editReg.tipo] || TIPO_REG.evolucion).label.toLowerCase()}</h2>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <div><label style={labelStyle}>Fecha y hora</label><input type="datetime-local" value={editReg.fecha_hora} onChange={e => setEditReg({ ...editReg, fecha_hora: e.target.value })} style={inputStyle} /></div>
+              <div><label style={labelStyle}>Aplicado por</label><input value={editReg.aplicado_por} onChange={e => setEditReg({ ...editReg, aplicado_por: e.target.value })} style={inputStyle} /></div>
+              {editReg.tipo === "constante" ? (
+                <>
+                  <div><label style={labelStyle}>Peso (kg)</label><input type="number" value={editReg.peso} onChange={e => setEditReg({ ...editReg, peso: e.target.value })} style={inputStyle} /></div>
+                  <div><label style={labelStyle}>Temp (°C)</label><input type="number" value={editReg.temperatura} onChange={e => setEditReg({ ...editReg, temperatura: e.target.value })} style={inputStyle} /></div>
+                  <div><label style={labelStyle}>FC (lpm)</label><input type="number" value={editReg.fc} onChange={e => setEditReg({ ...editReg, fc: e.target.value })} style={inputStyle} /></div>
+                  <div><label style={labelStyle}>FR (rpm)</label><input type="number" value={editReg.fr} onChange={e => setEditReg({ ...editReg, fr: e.target.value })} style={inputStyle} /></div>
+                  <div style={{ gridColumn: "1 / -1" }}><label style={labelStyle}>Mucosas</label><input value={editReg.mucosas} onChange={e => setEditReg({ ...editReg, mucosas: e.target.value })} style={inputStyle} /></div>
+                </>
+              ) : (
+                <div style={{ gridColumn: "1 / -1" }}><label style={labelStyle}>{editReg.tipo === "medicacion" ? "Medicación / tratamiento" : "Evolución"}</label><textarea value={editReg.tratamiento} onChange={e => setEditReg({ ...editReg, tratamiento: e.target.value })} rows={3} style={{ ...inputStyle, resize: "vertical" }} /></div>
+              )}
+              <div style={{ gridColumn: "1 / -1" }}><label style={labelStyle}>Nota</label><input value={editReg.nota} onChange={e => setEditReg({ ...editReg, nota: e.target.value })} style={inputStyle} /></div>
+            </div>
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 20 }}>
+              <button onClick={() => setEditReg(null)} style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 9, padding: "10px 18px", fontSize: 14, fontWeight: 600, color: "#475569", cursor: "pointer" }}>Cancelar</button>
+              <button onClick={guardarEdicionReg} disabled={guardandoEdit} style={{ background: OLIVA, border: "none", borderRadius: 9, padding: "10px 22px", fontSize: 14, fontWeight: 700, color: "white", cursor: guardandoEdit ? "not-allowed" : "pointer" }}>{guardandoEdit ? "Guardando…" : "Guardar"}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmar eliminar registro */}
+      {confirmDelReg && (
+        <div onClick={() => setConfirmDelReg(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: "white", borderRadius: 16, padding: "26px 28px", width: "100%", maxWidth: 360, textAlign: "center" }}>
+            <div style={{ fontSize: 34, marginBottom: 10 }}>🗑</div>
+            <p style={{ fontWeight: 700, color: "#1d1b12", marginBottom: 20 }}>¿Eliminar este registro de la hoja?</p>
+            <div style={{ display: "flex", justifyContent: "center", gap: 10 }}>
+              <button onClick={() => setConfirmDelReg(null)} style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 9, padding: "9px 18px", fontWeight: 600, color: "#475569", cursor: "pointer" }}>Cancelar</button>
+              <button onClick={eliminarReg} style={{ background: "#dc2626", border: "none", borderRadius: 9, padding: "9px 20px", fontWeight: 700, color: "white", cursor: "pointer" }}>Eliminar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmar eliminar internación */}
+      {confirmDelInt && (
+        <div onClick={() => setConfirmDelInt(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: "white", borderRadius: 16, padding: "26px 28px", width: "100%", maxWidth: 380, textAlign: "center" }}>
+            <div style={{ fontSize: 34, marginBottom: 10 }}>🗑</div>
+            <p style={{ fontWeight: 700, color: "#1d1b12", marginBottom: 6 }}>¿Eliminar la internación de {activa?.pacientes?.nombre}?</p>
+            <p style={{ fontSize: 13, color: "#64748b", marginBottom: 20 }}>Se borra también toda su hoja de internación. No se puede deshacer.</p>
+            <div style={{ display: "flex", justifyContent: "center", gap: 10 }}>
+              <button onClick={() => setConfirmDelInt(false)} style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 9, padding: "9px 18px", fontWeight: 600, color: "#475569", cursor: "pointer" }}>Cancelar</button>
+              <button onClick={eliminarInternacion} style={{ background: "#dc2626", border: "none", borderRadius: 9, padding: "9px 20px", fontWeight: 700, color: "white", cursor: "pointer" }}>Eliminar</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal nueva internación */}
       {modalNueva && (
