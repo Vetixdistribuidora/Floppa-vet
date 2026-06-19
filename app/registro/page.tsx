@@ -7,6 +7,7 @@ import Logo from "@/components/Logo"
 
 export default function RegistroPage() {
   const [nombreNegocio, setNombreNegocio] = useState("")
+  const [codigo, setCodigo] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [password2, setPassword2] = useState("")
@@ -18,39 +19,25 @@ export default function RegistroPage() {
   async function handleRegistro() {
     setError("")
     if (!nombreNegocio.trim()) { setError("Ingresá el nombre de tu negocio"); return }
+    if (!codigo.trim()) { setError("Ingresá tu código de invitación"); return }
     if (!email.trim()) { setError("Ingresá tu email"); return }
     if (password.length < 6) { setError("La contraseña debe tener al menos 6 caracteres"); return }
     if (password !== password2) { setError("Las contraseñas no coinciden"); return }
 
     setLoading(true)
     try {
-      // 1. Crear usuario en Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: email.trim().toLowerCase(),
-        password,
-        options: {
-          data: { nombre_negocio: nombreNegocio.trim() },
-        },
+      // 1. Validar el código y crear la cuenta en el servidor (no hay signup público)
+      const res = await fetch("/api/registro", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nombre_negocio: nombreNegocio.trim(), email: email.trim().toLowerCase(), password, codigo: codigo.trim() }),
       })
+      const j = await res.json()
+      if (!res.ok) { setError(j.error || "No se pudo crear la cuenta"); return }
 
-      if (authError) {
-        if (authError.message.includes("already registered")) {
-          setError("Este email ya está registrado. Intentá iniciar sesión.")
-        } else {
-          setError(authError.message)
-        }
-        return
-      }
-
-      // Si el proyecto NO pide confirmación de email, ya hay sesión activa →
-      // mandamos directo al onboarding. Si la pide, mostramos "revisá tu email".
-      // (La suscripción trial y la organización se crean en el onboarding, ya
-      //  autenticado, para que la RLS lo permita.)
-      if (authData.session) {
-        router.replace("/onboarding")
-      } else {
-        setExito(true)
-      }
+      // 2. Iniciar sesión y entrar al onboarding (crea org + suscripción ya autenticado)
+      const { data: signIn, error: signErr } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password })
+      if (signErr || !signIn.session) { setExito(true); return }
+      router.replace("/onboarding")
     } catch (e: any) {
       setError(e.message || "Error al registrarse")
     } finally {
@@ -149,6 +136,17 @@ export default function RegistroPage() {
             <div style={{ fontSize: 11, color: "#8a9a5b", letterSpacing: 2, fontWeight: 600, marginTop: 3, textTransform: "uppercase" }}>
               Crear cuenta
             </div>
+          </div>
+
+          <div className="field">
+            <label>Código de invitación</label>
+            <input
+              type="text"
+              placeholder="El que te pasamos"
+              value={codigo}
+              onChange={e => setCodigo(e.target.value)}
+              style={{ textTransform: "uppercase" }}
+            />
           </div>
 
           <div className="field">

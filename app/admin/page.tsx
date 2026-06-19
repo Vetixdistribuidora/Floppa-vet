@@ -41,9 +41,11 @@ export default function AdminPage() {
     if (!error && data && data.length > 1) {
       setEsAdmin(true)
       setSuscripciones(data)
+      cargarInvitaciones()
     } else if (!error && data?.length === 1 && data[0].estado === "owner") {
       setEsAdmin(true)
       setSuscripciones(data)
+      cargarInvitaciones()
     } else {
       setEsAdmin(false)
     }
@@ -54,6 +56,31 @@ export default function AdminPage() {
     await supabase.from("suscripciones").update({ estado: nuevoEstado }).eq("id", id)
     setSuscripciones(prev => prev.map(s => s.id === id ? { ...s, estado: nuevoEstado } : s))
   }
+
+  const [invitaciones, setInvitaciones] = useState<any[]>([])
+  const [invForm, setInvForm] = useState<{ email: string; rubro: string; nota: string }>({ email: "", rubro: "", nota: "" })
+  const [generandoInv, setGenerandoInv] = useState(false)
+  const [copiado, setCopiado] = useState<string | null>(null)
+
+  async function cargarInvitaciones() {
+    const { data: { session } } = await supabase.auth.getSession()
+    const res = await fetch("/api/admin/invitaciones", { headers: { Authorization: `Bearer ${session?.access_token}` } })
+    if (res.ok) setInvitaciones(await res.json())
+  }
+  async function generarInvitacion() {
+    setGenerandoInv(true)
+    const { data: { session } } = await supabase.auth.getSession()
+    const res = await fetch("/api/admin/invitaciones", { method: "POST", headers: { Authorization: `Bearer ${session?.access_token}`, "Content-Type": "application/json" }, body: JSON.stringify(invForm) })
+    setGenerandoInv(false)
+    if (res.ok) { const nueva = await res.json(); setInvitaciones(prev => [nueva, ...prev]); setInvForm({ email: "", rubro: "", nota: "" }) }
+    else alert("No se pudo generar el código")
+  }
+  async function borrarInvitacion(id: number) {
+    const { data: { session } } = await supabase.auth.getSession()
+    await fetch(`/api/admin/invitaciones?id=${id}`, { method: "DELETE", headers: { Authorization: `Bearer ${session?.access_token}` } })
+    setInvitaciones(prev => prev.filter(i => i.id !== id))
+  }
+  function copiar(cod: string) { navigator.clipboard?.writeText(cod); setCopiado(cod); setTimeout(() => setCopiado(null), 1500) }
 
   const [editor, setEditor] = useState<any>(null)
   const [orgForm, setOrgForm] = useState<{ rubro: string; modulos: string[]; precio: string }>({ rubro: "distribuidora", modulos: [], precio: "" })
@@ -131,6 +158,50 @@ export default function AdminPage() {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Invitaciones */}
+      <div style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 16, padding: "18px 20px", marginBottom: 20, boxShadow: "0 1px 4px rgba(0,0,0,0.05)" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8, marginBottom: 6 }}>
+          <h2 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: "#1d1b12" }}>🎟️ Invitaciones</h2>
+          <span style={{ fontSize: 12, color: "#94a3b8" }}>Solo quien tenga un código puede registrarse.</span>
+        </div>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "flex-end", marginTop: 10 }}>
+          <div style={{ flex: "2 1 180px" }}>
+            <label style={{ display: "block", fontSize: 10.5, color: "#64748b", fontWeight: 700, textTransform: "uppercase", marginBottom: 4 }}>Email (opcional, lo bloquea a ese mail)</label>
+            <input value={invForm.email} onChange={e => setInvForm(f => ({ ...f, email: e.target.value }))} placeholder="cliente@email.com" style={{ width: "100%", padding: "9px 12px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 13, color: "#1d1b12", boxSizing: "border-box" }} />
+          </div>
+          <div style={{ flex: "1 1 130px" }}>
+            <label style={{ display: "block", fontSize: 10.5, color: "#64748b", fontWeight: 700, textTransform: "uppercase", marginBottom: 4 }}>Rubro (opcional)</label>
+            <select value={invForm.rubro} onChange={e => setInvForm(f => ({ ...f, rubro: e.target.value }))} style={{ width: "100%", padding: "9px 12px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 13, color: "#1d1b12", background: "white", boxSizing: "border-box" }}>
+              <option value="">—</option>
+              {RUBROS.map(r => <option key={r.key} value={r.key}>{r.label}</option>)}
+            </select>
+          </div>
+          <div style={{ flex: "2 1 160px" }}>
+            <label style={{ display: "block", fontSize: 10.5, color: "#64748b", fontWeight: 700, textTransform: "uppercase", marginBottom: 4 }}>Nota (a quién)</label>
+            <input value={invForm.nota} onChange={e => setInvForm(f => ({ ...f, nota: e.target.value }))} placeholder="Ej: Vet. San Roque" style={{ width: "100%", padding: "9px 12px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 13, color: "#1d1b12", boxSizing: "border-box" }} />
+          </div>
+          <button onClick={generarInvitacion} disabled={generandoInv} style={{ background: "#6f7d49", color: "white", border: "none", borderRadius: 9, padding: "10px 18px", fontSize: 13.5, fontWeight: 700, cursor: generandoInv ? "wait" : "pointer", whiteSpace: "nowrap" }}>{generandoInv ? "Generando…" : "+ Generar código"}</button>
+        </div>
+
+        {invitaciones.length > 0 && (
+          <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 6, maxHeight: 280, overflowY: "auto" }}>
+            {invitaciones.map(inv => (
+              <div key={inv.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", border: "1px solid #f1f5f9", borderRadius: 9, background: inv.usada ? "#f8fafc" : "white", flexWrap: "wrap" }}>
+                <code style={{ fontSize: 14, fontWeight: 800, letterSpacing: 1, color: inv.usada ? "#94a3b8" : "#1d1b12", textDecoration: inv.usada ? "line-through" : "none" }}>{inv.codigo}</code>
+                {!inv.usada && <button onClick={() => copiar(inv.codigo)} style={{ background: copiado === inv.codigo ? "#dcfce7" : "#f1f5f9", border: "1px solid #e2e8f0", borderRadius: 7, padding: "3px 9px", fontSize: 11.5, color: copiado === inv.codigo ? "#15803d" : "#475569", cursor: "pointer", fontWeight: 700 }}>{copiado === inv.codigo ? "✓ Copiado" : "Copiar"}</button>}
+                <span style={{ fontSize: 12, color: "#64748b", flex: 1, minWidth: 100 }}>
+                  {inv.nota ? inv.nota : ""}{inv.email ? ` · ${inv.email}` : ""}{inv.rubro ? ` · ${inv.rubro}` : ""}
+                </span>
+                {inv.usada
+                  ? <span style={{ fontSize: 11, color: "#94a3b8", whiteSpace: "nowrap" }}>usada{inv.usada_por ? ` · ${inv.usada_por}` : ""}</span>
+                  : <span style={{ fontSize: 11, fontWeight: 700, color: "#16a34a", whiteSpace: "nowrap" }}>disponible</span>}
+                <button onClick={() => borrarInvitacion(inv.id)} title="Borrar" style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 7, padding: "3px 8px", fontSize: 11, color: "#dc2626", cursor: "pointer" }}>✕</button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Buscador */}
