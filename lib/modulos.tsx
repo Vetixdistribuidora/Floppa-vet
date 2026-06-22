@@ -66,7 +66,7 @@ export const MODULOS_TOGGLEABLES = MODULOS.filter(m => !m.core)
 
 // Presets por rubro: qué módulos vienen activos por defecto
 export const PRESETS_RUBRO: Record<string, string[]> = {
-  veterinaria:   ["sala", "turnos", "internacion", "productos", "tutores", "pacientes", "consultas", "estudios", "recordatorios", "cobros", "ventas", "caja"],
+  veterinaria:   ["sala", "turnos", "internacion", "productos", "tutores", "pacientes", "estudios", "recordatorios", "cobros", "ventas", "caja"],
   general:       ["productos", "clientes", "ventas", "proveedores", "compras", "caja", "reportes", "deudores"],
   distribuidora: ["productos", "clientes", "ventas", "proveedores", "compras", "cuentas", "caja", "reportes", "deudores", "tienda-online", "pedidos", "cheques", "mermas"],
   // Personalizado: arranca con un mínimo usable; el admin de Floppa habilita el

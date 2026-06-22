@@ -103,6 +103,7 @@ export default function FichaPaciente() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
         <button onClick={() => router.push("/pacientes")} style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 9, padding: "8px 14px", fontSize: 13, fontWeight: 600, color: "#475569", cursor: "pointer" }}>← Pacientes</button>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <Link href={`/consultas?paciente=${id}`} style={{ background: "#eef0e0", border: "1px solid #cdd6a8", borderRadius: 9, padding: "9px 16px", fontSize: 13, fontWeight: 700, color: "#4b5a2c", textDecoration: "none" }}>📋 Historia clínica</Link>
           {p.fallecido
             ? <button onClick={revertirDeceso} style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 9, padding: "9px 14px", fontSize: 13, fontWeight: 600, color: "#475569", cursor: "pointer" }}>↩ Revertir deceso</button>
             : <button onClick={() => setModalDeceso(true)} style={{ background: "white", border: "1px solid #fecaca", borderRadius: 9, padding: "9px 14px", fontSize: 13, fontWeight: 600, color: "#b91c1c", cursor: "pointer" }}>🕊 Marcar deceso</button>}

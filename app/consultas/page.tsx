@@ -95,9 +95,19 @@ export default function ConsultasPage() {
   }
   useEffect(() => {
     cargar()
-    // Pre-filtrar por paciente si viene en la URL (?paciente=ID) desde la ficha
-    const pid = new URLSearchParams(window.location.search).get("paciente")
-    if (pid) setFiltroPaciente(pid)
+    // Pre-filtrar por paciente si viene en la URL (?paciente=ID) desde la ficha.
+    // Con ?nueva=consulta|estudio|sanidad se abre directo el alta de ese tipo.
+    const params = new URLSearchParams(window.location.search)
+    const pid = params.get("paciente")
+    if (pid) { setFiltroPaciente(pid); setFiltroFecha("") }
+    const nueva = params.get("nueva")
+    if (nueva) {
+      setTimeout(() => {
+        if (nueva === "estudio") { setFormEst({ paciente_id: pid || "", titulo: "", tipo: "Ecografía" }); setModalEst(true) }
+        else if (nueva === "sanidad") { setFormSan({ paciente_id: pid || "", tipo: "Vacuna Antirrábica", fecha_aplicacion: hoyISO(), fecha: "", notas: "" }); setModalSan(true) }
+        else { setEditId(null); setForm({ ...formVacio(), paciente_id: pid || "" }); setModal(true) }
+      }, 0)
+    }
   }, [])
 
   function abrirNueva() {

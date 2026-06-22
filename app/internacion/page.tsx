@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase"
 import ComboBox from "@/components/ComboBox"
+import { nowARInput, isoToARInput, arInputToISO, fmtFechaHoraAR, fmtFechaAR } from "@/lib/fecha"
 
 const OLIVA = "#6f7d49"
 const TIPO_REG: Record<string, { label: string; icon: string; bg: string; color: string }> = {
@@ -22,20 +23,10 @@ function Toast({ mensaje, tipo }: { mensaje: string; tipo: "ok" | "error" }) {
 const labelStyle: React.CSSProperties = { display: "block", fontSize: 11, fontWeight: 700, color: "#64748b", letterSpacing: 0.4, marginBottom: 5, textTransform: "uppercase" }
 const inputStyle: React.CSSProperties = { width: "100%", padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 9, fontSize: 14, color: "#1d1b12", outline: "none", boxSizing: "border-box", background: "white" }
 
-function nowLocal() {
-  const d = new Date(); const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000)
-  return local.toISOString().slice(0, 16)
-}
-function toLocalInput(iso: string) {
-  const d = new Date(iso); const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000)
-  return local.toISOString().slice(0, 16)
-}
-function fmtFechaHora(s: string) {
-  return new Date(s).toLocaleString("es-AR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })
-}
-function fmtFecha(s: string) {
-  return new Date(s).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric" })
-}
+const nowLocal = nowARInput
+const toLocalInput = isoToARInput
+const fmtFechaHora = fmtFechaHoraAR
+const fmtFecha = fmtFechaAR
 const medVacio = () => ({ medicamento: "", dosis: "", frecuencia: "" })
 const regVacio = () => ({ fecha_hora: nowLocal(), peso: "", temperatura: "", fc: "", fr: "", mucosas: "", meds: [medVacio()], evolucion: "", aplicado_por: "", nota: "" })
 
@@ -120,7 +111,7 @@ export default function InternacionPage() {
     setGuardandoReg(true)
     const base = {
       internacion_id: activa.id,
-      fecha_hora: reg.fecha_hora ? new Date(reg.fecha_hora).toISOString() : new Date().toISOString(),
+      fecha_hora: reg.fecha_hora ? arInputToISO(reg.fecha_hora) : new Date().toISOString(),
       aplicado_por: reg.aplicado_por.trim() || null,
     }
     const filas: any[] = []
@@ -140,7 +131,7 @@ export default function InternacionPage() {
     if (!editReg) return
     setGuardandoEdit(true)
     const payload: any = {
-      fecha_hora: editReg.fecha_hora ? new Date(editReg.fecha_hora).toISOString() : new Date().toISOString(),
+      fecha_hora: editReg.fecha_hora ? arInputToISO(editReg.fecha_hora) : new Date().toISOString(),
       aplicado_por: (editReg.aplicado_por || "").trim() || null,
       nota: (editReg.nota || "").trim() || null,
     }

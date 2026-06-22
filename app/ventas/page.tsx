@@ -610,7 +610,7 @@ thead th:last-child{text-align:right}
   }
 
   async function crearBorrador() {
-    const titulo = "Borrador " + new Date().toLocaleString("es-AR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })
+    const titulo = "Borrador " + new Date().toLocaleString("es-AR", { timeZone: "America/Argentina/Buenos_Aires", day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })
     const { data, error } = await supabase.from("borradores").insert({ titulo, items: [], notas: "" }).select().single()
     if (error || !data) return mostrarToast("❌ Error al crear borrador", "error")
     setBorradores(prev => [data, ...prev])

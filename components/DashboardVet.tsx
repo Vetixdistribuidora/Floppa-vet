@@ -57,7 +57,7 @@ export default function DashboardVet() {
       supabase.from("recordatorios").select("*, pacientes(nombre, fallecido, clientes(nombre, telefono))").neq("estado", "hecho").lte("fecha", en7Str).order("fecha"),
       supabase.from("pacientes").select("id, nombre, especie, fecha_nacimiento, clientes(nombre, apellido, telefono)").eq("fallecido", false),
       supabase.from("clientes").select("id", { count: "exact", head: true }),
-      supabase.from("consultas").select("id, para_cobrar, cobrado, pacientes(nombre)").not("para_cobrar", "is", null).eq("cobrado", false),
+      supabase.from("consultas").select("id, para_cobrar, cobrar_items, cobrado, pacientes(nombre)").not("para_cobrar", "is", null).eq("cobrado", false),
       supabase.from("sala_espera").select("*, pacientes(id, nombre, especie)").neq("estado", "atendido").order("check_in_at"),
     ])
     setTurnos(tt.data || [])
@@ -93,7 +93,10 @@ export default function DashboardVet() {
 
   const turnosPend = turnos.filter(t => t.estado === "reservado" || t.estado === "confirmado").length
   const sanVencidas = sanidad.filter(r => diasHasta(r.fecha) < 0).length
-  const totalACobrar = aCobrar.reduce((s, c) => s + Number(c.para_cobrar || 0), 0)
+  const totalACobrar = aCobrar.reduce((s, c) => {
+    const items = Array.isArray(c.cobrar_items) ? c.cobrar_items : []
+    return s + items.reduce((a: number, i: any) => a + (Number(i.precio) || 0) * (Number(i.cantidad) || 0), 0)
+  }, 0)
   const salaEsperando = sala.filter(s => s.estado === "esperando").length
   const salaAtendiendo = sala.filter(s => s.estado === "atendiendo").length
 
@@ -102,7 +105,7 @@ export default function DashboardVet() {
     { titulo: "Turnos hoy", valor: turnos.length, sub: `${turnosPend} pendiente${turnosPend !== 1 ? "s" : ""}`, icon: "📅", color: "#38bdf8", href: "/turnos" },
     { titulo: "Internados", valor: internados.length, sub: "en seguimiento", icon: "🏥", color: "#fb7185", href: "/internacion" },
     { titulo: "Sanidad 7 días", valor: sanidad.length, sub: `${sanVencidas} vencida${sanVencidas !== 1 ? "s" : ""}`, icon: "💉", color: "#f59e0b", href: "/recordatorios" },
-    { titulo: "A cobrar", valor: "$" + Math.round(totalACobrar).toLocaleString("es-AR"), sub: `${aCobrar.length} pendiente${aCobrar.length !== 1 ? "s" : ""}`, icon: "💲", color: "#22c55e", href: "/cobros" },
+    { titulo: "Pre Venta", valor: "$" + Math.round(totalACobrar).toLocaleString("es-AR"), sub: `${aCobrar.length} pendiente${aCobrar.length !== 1 ? "s" : ""}`, icon: "💲", color: "#22c55e", href: "/cobros" },
     { titulo: "Pacientes", valor: nPacientes, sub: `${nTutores} tutores`, icon: "🐾", color: "#5ec5c0", href: "/pacientes" },
   ]
 
@@ -208,7 +211,7 @@ export default function DashboardVet() {
               {internados.slice(0, 6).map(i => (
                 <div key={i.id} style={{ display: "flex", justifyContent: "space-between", gap: 10, fontSize: 13, borderBottom: "1px solid #f1f5f9", paddingBottom: 7 }}>
                   <span><b style={{ color: "#1d1b12" }}>🐾 {i.pacientes?.nombre || "—"}</b>{i.motivo ? ` · ${i.motivo}` : ""}</span>
-                  <span style={{ color: "#94a3b8", fontSize: 11, whiteSpace: "nowrap" }}>desde {new Date(i.fecha_ingreso).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit" })}</span>
+                  <span style={{ color: "#94a3b8", fontSize: 11, whiteSpace: "nowrap" }}>desde {new Date(i.fecha_ingreso).toLocaleDateString("es-AR", { timeZone: "America/Argentina/Buenos_Aires", day: "2-digit", month: "2-digit" })}</span>
                 </div>
               ))}
             </div>
