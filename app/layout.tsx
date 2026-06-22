@@ -20,6 +20,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const [rubro, setRubro] = useState<string>("")
   const [mostrarRubro, setMostrarRubro] = useState<boolean>(true)
   const [sidebarAbierto, setSidebarAbierto] = useState(false)
+  const [authListo, setAuthListo] = useState(false)
   const router = useRouter()
   // Refs para acceder siempre al valor actualizado dentro del callback (evitar stale closure)
   const usuarioIdRef = useRef<string | null>(null)
@@ -30,7 +31,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const RUTAS_PUBLICAS = ["/login", "/onboarding", "/registro"]
 
   useEffect(() => {
+    // Garantizar que, apenas se restaura la sesión desde el almacenamiento, las
+    // páginas ya puedan renderizar autenticadas (evita la carrera del arranque en frío).
+    supabase.auth.getSession().then(() => setAuthListo(true))
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      setAuthListo(true)
       if (event === "SIGNED_OUT") {
         usuarioIdRef.current = null
         setUsuario(null)
@@ -233,6 +238,26 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </head>
         <body>
           {children}
+        </body>
+      </html>
+    )
+  }
+
+  // Ruta protegida: esperar a que la sesión se restaure antes de montar la página
+  // (así ninguna pantalla consulta sin auth y entra bien la primera vez).
+  if (!authListo) {
+    return (
+      <html lang="es">
+        <head>
+          <meta name="viewport" content="width=device-width, initial-scale=1" />
+          <meta name="theme-color" content="#647a3e" />
+          <link rel="manifest" href="/manifest.webmanifest" />
+        </head>
+        <body style={{ margin: 0, background: "#14130d", display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh" }}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>
+            <div style={{ filter: "drop-shadow(0 6px 18px rgba(80,96,55,0.45))" }}><Logo size={52} /></div>
+            <div style={{ color: "#8a9a5b", fontFamily: "DM Sans, sans-serif", fontSize: 13, letterSpacing: 1 }}>Cargando…</div>
+          </div>
         </body>
       </html>
     )

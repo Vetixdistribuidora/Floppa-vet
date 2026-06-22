@@ -227,7 +227,7 @@ export default function PacientesPage() {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 340px), 1fr))", gap: 14 }}>
           {filtrados.map(p => (
             <div key={p.id} style={{ background: p.fallecido ? "#faf7fb" : "white", border: "1px solid #e2e8f0", borderLeft: p.fallecido ? "4px solid #7b2cbf" : "1px solid #e2e8f0", borderRadius: 14, padding: "16px 18px", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
-              <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 8 }}>
+              <div className="pac-card-head" style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 8 }}>
                 <div onClick={() => p.imagen_url ? setVerFoto(p) : abrirSelectorFoto(p.id)} title={p.imagen_url ? "Ver foto" : "Agregar foto"}
                   style={{ width: 52, height: 52, flexShrink: 0, borderRadius: 10, overflow: "hidden", border: "1px solid #e2e8f0", cursor: "pointer", background: "#f9fafb", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   {subiendoFoto === p.id
@@ -246,7 +246,7 @@ export default function PacientesPage() {
                     {p.fallecido && <span style={{ background: "#7b2cbf", color: "white", fontSize: 10.5, fontWeight: 800, padding: "2px 9px", borderRadius: 999 }}>🕊 Fallecido</span>}
                   </div>
                 </div>
-                <div style={{ display: "flex", gap: 6 }}>
+                <div className="pac-card-actions" style={{ display: "flex", gap: 6, flexWrap: "wrap", flexShrink: 0 }}>
                   <button onClick={() => abrirSala(p)} title="Agregar a sala de espera" style={{ background: "#ccfbf1", border: "1px solid #99f6e4", borderRadius: 7, padding: "4px 9px", cursor: "pointer", fontSize: 12, color: "#0d9488", fontWeight: 700 }}>🪑</button>
                   <Link href={`/consultas?paciente=${p.id}`} title="Historia clínica (consultas, estudios y sanidad)" style={{ background: "#f4f2e6", border: "1px solid #e6e8cf", borderRadius: 7, padding: "4px 10px", cursor: "pointer", fontSize: 12, color: "#6f7d49", textDecoration: "none", fontWeight: 700, whiteSpace: "nowrap" }}>📋 Historia clínica</Link>
                   <Link href={`/consultas?paciente=${p.id}&nueva=consulta`} title="Agregar a la historia clínica" style={{ background: "#eef0e0", border: "1px solid #cdd6a8", borderRadius: 7, padding: "4px 9px", cursor: "pointer", fontSize: 12, color: "#4b5a2c", textDecoration: "none", fontWeight: 700 }}>＋</Link>
