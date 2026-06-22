@@ -842,6 +842,9 @@ thead th:last-child{text-align:right}
         }
       }
       await supabase.from("ventas").update({ estado: "anulada" }).eq("id", confirmAnular.id)
+      // Si la venta venía de una pre-venta, devolverla a "pendiente" de cobro.
+      const { data: vRow } = await supabase.from("ventas").select("consulta_id").eq("id", confirmAnular.id).maybeSingle()
+      if ((vRow as any)?.consulta_id) await supabase.from("consultas").update({ cobrado: false }).eq("id", (vRow as any).consulta_id)
       setConfirmAnular(null)
       if (ventaDetalle?.id === confirmAnular.id) setVentaDetalle({ ...ventaDetalle, estado: "anulada" })
       mostrarToast("🗑️ Venta anulada y stock restaurado", "ok")
@@ -883,6 +886,9 @@ thead th:last-child{text-align:right}
       }
       await supabase.from("detalle_ventas").delete().eq("venta_id", confirmEliminarVenta.id)
       await supabase.from("facturas_impresion").delete().eq("venta_id", confirmEliminarVenta.id)
+      // Si venía de una pre-venta, devolverla a pendiente antes de borrar la venta.
+      const { data: vRowDel } = await supabase.from("ventas").select("consulta_id").eq("id", confirmEliminarVenta.id).maybeSingle()
+      if ((vRowDel as any)?.consulta_id) await supabase.from("consultas").update({ cobrado: false }).eq("id", (vRowDel as any).consulta_id)
       await supabase.from("ventas").delete().eq("id", confirmEliminarVenta.id)
       setConfirmEliminarVenta(null)
       if (ventaDetalle?.id === confirmEliminarVenta.id) setVentaDetalle(null)
@@ -1152,7 +1158,8 @@ thead th:last-child{text-align:right}
     const { data: venta, error: errorVenta } = await supabase.from("ventas").insert({
       cliente_id: Number(clienteId), total, fecha: new Date(),
       estado: esCuentaCorriente ? "cuenta_corriente" : "cobrada", nro_factura: nroFacturaSave,
-      metodo_cobro: esCuentaCorriente ? null : metodoCobro
+      metodo_cobro: esCuentaCorriente ? null : metodoCobro,
+      consulta_id: consultaOrigenRef.current ? Number(consultaOrigenRef.current) : null
     }).select().single()
     if (errorVenta || !venta) { mostrarToast("Error al guardar venta", "error"); return }
       const { error: errorDetalle } = await supabase.from("detalle_ventas").insert(
