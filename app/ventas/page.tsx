@@ -204,11 +204,13 @@ export default function Ventas() {
 
   // Precargar el carrito con los productos elegidos en la consulta (?consulta=ID)
   const preselConsultaRef = useRef(false)
+  const consultaOrigenRef = useRef<string | null>(null)  // pre-venta de origen → se marca cobrada al confirmar
   useEffect(() => {
     if (preselConsultaRef.current) return
     const cid = new URLSearchParams(window.location.search).get("consulta")
     if (!cid) return
     preselConsultaRef.current = true
+    consultaOrigenRef.current = cid
     ;(async () => {
       const { data: con } = await supabase.from("consultas").select("cobrar_items").eq("id", cid).maybeSingle()
       const items = (con as any)?.cobrar_items
@@ -1221,6 +1223,11 @@ thead th:last-child{text-align:right}
         // Venta al contado: no genera deuda, pero mostramos la deuda existente del cliente (si tiene)
         const saldoCliente = clienteId ? await getSaldoCliente(clienteId) : 0
         generarReciboHTMLEImprimir({ nroFactura: nroFacturaSave, clienteSeleccionado, carrito: carritoEfectivo, subtotal, ivaNum, total, esCuentaCorriente: false, metodoCobro, fecha: fechaHoy, saldoCliente })
+      }
+      // Si la venta vino de una pre-venta (consulta), marcarla como cobrada automáticamente.
+      if (consultaOrigenRef.current) {
+        await supabase.from("consultas").update({ cobrado: true }).eq("id", Number(consultaOrigenRef.current))
+        consultaOrigenRef.current = null
       }
       setCarrito([]); setClienteId(""); setClienteSeleccionado(null); setBusquedaCliente(""); setEsCuentaCorriente(false)
       localStorage.removeItem("floppa_borrador")
