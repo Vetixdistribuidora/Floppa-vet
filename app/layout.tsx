@@ -226,7 +226,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     return (
       <html lang="es">
         <head>
+          <meta name="viewport" content="width=device-width, initial-scale=1" />
           <meta name="theme-color" content="#647a3e" />
+          <meta name="apple-mobile-web-app-capable" content="yes" />
           <link rel="manifest" href="/manifest.webmanifest" />
         </head>
         <body>

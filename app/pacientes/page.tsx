@@ -224,7 +224,7 @@ export default function PacientesPage() {
           {pacientes.length === 0 && <p style={{ fontSize: 13, marginTop: 4 }}>Agregá el primero con “+ Nuevo paciente”.</p>}
         </div>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))", gap: 14 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 340px), 1fr))", gap: 14 }}>
           {filtrados.map(p => (
             <div key={p.id} style={{ background: p.fallecido ? "#faf7fb" : "white", border: "1px solid #e2e8f0", borderLeft: p.fallecido ? "4px solid #7b2cbf" : "1px solid #e2e8f0", borderRadius: 14, padding: "16px 18px", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
               <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 8 }}>

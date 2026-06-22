@@ -725,7 +725,7 @@ export default function Pedidos() {
           {filtro === "todos" && <div style={{ color: "#9ca3af", fontSize: 13, marginTop: 4 }}>Creá tu primer pedido con el botón de arriba</div>}
         </div>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 320px), 1fr))", gap: 16 }}>
           {pedidosFiltrados.map(p => (
             <div key={p.id} style={{ background: "white", borderRadius: 16, border: p.estado === "enviado" ? "1px solid #bbf7d0" : "1px solid #e2e8f0", boxShadow: "0 2px 8px rgba(0,0,0,0.06)", overflow: "hidden" }}>
               <div style={{ height: 5, background: p.estado === "enviado" ? "linear-gradient(90deg,#16a34a,#22c55e)" : "linear-gradient(90deg,#5b6b34,#6f7d49)" }} />

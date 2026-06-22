@@ -13,6 +13,9 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Evitar scroll horizontal accidental en celular */
+html, body { max-width: 100%; overflow-x: hidden; }
+
 /* Reset mínimo — no imponer colores ni estilos a botones/inputs
    ya que cada componente define los propios via inline styles */
 *, *::before, *::after {
@@ -192,4 +195,19 @@ input, select, textarea {
   .cc-resumen-grid {
     grid-template-columns: 1fr !important;
   }
+}
+
+/* ── Celular: comodidad general ──────────────────────────────────────────── */
+@media (max-width: 600px) {
+  /* Grillas fijas de 2/3 columnas → 1 columna (modales, formularios, tarjetas).
+     No toca calendarios (repeat(7,1fr)) ni KPIs (auto-fill). */
+  [style*="1fr 1fr"],
+  [style*="2fr 1fr"],
+  [style*="1fr 2fr"] { grid-template-columns: 1fr !important; }
+
+  /* Inputs a 16px: evita que iOS haga zoom al enfocar un campo */
+  input, select, textarea { font-size: 16px !important; }
+
+  /* Modales un poco más al borde para aprovechar la pantalla */
+  .modal-inner { padding: 22px 18px !important; }
 }
