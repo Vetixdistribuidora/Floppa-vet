@@ -111,11 +111,19 @@ export default function FichaPaciente() {
         </div>
       </div>
 
+      {/* Aviso de fallecimiento — bien visible */}
+      {p.fallecido && (
+        <div style={{ background: "#4c1d3d", color: "white", borderRadius: 12, padding: "12px 18px", display: "flex", alignItems: "center", gap: 10, boxShadow: "0 2px 10px rgba(76,29,61,0.3)" }}>
+          <span style={{ fontSize: 22 }}>🕊</span>
+          <span style={{ fontWeight: 800, fontSize: 15, letterSpacing: 0.3 }}>Paciente fallecido{p.fecha_deceso ? ` · ${f(p.fecha_deceso)}` : ""}</span>
+        </div>
+      )}
+
       {/* Cabecera del paciente */}
-      <div style={card}>
+      <div style={{ ...card, ...(p.fallecido ? { borderColor: "#9d4edd", borderLeftWidth: 4, borderLeftColor: "#7b2cbf" } : {}) }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
           <div style={{ fontSize: 22, fontWeight: 800, color: "#1d1b12" }}>🐾 {p.nombre}</div>
-          {p.fallecido && <span style={{ background: "#f1f5f9", color: "#475569", fontSize: 11.5, fontWeight: 700, padding: "3px 11px", borderRadius: 999, border: "1px solid #e2e8f0" }}>🕊 Fallecido{p.fecha_deceso ? ` · ${f(p.fecha_deceso)}` : ""}</span>}
+          {p.fallecido && <span style={{ background: "#7b2cbf", color: "white", fontSize: 11.5, fontWeight: 800, padding: "3px 12px", borderRadius: 999 }}>🕊 Fallecido{p.fecha_deceso ? ` · ${f(p.fecha_deceso)}` : ""}</span>}
           {(p.etiquetas || []).map((et: string) => <span key={et} style={{ background: "#eef0e0", color: "#4b5a2c", fontSize: 11, fontWeight: 700, padding: "2px 9px", borderRadius: 999 }}>{et}</span>)}
         </div>
         <div style={{ display: "flex", gap: 16, flexWrap: "wrap", fontSize: 13, color: "#475569", marginTop: 10 }}>

@@ -52,7 +52,7 @@ export default function ConsultasPage() {
   const [filtroPaciente, setFiltroPaciente] = useState("")
   const [busqueda, setBusqueda] = useState("")
   const [filtroFecha, setFiltroFecha] = useState(hoyISO()) // por defecto, las consultas de hoy
-  const [filtroTipo, setFiltroTipo] = useState<"todos" | "consulta" | "estudio" | "sanidad">("todos")
+  const [filtroTipo, setFiltroTipo] = useState<"todos" | "consulta" | "estudio" | "sanidad" | "internacion">("todos")
   const [cargando, setCargando] = useState(false)
   const [toast, setToast] = useState<any>(null)
   const [modal, setModal] = useState(false)
@@ -62,6 +62,7 @@ export default function ConsultasPage() {
   const [confirmEliminar, setConfirmEliminar] = useState<any>(null)
   const [estudios, setEstudios] = useState<any[]>([])
   const [sanidad, setSanidad] = useState<any[]>([])
+  const [internaciones, setInternaciones] = useState<any[]>([])
   const [orgId, setOrgId] = useState<string | null>(null)
   const [productosCat, setProductosCat] = useState<any[]>([])
   const [modalEst, setModalEst] = useState(false)
@@ -77,17 +78,19 @@ export default function ConsultasPage() {
 
   async function cargar() {
     setCargando(true)
-    const [{ data: con }, { data: pac }, { data: est }, { data: san }, { data: org }] = await Promise.all([
+    const [{ data: con }, { data: pac }, { data: est }, { data: san }, { data: org }, { data: inter }] = await Promise.all([
       supabase.from("consultas").select("*, pacientes(nombre, especie, cliente_id, clientes(nombre, apellido))").order("fecha", { ascending: false }),
       supabase.from("pacientes").select("id, nombre, especie, clientes(nombre, apellido)").order("nombre"),
       supabase.from("estudios").select("*, pacientes(nombre, especie)").order("created_at", { ascending: false }),
       supabase.from("recordatorios").select("*, pacientes(nombre, especie)").order("fecha", { ascending: false }),
       supabase.from("organizaciones").select("id").maybeSingle(),
+      supabase.from("internaciones").select("*, pacientes(nombre, especie)").order("fecha_ingreso", { ascending: false }),
     ])
     setConsultas(con || [])
     setPacientes(pac || [])
     setEstudios(est || [])
     setSanidad(san || [])
+    setInternaciones(inter || [])
     setOrgId((org as any)?.id ?? null)
     const { data: prods } = await supabase.from("productos").select("id, nombre, precio_venta, es_servicio").order("nombre")
     setProductosCat(prods || [])
@@ -231,6 +234,7 @@ export default function ConsultasPage() {
     ...consultas.map(c => ({ kind: "consulta", id: "c" + c.id, fecha: c.fecha, paciente_id: c.paciente_id, data: c })),
     ...estudios.map(e => ({ kind: "estudio", id: "e" + e.id, fecha: (e.created_at || "").slice(0, 10), paciente_id: e.paciente_id, data: e })),
     ...sanidad.map(s => ({ kind: "sanidad", id: "s" + s.id, fecha: s.fecha_aplicacion || s.fecha, paciente_id: s.paciente_id, data: s })),
+    ...internaciones.map(i => ({ kind: "internacion", id: "i" + i.id, fecha: (i.fecha_ingreso || "").slice(0, 10), paciente_id: i.paciente_id, data: i })),
   ].filter(ev => {
     // Si hay un paciente elegido, mostramos TODO su historial (ignora la fecha)
     if (filtroFecha && !filtroPaciente && ev.fecha !== filtroFecha) return false
@@ -239,7 +243,7 @@ export default function ConsultasPage() {
     const pac = ev.data.pacientes
     const nombrePac = pac?.nombre || ""
     const tutor = pac?.clientes ? `${pac.clientes.nombre || ""} ${pac.clientes.apellido || ""}` : ""
-    const extra = ev.kind === "consulta" ? (ev.data.motivo || "") : ev.kind === "estudio" ? (ev.data.titulo || "") + (ev.data.tipo || "") : (ev.data.tipo || "")
+    const extra = ev.kind === "consulta" || ev.kind === "internacion" ? (ev.data.motivo || "") : ev.kind === "estudio" ? (ev.data.titulo || "") + (ev.data.tipo || "") : (ev.data.tipo || "")
     return coincideBusq(nombrePac) || coincideBusq(tutor) || coincideBusq(extra)
   }).sort((a, b) => String(b.fecha || "").localeCompare(String(a.fecha || "")))
 
@@ -272,7 +276,7 @@ export default function ConsultasPage() {
       </div>
 
       <div style={{ display: "flex", gap: 6, marginBottom: 14, flexWrap: "wrap" }}>
-        {([["todos", "Todos"], ["consulta", "📋 Consultas"], ["estudio", "📎 Estudios"], ["sanidad", "💉 Sanidad"]] as const).map(([k, lab]) => (
+        {([["todos", "Todos"], ["consulta", "📋 Consultas"], ["estudio", "📎 Estudios"], ["sanidad", "💉 Sanidad"], ["internacion", "🏥 Internación"]] as const).map(([k, lab]) => (
           <button key={k} onClick={() => setFiltroTipo(k)} style={{ border: `1px solid ${filtroTipo === k ? "#6f7d49" : "#e2e8f0"}`, background: filtroTipo === k ? "#eef0e0" : "white", color: filtroTipo === k ? "#4b5a2c" : "#64748b", borderRadius: 8, padding: "6px 13px", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>{lab}</button>
         ))}
       </div>
@@ -321,6 +325,26 @@ export default function ConsultasPage() {
                     </div>
                   </div>
                   <Link href="/recordatorios" style={{ background: "#fff7ed", border: "1px solid #fed7aa", borderRadius: 8, padding: "6px 12px", fontSize: 12.5, color: "#c2410c", fontWeight: 700, textDecoration: "none", flexShrink: 0 }}>Sanidad →</Link>
+                </div>
+              )
+            }
+            // ── Internación ──
+            if (ev.kind === "internacion") {
+              const it = ev.data
+              const internado = it.estado === "internado"
+              return (
+                <div key={ev.id} style={{ background: "white", border: "1px solid #e2e8f0", borderLeft: "4px solid #fb7185", borderRadius: 14, padding: "13px 18px", boxShadow: "0 1px 4px rgba(0,0,0,0.04)", display: "flex", alignItems: "center", gap: 12 }}>
+                  <div style={{ fontSize: 26 }}>🏥</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 700, fontSize: 14.5, color: "#1d1b12" }}>
+                      Internación{it.motivo ? ` · ${it.motivo}` : ""}{it.jaula ? <span style={{ color: "#0d9488", fontWeight: 800 }}> · Jaula {it.jaula}</span> : null}
+                      {internado && <span style={{ marginLeft: 8, background: "#fef2f2", color: "#e11d48", fontSize: 10.5, fontWeight: 800, padding: "2px 8px", borderRadius: 999 }}>internado</span>}
+                    </div>
+                    <div style={{ fontSize: 12.5, color: "#64748b", marginTop: 2 }}>
+                      🗓 Ingreso {fechaCorta(ev.fecha)}{it.fecha_egreso ? ` · Alta ${fechaCorta((it.fecha_egreso || "").slice(0, 10))}` : ""}
+                    </div>
+                  </div>
+                  <Link href="/internacion" style={{ background: "#fff1f2", border: "1px solid #fecdd3", borderRadius: 8, padding: "6px 12px", fontSize: 12.5, color: "#e11d48", fontWeight: 700, textDecoration: "none", flexShrink: 0 }}>Abrir →</Link>
                 </div>
               )
             }

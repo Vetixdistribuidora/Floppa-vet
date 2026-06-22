@@ -11,7 +11,22 @@ import DashboardVet from "@/components/DashboardVet"
 export default function DashboardPage() {
   const [rubro, setRubro] = useState<string | null | undefined>(undefined)
   useEffect(() => {
-    supabase.from("organizaciones").select("rubro").maybeSingle().then(({ data }) => setRubro((data?.rubro as string) || null))
+    let cancelado = false
+    async function detectarRubro(intentos = 0) {
+      // Esperar a que la sesión se restaure antes de consultar (evita que en el
+      // arranque en frío la query corra sin auth y quede en "Cargando").
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        // Sesión todavía no lista: reintentar un par de veces antes de rendirse.
+        if (intentos < 10) { setTimeout(() => { if (!cancelado) detectarRubro(intentos + 1) }, 300); return }
+        if (!cancelado) setRubro(null)
+        return
+      }
+      const { data } = await supabase.from("organizaciones").select("rubro").maybeSingle()
+      if (!cancelado) setRubro((data?.rubro as string) || null)
+    }
+    detectarRubro()
+    return () => { cancelado = true }
   }, [])
   if (rubro === undefined) return <div style={{ padding: 40, textAlign: "center", color: "#94a3b8" }}>Cargando…</div>
   return rubro === "veterinaria" ? <DashboardVet /> : <DashboardComercial />

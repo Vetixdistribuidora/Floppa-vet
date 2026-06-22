@@ -226,7 +226,7 @@ export default function PacientesPage() {
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))", gap: 14 }}>
           {filtrados.map(p => (
-            <div key={p.id} style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 14, padding: "16px 18px", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
+            <div key={p.id} style={{ background: p.fallecido ? "#faf7fb" : "white", border: "1px solid #e2e8f0", borderLeft: p.fallecido ? "4px solid #7b2cbf" : "1px solid #e2e8f0", borderRadius: 14, padding: "16px 18px", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
               <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 8 }}>
                 <div onClick={() => p.imagen_url ? setVerFoto(p) : abrirSelectorFoto(p.id)} title={p.imagen_url ? "Ver foto" : "Agregar foto"}
                   style={{ width: 52, height: 52, flexShrink: 0, borderRadius: 10, overflow: "hidden", border: "1px solid #e2e8f0", cursor: "pointer", background: "#f9fafb", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -243,7 +243,7 @@ export default function PacientesPage() {
                       {p.raza && <span style={{ fontWeight: 500, color: "#94a3b8", fontSize: 14 }}> · {p.raza}</span>}
                     </Link>
                     {conCobro.has(p.id) && <span style={{ background: "#fff7ed", border: "1px solid #fed7aa", color: "#c2410c", fontSize: 10.5, fontWeight: 800, padding: "2px 7px", borderRadius: 999 }}>💲 A cobrar</span>}
-                    {p.fallecido && <span style={{ background: "#f1f5f9", border: "1px solid #e2e8f0", color: "#64748b", fontSize: 10.5, fontWeight: 800, padding: "2px 7px", borderRadius: 999 }}>🕊 Fallecido</span>}
+                    {p.fallecido && <span style={{ background: "#7b2cbf", color: "white", fontSize: 10.5, fontWeight: 800, padding: "2px 9px", borderRadius: 999 }}>🕊 Fallecido</span>}
                   </div>
                 </div>
                 <div style={{ display: "flex", gap: 6 }}>
