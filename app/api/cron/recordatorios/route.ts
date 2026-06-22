@@ -7,8 +7,10 @@ const SB_URL = (process.env.NEXT_PUBLIC_SUPABASE_URL || "").trim().replace(/\/+$
 // HOY, que estén pendientes, no enviados aún y cuyo tutor tenga email.
 // Multi-tenant: usa service role (bypass RLS) para recorrer todas las organizaciones.
 export async function GET(req: Request) {
+  // Fail-closed: si no hay CRON_SECRET configurado, o no coincide, se rechaza.
+  // (Evita que el endpoint quede abierto y cualquiera dispare envíos con service role.)
   const secret = process.env.CRON_SECRET
-  if (secret && req.headers.get("authorization") !== `Bearer ${secret}`) {
+  if (!secret || req.headers.get("authorization") !== `Bearer ${secret}`) {
     return Response.json({ error: "No autorizado" }, { status: 401 })
   }
 
