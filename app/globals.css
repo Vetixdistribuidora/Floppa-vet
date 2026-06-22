@@ -19,6 +19,11 @@ html { width: 100%; }
 /* El área de contenido scrollea solo en vertical; nada se corre para los costados */
 .main-content { overflow-x: hidden; max-width: 100%; }
 
+/* Tarjeta de paciente (PC y celular): nombre/raza con todo el ancho y las acciones
+   en su propia fila debajo, así no se aprietan ni se superponen. */
+.pac-card-head { flex-wrap: wrap; }
+.pac-card-actions { flex-basis: 100%; width: 100%; justify-content: flex-start; margin-top: 8px; }
+
 /* Reset mínimo — no imponer colores ni estilos a botones/inputs
    ya que cada componente define los propios via inline styles */
 *, *::before, *::after {
@@ -213,8 +218,4 @@ input, select, textarea {
 
   /* Modales un poco más al borde para aprovechar la pantalla */
   .modal-inner { padding: 22px 18px !important; }
-
-  /* Tarjeta de paciente: nombre arriba, acciones en su propia fila (no se superponen) */
-  .pac-card-head { flex-wrap: wrap; }
-  .pac-card-actions { flex-basis: 100%; width: 100%; justify-content: flex-start; margin-top: 8px; }
 }

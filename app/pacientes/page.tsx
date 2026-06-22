@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabase"
 import ComboBox from "@/components/ComboBox"
 
 const ESPECIES = ["Perro", "Gato", "Ave", "Conejo", "Roedor", "Reptil", "Equino", "Otro"]
-const ESPECIE_EMOJI: Record<string, string> = { Perro: "🐶", Gato: "🐱", Ave: "🐦", Conejo: "🐰", Roedor: "🐹", Reptil: "🦎", Equino: "🐴", Otro: "🐾" }
+const ESPECIE_EMOJI: Record<string, string> = { Perro: "🐶", Gato: "🐈", Ave: "🐦", Conejo: "🐰", Roedor: "🐹", Reptil: "🦎", Equino: "🐴", Otro: "🐾" }
 const emojiEsp = (e: string | null) => ESPECIE_EMOJI[e || ""] || "🐾"
 const OLIVA = "#6f7d49"
 
