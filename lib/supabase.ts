@@ -49,5 +49,17 @@ export const SUPABASE_URL = (process.env.NEXT_PUBLIC_SUPABASE_URL || "")
 export const supabase = createClient(
   SUPABASE_URL,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  { global: { fetch: fetchConTimeout } }
+  {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      // No buscar sesión en la URL (no usamos OAuth con redirect): evita trabas al cargar.
+      detectSessionInUrl: false,
+      // Reemplazar el lock por defecto (Web Locks API). En PWA / standalone ese lock
+      // a veces queda trabado y deja las consultas colgadas en "Cargando" hasta recargar.
+      // Con este lock simple (sin Web Locks) el refresco de token nunca se traba.
+      lock: async (_name: string, _acquireTimeout: number, fn: () => Promise<any>) => fn(),
+    },
+    global: { fetch: fetchConTimeout },
+  }
 )
