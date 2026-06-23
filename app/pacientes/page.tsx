@@ -74,6 +74,11 @@ export default function PacientesPage() {
   const [salaForm, setSalaForm] = useState<any>({ motivo: "", prioridad: "normal" })
   const [salaGuardando, setSalaGuardando] = useState(false)
   const [verFoto, setVerFoto] = useState<any>(null)
+  const [orgId, setOrgId] = useState<string | null>(null)
+  const [fotos, setFotos] = useState<Record<number, string>>({})  // id paciente → URL firmada
+
+  // URL para mostrar la foto: firmada (bucket privado) o legacy pública (http)
+  const fotoSrc = (p: any) => fotos[p.id] || (typeof p?.imagen_url === "string" && p.imagen_url.startsWith("http") ? p.imagen_url : null)
 
   function abrirSala(p: any) { setSalaPac(p); setSalaForm({ motivo: "", prioridad: "normal" }) }
   async function agregarASala() {
@@ -100,15 +105,19 @@ export default function PacientesPage() {
     const file = e.target.files?.[0]
     if (!file || !pacienteFotoRef.current) return
     const id = pacienteFotoRef.current; e.target.value = ""
+    if (!orgId) { mostrar("No se pudo identificar la organización", "error"); return }
     const ext = file.name.split(".").pop()
+    const path = `${orgId}/${id}-${Date.now()}.${ext}`  // carpeta por organización (bucket privado)
     setSubiendoFoto(id)
-    const { error: upErr } = await supabase.storage.from("pacientes").upload(`${id}.${ext}`, file, { upsert: true })
+    const { error: upErr } = await supabase.storage.from("pacientes").upload(path, file, { upsert: true })
     if (upErr) { mostrar("Error subiendo la foto", "error"); setSubiendoFoto(null); return }
-    const { data: urlData } = supabase.storage.from("pacientes").getPublicUrl(`${id}.${ext}`)
-    const url = urlData.publicUrl + "?t=" + Date.now()
-    const { error: updErr } = await supabase.from("pacientes").update({ imagen_url: url }).eq("id", id)
-    if (updErr) mostrar("Error guardando la foto", "error")
-    else { mostrar("Foto actualizada", "ok"); setPacientes(prev => prev.map(p => p.id === id ? { ...p, imagen_url: url } : p)) }
+    const { error: updErr } = await supabase.from("pacientes").update({ imagen_url: path }).eq("id", id)
+    if (updErr) { mostrar("Error guardando la foto", "error"); setSubiendoFoto(null); return }
+    // URL firmada para mostrarla ya
+    const { data: signed } = await supabase.storage.from("pacientes").createSignedUrl(path, 3600)
+    if (signed?.signedUrl) setFotos(prev => ({ ...prev, [id]: signed.signedUrl }))
+    setPacientes(prev => prev.map(p => p.id === id ? { ...p, imagen_url: path } : p))
+    mostrar("Foto actualizada", "ok")
     setSubiendoFoto(null)
   }
 
@@ -116,14 +125,24 @@ export default function PacientesPage() {
 
   async function cargar() {
     setCargando(true)
-    const [{ data: pac }, { data: cli }, { data: cobros }] = await Promise.all([
+    const [{ data: pac }, { data: cli }, { data: cobros }, { data: org }] = await Promise.all([
       supabase.from("pacientes").select("*, clientes(nombre, apellido)").order("nombre"),
       supabase.from("clientes").select("id, nombre, apellido").order("nombre"),
       supabase.from("consultas").select("paciente_id").not("para_cobrar", "is", null).eq("cobrado", false),
+      supabase.from("organizaciones").select("id").maybeSingle(),
     ])
     setPacientes(pac || [])
     setClientes(cli || [])
     setConCobro(new Set((cobros || []).map((c: any) => c.paciente_id)))
+    setOrgId((org as any)?.id ?? null)
+    // Resolver URLs firmadas para las fotos (bucket privado). Las legacy (http) se muestran directo.
+    const conPath = (pac || []).filter((p: any) => p.imagen_url && !String(p.imagen_url).startsWith("http"))
+    if (conPath.length) {
+      const { data: signed } = await supabase.storage.from("pacientes").createSignedUrls(conPath.map((p: any) => p.imagen_url), 3600)
+      const mapa: Record<number, string> = {}
+      ;(signed || []).forEach((s: any, i: number) => { if (s?.signedUrl) mapa[conPath[i].id] = s.signedUrl })
+      setFotos(mapa)
+    } else { setFotos({}) }
     setCargando(false)
   }
   useEffect(() => { cargar() }, [])
@@ -228,12 +247,12 @@ export default function PacientesPage() {
           {filtrados.map(p => (
             <div key={p.id} style={{ background: p.fallecido ? "#faf7fb" : "white", border: "1px solid #e2e8f0", borderLeft: p.fallecido ? "4px solid #7b2cbf" : "1px solid #e2e8f0", borderRadius: 14, padding: "16px 18px", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
               <div className="pac-card-head" style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 8 }}>
-                <div onClick={() => p.imagen_url ? setVerFoto(p) : abrirSelectorFoto(p.id)} title={p.imagen_url ? "Ver foto" : "Agregar foto"}
+                <div onClick={() => fotoSrc(p) ? setVerFoto(p) : abrirSelectorFoto(p.id)} title={fotoSrc(p) ? "Ver foto" : "Agregar foto"}
                   style={{ width: 52, height: 52, flexShrink: 0, borderRadius: 10, overflow: "hidden", border: "1px solid #e2e8f0", cursor: "pointer", background: "#f9fafb", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   {subiendoFoto === p.id
                     ? <span style={{ fontSize: 10, color: "#9ca3af" }}>…</span>
-                    : p.imagen_url
-                      ? <img src={p.imagen_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    : fotoSrc(p)
+                      ? <img src={fotoSrc(p)!} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                       : <span style={{ fontSize: 24 }}>{emojiEsp(p.especie)}</span>}
                 </div>
                 <div style={{ minWidth: 0, flex: 1 }}>
@@ -282,7 +301,7 @@ export default function PacientesPage() {
       {/* Lightbox foto */}
       {verFoto && (
         <div onClick={() => setVerFoto(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", zIndex: 1100, padding: 24, gap: 16 }}>
-          <img src={verFoto.imagen_url} alt={verFoto.nombre} onClick={e => e.stopPropagation()} style={{ maxWidth: "90vw", maxHeight: "78vh", borderRadius: 14, boxShadow: "0 12px 48px rgba(0,0,0,0.5)", objectFit: "contain", background: "white" }} />
+          <img src={fotoSrc(verFoto) || ""} alt={verFoto.nombre} onClick={e => e.stopPropagation()} style={{ maxWidth: "90vw", maxHeight: "78vh", borderRadius: 14, boxShadow: "0 12px 48px rgba(0,0,0,0.5)", objectFit: "contain", background: "white" }} />
           <div onClick={e => e.stopPropagation()} style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <span style={{ color: "white", fontWeight: 700, fontSize: 15 }}>{emojiEsp(verFoto.especie)} {verFoto.nombre}</span>
             <button onClick={() => { const id = verFoto.id; setVerFoto(null); abrirSelectorFoto(id) }} style={{ background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.3)", color: "white", borderRadius: 9, padding: "8px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>📷 Cambiar foto</button>
