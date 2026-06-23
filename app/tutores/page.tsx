@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
+import { modulosActivos } from "@/lib/modulos"
 
 const OLIVA = "#6f7d49"
 
@@ -18,7 +19,10 @@ const labelStyle: React.CSSProperties = { display: "block", fontSize: 11, fontWe
 const inputStyle: React.CSSProperties = { width: "100%", padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 9, fontSize: 14, color: "#1d1b12", outline: "none", boxSizing: "border-box", background: "white" }
 const ESPECIES = ["Perro", "Gato", "Conejo", "Ave", "Roedor", "Otro"]
 const SEXOS = ["Macho", "Hembra"]
-const FORM_VACIO = { nombre: "", apellido: "", telefono: "", email: "", localidad: "", pacNombre: "", pacEspecie: "Perro", pacRaza: "", pacSexo: "", pacNac: "" }
+const FORM_VACIO = { nombre: "", apellido: "", cuit: "", porcentaje: "", telefono: "", email: "", localidad: "", pacNombre: "", pacEspecie: "Perro", pacRaza: "", pacSexo: "", pacNac: "" }
+// Módulos comerciales: si la org los tiene (mixto/personalizado), Tutores muestra
+// también CUIT y % margen, funcionando como un Clientes completo.
+const MODS_COM = ["proveedores", "compras", "cuentas", "reportes", "deudores", "cheques", "mermas", "pedidos", "tienda-online", "clientes"]
 
 export default function TutoresPage() {
   const router = useRouter()
@@ -37,6 +41,7 @@ export default function TutoresPage() {
   const [addPacTutor, setAddPacTutor] = useState<any>(null)
   const [addPacForm, setAddPacForm] = useState<any>({ nombre: "", especie: "Perro", raza: "", sexo: "", nac: "" })
   const [addPacGuardando, setAddPacGuardando] = useState(false)
+  const [comercial, setComercial] = useState(false)
 
   function abrirAddPac(t: any) { setAddPacTutor(t); setAddPacForm({ nombre: "", especie: "Perro", raza: "", sexo: "", nac: "" }) }
   async function guardarPaciente() {
@@ -77,8 +82,12 @@ export default function TutoresPage() {
 
   async function cargar() {
     setCargando(true)
-    const { data } = await supabase.from("clientes").select("id, nombre, apellido, telefono, email, localidad, pacientes(id, nombre, especie)").order("nombre")
+    const [{ data }, { data: org }] = await Promise.all([
+      supabase.from("clientes").select("id, nombre, apellido, cuit, porcentaje, telefono, email, localidad, pacientes(id, nombre, especie)").order("nombre"),
+      supabase.from("organizaciones").select("modulos").maybeSingle(),
+    ])
     setTutores(data || [])
+    setComercial(modulosActivos((org as any)?.modulos).some(m => MODS_COM.includes(m)))
     setCargando(false)
   }
   useEffect(() => { cargar() }, [])
@@ -86,14 +95,14 @@ export default function TutoresPage() {
   function abrirNuevo() { setEditId(null); setForm(FORM_VACIO); setModal(true) }
   function abrirEditar(t: any) {
     setEditId(t.id)
-    setForm({ ...FORM_VACIO, nombre: t.nombre || "", apellido: t.apellido || "", telefono: t.telefono || "", email: t.email || "", localidad: t.localidad || "" })
+    setForm({ ...FORM_VACIO, nombre: t.nombre || "", apellido: t.apellido || "", cuit: t.cuit || "", porcentaje: t.porcentaje != null ? String(t.porcentaje) : "", telefono: t.telefono || "", email: t.email || "", localidad: t.localidad || "" })
     setModal(true)
   }
 
   async function guardar() {
     if (!form.nombre.trim()) { mostrar("El nombre es obligatorio", "error"); return }
     setGuardando(true)
-    const payload = { nombre: form.nombre.trim(), apellido: form.apellido.trim(), telefono: form.telefono.trim(), email: form.email.trim() || null, localidad: form.localidad.trim() }
+    const payload = { nombre: form.nombre.trim(), apellido: form.apellido.trim(), cuit: form.cuit.trim() || null, porcentaje: Number(form.porcentaje || 0), telefono: form.telefono.trim(), email: form.email.trim() || null, localidad: form.localidad.trim() }
     try {
       if (editId) {
         const { error } = await supabase.from("clientes").update(payload).eq("id", editId); if (error) throw error
@@ -178,6 +187,7 @@ export default function TutoresPage() {
                     {t.telefono && <span>📞 {t.telefono}</span>}
                     {t.email && <span>📧 {t.email}</span>}
                     {t.localidad && <span>📍 {t.localidad}</span>}
+                    {comercial && t.cuit && <span>🧾 {t.cuit}</span>}
                     {!t.telefono && !t.email && !t.localidad && <span style={{ color: "#cbd5e1", fontStyle: "italic" }}>Sin datos de contacto</span>}
                   </div>
                   <div style={{ fontSize: 11.5, color: "#94a3b8", marginTop: 4 }}>
@@ -222,6 +232,18 @@ export default function TutoresPage() {
                 <label style={labelStyle}>Email <span style={{ color: "#94a3b8", fontWeight: 500, textTransform: "none" }}>(para recordatorios)</span></label>
                 <input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="Ej: tutor@email.com" style={inputStyle} />
               </div>
+              {comercial && (
+                <>
+                  <div>
+                    <label style={labelStyle}>CUIT <span style={{ color: "#94a3b8", fontWeight: 500, textTransform: "none" }}>(para facturar)</span></label>
+                    <input value={form.cuit} onChange={e => setForm({ ...form, cuit: e.target.value })} placeholder="Ej: 20-12345678-3" style={inputStyle} />
+                  </div>
+                  <div>
+                    <label style={labelStyle}>% Margen <span style={{ color: "#94a3b8", fontWeight: 500, textTransform: "none" }}>(recargo en ventas)</span></label>
+                    <input type="number" value={form.porcentaje} onChange={e => setForm({ ...form, porcentaje: e.target.value })} placeholder="0" style={inputStyle} />
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Primera mascota — solo al crear un tutor nuevo */}
