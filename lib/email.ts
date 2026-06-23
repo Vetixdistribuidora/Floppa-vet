@@ -10,7 +10,7 @@ export async function enviarEmail(opts: { to: string; subject: string; html: str
   const fromBase = process.env.RESEND_FROM || "onboarding@resend.dev"
   const addr = fromBase.match(/<(.+)>/)?.[1] || fromBase
   // El nombre visible es el del negocio (ej. "Veterinaria Toly")
-  const from = `${(opts.fromName || "Floppa").replace(/[<>]/g, "")} <${addr}>`
+  const from = `${(opts.fromName || "Flop").replace(/[<>]/g, "")} <${addr}>`
 
   const res = await fetch(RESEND_URL, {
     method: "POST",

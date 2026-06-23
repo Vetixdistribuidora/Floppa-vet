@@ -466,7 +466,7 @@ export default function ConfiguracionPage() {
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 13, fontWeight: 700, color: "#1d1b12" }}>Logo del negocio</div>
             <div style={{ fontSize: 12, color: "#64748b", marginTop: 2 }}>
-              {org?.logo_url ? "Se usa en todos los comprobantes." : "Si no subís uno, los comprobantes usan el logo de Floppa con tu nombre."}
+              {org?.logo_url ? "Se usa en todos los comprobantes." : "Si no subís uno, los comprobantes usan el logo de Flop con tu nombre."}
             </div>
             <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
               <button onClick={() => logoInputRef.current?.click()} disabled={subiendoLogo}

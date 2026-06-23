@@ -2,9 +2,9 @@ import type { MetadataRoute } from "next"
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Floppa",
-    short_name: "Floppa",
-    description: "Sistema de gestión para distribuidoras",
+    name: "Flop",
+    short_name: "Flop",
+    description: "Sistema de gestión para tu negocio",
     start_url: "/",
     display: "standalone",
     background_color: "#14130d",

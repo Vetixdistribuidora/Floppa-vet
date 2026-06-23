@@ -131,7 +131,7 @@ export default function RegistroPage() {
               <Logo size={52} />
             </div>
             <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 22, letterSpacing: 3, color: "white" }}>
-              FLOPPA
+              FLOP
             </div>
             <div style={{ fontSize: 11, color: "#8a9a5b", letterSpacing: 2, fontWeight: 600, marginTop: 3, textTransform: "uppercase" }}>
               Crear cuenta

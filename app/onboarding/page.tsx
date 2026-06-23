@@ -88,7 +88,7 @@ export default function OnboardingPage() {
           </div>
           <div style={{ fontWeight: 800, fontSize: 24, color: "white", letterSpacing: 2 }}>¡Bienvenido!</div>
           <div style={{ fontSize: 14, color: "#6b7280", marginTop: 8, lineHeight: 1.5 }}>
-            Configurá tu negocio para empezar a usar Floppa
+            Configurá tu negocio para empezar a usar Flop
           </div>
         </div>
 

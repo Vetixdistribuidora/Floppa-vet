@@ -221,8 +221,8 @@ export default function LoginPage() {
               <Logo size={58} />
             </div>
             <div className="logo-text">
-              <div className="brand">FLOPPA</div>
-              <div className="sub">Distribuidora</div>
+              <div className="brand">FLOP</div>
+              <div className="sub">Gestión</div>
             </div>
           </div>
 

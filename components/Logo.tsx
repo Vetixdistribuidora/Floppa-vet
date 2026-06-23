@@ -4,7 +4,7 @@ export default function Logo({ size = 40, className }: { size?: number; classNam
   return (
     <svg
       width={size} height={size} viewBox="0 0 64 64" fill="none"
-      className={className} role="img" aria-label="Floppa"
+      className={className} role="img" aria-label="Flop"
     >
       <rect x="3" y="3" width="58" height="58" rx="17" fill="#ddcca8" />
       <path d="M32 14 47 22 32 30 17 22Z" fill="#9aa86a" />

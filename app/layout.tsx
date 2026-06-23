@@ -13,7 +13,7 @@ import { MODULOS, modulosActivos, modulosVisibles, RUBROS } from "@/lib/modulos"
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const [usuario, setUsuario] = useState<any>(null)
-  const [orgNombre, setOrgNombre] = useState<string>("Floppa")
+  const [orgNombre, setOrgNombre] = useState<string>("Flop")
   const [modulos, setModulos] = useState<string[] | null>(null)
   const [modulosRol, setModulosRol] = useState<Record<string, string[]>>({})
   const [rol, setRol] = useState<string>("admin")
@@ -351,7 +351,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="Floppa" />
+        <meta name="apple-mobile-web-app-title" content="Flop" />
         <link rel="manifest" href="/manifest.webmanifest" />
         <link rel="apple-touch-icon" href="/api/icon-192" />
         <style>{`
