@@ -29,8 +29,8 @@ export const MODULOS: Modulo[] = [
     icon: <><circle cx="9" cy="7" r="3.2" /><path d="M3.5 20a5.5 5.5 0 0 1 11 0" /><path d="M16 7.7a3 3 0 0 1 0 5.6" /><path d="M17.5 20a5 5 0 0 0-3-4.4" /></> },
   { key: "pacientes", label: "Pacientes", path: "/pacientes", color: "#5ec5c0",
     icon: <><circle cx="5.5" cy="12.5" r="1.7" /><circle cx="9.5" cy="8" r="1.7" /><circle cx="14.5" cy="8" r="1.7" /><circle cx="18.5" cy="12.5" r="1.7" /><path d="M12 14c-2.4 0-4.3 1.6-4.3 3.5 0 1.3 1 2.3 2.4 2.3 1 0 1.4-.4 1.9-.4s.9.4 1.9.4c1.4 0 2.4-1 2.4-2.3 0-1.9-1.9-3.5-4.3-3.5z" /></> },
-  { key: "consultas", label: "Historia Clínica", path: "/consultas", color: "#f9a8d4",
-    icon: <><rect x="6" y="4" width="12" height="17" rx="2" /><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1" /><path d="M12 10.5v5M9.5 13h5" /></> },
+  // "consultas" (Historia Clínica) ya NO es un módulo/pestaña: se unificó dentro de
+  // Pacientes (se abre por paciente). La ruta /consultas sigue existiendo para esa vista.
   { key: "estudios", label: "Estudios", path: "/estudios", color: "#0891b2",
     icon: <><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z" /><path d="M9 13h6M9 17h4" /></> },
   { key: "recordatorios", label: "Sanidad", path: "/recordatorios", color: "#f59e0b",

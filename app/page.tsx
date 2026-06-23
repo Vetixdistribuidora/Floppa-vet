@@ -5,24 +5,44 @@ import { supabase } from "@/lib/supabase"
 import { useRouter } from "next/navigation"
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts"
 import DashboardVet from "@/components/DashboardVet"
+import { modulosActivos } from "@/lib/modulos"
 
-// El Inicio depende del rubro: veterinaria usa un panel clínico/operativo,
-// el resto de los rubros usa el panel comercial (ventas/compras/stock).
+// Módulos que definen "tiene parte clínica" / "tiene parte comercial".
+// (ventas/caja/productos son compartidos y no definen el tipo de Inicio.)
+const MODS_VET = ["sala", "turnos", "internacion", "tutores", "pacientes", "consultas", "estudios", "recordatorios", "cobros"]
+const MODS_COM = ["proveedores", "compras", "cuentas", "reportes", "deudores", "cheques", "mermas", "pedidos", "tienda-online", "clientes"]
+
+// El Inicio se arma POR MÓDULOS (no por rubro): muestra el panel clínico si hay
+// módulos de veterinaria y el comercial si hay módulos de comercio. Un plan
+// Personalizado mixto ve los dos paneles, uno debajo del otro.
 export default function DashboardPage() {
-  const [rubro, setRubro] = useState<string | null | undefined>(undefined)
+  const [estado, setEstado] = useState<{ vet: boolean; com: boolean } | null>(null)
   useEffect(() => {
     let cancelado = false
-    // El layout ya esperó a que la sesión esté lista, así que consultamos directo.
-    // Siempre resolvemos (con dato o con null) para no quedar nunca en "Cargando".
-    supabase.from("organizaciones").select("rubro").maybeSingle()
+    supabase.from("organizaciones").select("rubro, modulos").maybeSingle()
       .then(
-        ({ data }) => { if (!cancelado) setRubro((data?.rubro as string) || null) },
-        () => { if (!cancelado) setRubro(null) },
+        ({ data }) => {
+          if (cancelado) return
+          const mods = modulosActivos((data as any)?.modulos)
+          const vet = mods.some(m => MODS_VET.includes(m))
+          const com = mods.some(m => MODS_COM.includes(m))
+          // Fallback: si no hay módulos distintivos, mostrar comercial.
+          setEstado(vet || com ? { vet, com } : { vet: false, com: true })
+        },
+        () => { if (!cancelado) setEstado({ vet: false, com: true }) },
       )
     return () => { cancelado = true }
   }, [])
-  if (rubro === undefined) return <div style={{ padding: 40, textAlign: "center", color: "#94a3b8" }}>Cargando…</div>
-  return rubro === "veterinaria" ? <DashboardVet /> : <DashboardComercial />
+  if (!estado) return <div style={{ padding: 40, textAlign: "center", color: "#94a3b8" }}>Cargando…</div>
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 26 }}>
+      {estado.vet && <DashboardVet />}
+      {estado.vet && estado.com && (
+        <div style={{ fontSize: 13, fontWeight: 800, color: "#64748b", letterSpacing: 1, textTransform: "uppercase", borderTop: "1px solid #e2e8f0", paddingTop: 20 }}>🛒 Comercio</div>
+      )}
+      {estado.com && <DashboardComercial />}
+    </div>
+  )
 }
 
 function fmt(num: number) {
