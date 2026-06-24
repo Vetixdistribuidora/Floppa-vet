@@ -19,10 +19,36 @@ const labelStyle: React.CSSProperties = { display: "block", fontSize: 11, fontWe
 const inputStyle: React.CSSProperties = { width: "100%", padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 9, fontSize: 14, color: "#1d1b12", outline: "none", boxSizing: "border-box", background: "white" }
 const ESPECIES = ["Perro", "Gato", "Conejo", "Ave", "Roedor", "Otro"]
 const SEXOS = ["Macho", "Hembra"]
-const FORM_VACIO = { nombre: "", apellido: "", cuit: "", porcentaje: "", telefono: "", email: "", localidad: "", pacNombre: "", pacEspecie: "Perro", pacRaza: "", pacSexo: "", pacNac: "" }
+const FORM_VACIO = { nombre: "", apellido: "", cuit: "", porcentaje: "", telefono: "", email: "", localidad: "", pacNombre: "", pacEspecie: "Perro", pacRaza: "", pacSexo: "", pacNac: "", pacPeso: "", pacColor: "", pacNotas: "", pacEtiquetas: [] as string[] }
+const ADDPAC_VACIO = { nombre: "", especie: "Perro", raza: "", sexo: "", nac: "", peso: "", color: "", notas: "", etiquetas: [] as string[] }
+const ETIQUETAS_SUGERIDAS = ["Reproductor", "Donante", "Castrado/a", "Gestante", "Con crías", "Geronte", "Agresivo"]
 // Módulos comerciales: si la org los tiene (mixto/personalizado), Tutores muestra
 // también CUIT y % margen, funcionando como un Clientes completo.
 const MODS_COM = ["proveedores", "compras", "cuentas", "reportes", "deudores", "cheques", "mermas", "pedidos", "tienda-online", "clientes"]
+
+// Campos extra de mascota (peso, color, nota, etiquetas), iguales que en Pacientes.
+function CamposMascotaExtra({ peso, color, notas, etiquetas, onChange, onToggleEtq }: {
+  peso: string; color: string; notas: string; etiquetas: string[]
+  onChange: (campo: "peso" | "color" | "notas", val: string) => void
+  onToggleEtq: (et: string) => void
+}) {
+  return (
+    <>
+      <div><label style={labelStyle}>Peso (kg)</label><input type="number" step="0.01" value={peso} onChange={e => onChange("peso", e.target.value)} placeholder="0" style={inputStyle} /></div>
+      <div><label style={labelStyle}>Color / seña</label><input value={color} onChange={e => onChange("color", e.target.value)} placeholder="Ej: Marrón" style={inputStyle} /></div>
+      <div style={{ gridColumn: "1 / -1" }}><label style={labelStyle}>Nota / patología de base</label><textarea value={notas} onChange={e => onChange("notas", e.target.value)} rows={2} placeholder="Alergias, patología de base, observaciones…" style={{ ...inputStyle, resize: "vertical" }} /></div>
+      <div style={{ gridColumn: "1 / -1" }}>
+        <label style={labelStyle}>Etiquetas</label>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+          {ETIQUETAS_SUGERIDAS.map(et => {
+            const on = (etiquetas || []).includes(et)
+            return <button key={et} type="button" onClick={() => onToggleEtq(et)} style={{ padding: "6px 12px", borderRadius: 999, cursor: "pointer", fontSize: 12.5, fontWeight: 700, border: on ? "1.5px solid #6f7d49" : "1px solid #e2e8f0", background: on ? "#f4f2e6" : "white", color: on ? "#4b5a2c" : "#64748b" }}>{on ? "✓ " : ""}{et}</button>
+          })}
+        </div>
+      </div>
+    </>
+  )
+}
 
 export default function TutoresPage() {
   const router = useRouter()
@@ -39,11 +65,11 @@ export default function TutoresPage() {
   const [salaForm, setSalaForm] = useState<any>({ paciente_id: "", motivo: "", prioridad: "normal" })
   const [salaGuardando, setSalaGuardando] = useState(false)
   const [addPacTutor, setAddPacTutor] = useState<any>(null)
-  const [addPacForm, setAddPacForm] = useState<any>({ nombre: "", especie: "Perro", raza: "", sexo: "", nac: "" })
+  const [addPacForm, setAddPacForm] = useState<any>(ADDPAC_VACIO)
   const [addPacGuardando, setAddPacGuardando] = useState(false)
   const [comercial, setComercial] = useState(false)
 
-  function abrirAddPac(t: any) { setAddPacTutor(t); setAddPacForm({ nombre: "", especie: "Perro", raza: "", sexo: "", nac: "" }) }
+  function abrirAddPac(t: any) { setAddPacTutor(t); setAddPacForm(ADDPAC_VACIO) }
   async function guardarPaciente() {
     if (!addPacForm.nombre.trim()) { mostrar("Poné el nombre de la mascota", "error"); return }
     setAddPacGuardando(true)
@@ -54,6 +80,10 @@ export default function TutoresPage() {
       raza: addPacForm.raza.trim() || null,
       sexo: addPacForm.sexo || null,
       fecha_nacimiento: addPacForm.nac || null,
+      peso: addPacForm.peso === "" ? null : Number(addPacForm.peso),
+      color: addPacForm.color.trim() || null,
+      notas: addPacForm.notas.trim() || null,
+      etiquetas: addPacForm.etiquetas || [],
     }])
     setAddPacGuardando(false)
     if (error) { mostrar("Error: " + error.message, "error"); return }
@@ -118,6 +148,10 @@ export default function TutoresPage() {
             raza: form.pacRaza.trim() || null,
             sexo: form.pacSexo || null,
             fecha_nacimiento: form.pacNac || null,
+            peso: form.pacPeso === "" ? null : Number(form.pacPeso),
+            color: form.pacColor.trim() || null,
+            notas: form.pacNotas.trim() || null,
+            etiquetas: form.pacEtiquetas || [],
           }])
           if (ePac) { mostrar("Tutor creado, pero falló la mascota: " + ePac.message, "error"); setModal(false); cargar(); return }
           mostrar("Tutor y mascota agregados", "ok")
@@ -273,10 +307,13 @@ export default function TutoresPage() {
                       {SEXOS.map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
                   </div>
-                  <div style={{ gridColumn: "1 / -1" }}>
+                  <div>
                     <label style={labelStyle}>Nacimiento</label>
                     <input type="date" value={form.pacNac} onChange={e => setForm({ ...form, pacNac: e.target.value })} style={inputStyle} />
                   </div>
+                  <CamposMascotaExtra peso={form.pacPeso} color={form.pacColor} notas={form.pacNotas} etiquetas={form.pacEtiquetas}
+                    onChange={(c, v) => setForm({ ...form, ["pac" + c[0].toUpperCase() + c.slice(1)]: v })}
+                    onToggleEtq={(et) => setForm({ ...form, pacEtiquetas: form.pacEtiquetas.includes(et) ? form.pacEtiquetas.filter((x: string) => x !== et) : [...form.pacEtiquetas, et] })} />
                 </div>
               </div>
             )}
@@ -292,7 +329,7 @@ export default function TutoresPage() {
       {/* Modal agregar mascota a un tutor */}
       {addPacTutor && (
         <div onClick={() => setAddPacTutor(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 }}>
-          <div onClick={e => e.stopPropagation()} style={{ background: "white", borderRadius: 18, padding: "26px 28px", width: "100%", maxWidth: 460 }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: "white", borderRadius: 18, padding: "26px 28px", width: "100%", maxWidth: 460, maxHeight: "90vh", overflowY: "auto" }}>
             <h2 style={{ margin: "0 0 4px", fontSize: 19, fontWeight: 800, color: "#1d1b12" }}>🐾 Nueva mascota</h2>
             <p style={{ margin: "0 0 18px", fontSize: 13, color: "#64748b" }}>Tutor: {`${addPacTutor.nombre || ""} ${addPacTutor.apellido || ""}`.trim()}</p>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
@@ -317,10 +354,13 @@ export default function TutoresPage() {
                   {SEXOS.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
               </div>
-              <div style={{ gridColumn: "1 / -1" }}>
+              <div>
                 <label style={labelStyle}>Nacimiento</label>
                 <input type="date" value={addPacForm.nac} onChange={e => setAddPacForm({ ...addPacForm, nac: e.target.value })} style={inputStyle} />
               </div>
+              <CamposMascotaExtra peso={addPacForm.peso} color={addPacForm.color} notas={addPacForm.notas} etiquetas={addPacForm.etiquetas}
+                onChange={(c, v) => setAddPacForm({ ...addPacForm, [c]: v })}
+                onToggleEtq={(et) => setAddPacForm({ ...addPacForm, etiquetas: addPacForm.etiquetas.includes(et) ? addPacForm.etiquetas.filter((x: string) => x !== et) : [...addPacForm.etiquetas, et] })} />
             </div>
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 22 }}>
               <button onClick={() => setAddPacTutor(null)} style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 9, padding: "10px 18px", fontSize: 14, fontWeight: 600, color: "#475569", cursor: "pointer" }}>Cancelar</button>
