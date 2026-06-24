@@ -268,6 +268,12 @@ export default function LoginPage() {
             </a>
           </div>
 
+          <div style={{ textAlign: "center", marginTop: 14, fontSize: 11, color: "#4b5563" }}>
+            <a href="/terminos" style={{ color: "#6b7280", textDecoration: "none" }}>Términos</a>
+            {" · "}
+            <a href="/privacidad" style={{ color: "#6b7280", textDecoration: "none" }}>Privacidad</a>
+          </div>
+
         </div>
       </div>
     </>

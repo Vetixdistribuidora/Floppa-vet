@@ -215,6 +215,13 @@ export default function RegistroPage() {
             15 días de prueba gratuita · Sin tarjeta requerida
           </div>
 
+          <div style={{ textAlign: "center", marginTop: 12, fontSize: 11, color: "#4b5563", lineHeight: 1.6 }}>
+            Al crear tu cuenta aceptás los{" "}
+            <a href="/terminos" style={{ color: "#9aa86a", textDecoration: "none", fontWeight: 600 }}>Términos</a>{" "}
+            y la{" "}
+            <a href="/privacidad" style={{ color: "#9aa86a", textDecoration: "none", fontWeight: 600 }}>Política de Privacidad</a>.
+          </div>
+
         </div>
       </div>
     </>
