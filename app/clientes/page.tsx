@@ -457,7 +457,7 @@ export default function Clientes() {
       {modalNuevo && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 16 }}
           onClick={() => setModalNuevo(false)}>
-          <div style={{ background: "#1d1b12", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "36px 32px", width: "100%", maxWidth: 480, boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}
+          <div style={{ background: "#1d1b12", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "36px 32px", width: "100%", maxWidth: 480, maxHeight: "90vh", overflowY: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}
             onClick={e => e.stopPropagation()}>
             <h2 style={{ color: "white", fontSize: 18, fontWeight: 700, margin: "0 0 24px" }}>Nuevo cliente</h2>
             <div className="clientes-modal-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
@@ -491,7 +491,7 @@ export default function Clientes() {
       {modalEditar && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 16 }}
           onClick={() => setModalEditar(null)}>
-          <div style={{ background: "#1d1b12", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "36px 32px", width: "100%", maxWidth: 480, boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}
+          <div style={{ background: "#1d1b12", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "36px 32px", width: "100%", maxWidth: 480, maxHeight: "90vh", overflowY: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.6)" }}
             onClick={e => e.stopPropagation()}>
             <h2 style={{ color: "white", fontSize: 18, fontWeight: 700, margin: "0 0 24px" }}>Editar cliente</h2>
             <div className="clientes-modal-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
