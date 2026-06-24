@@ -171,6 +171,12 @@ export default function ConsultasPage() {
         if (error) throw error
         mostrar("Consulta registrada", "ok")
       }
+      // Mantener el peso del paciente actualizado con el de su consulta más reciente.
+      const pid = Number(form.paciente_id)
+      const { data: ult } = await supabase.from("consultas")
+        .select("peso").eq("paciente_id", pid).not("peso", "is", null)
+        .order("fecha", { ascending: false }).order("id", { ascending: false }).limit(1).maybeSingle()
+      if (ult?.peso != null) await supabase.from("pacientes").update({ peso: ult.peso }).eq("id", pid)
       setModal(false); cargar()
     } catch (e: any) {
       mostrar("Error: " + (e?.message || "desconocido"), "error")
