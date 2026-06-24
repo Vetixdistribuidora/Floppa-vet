@@ -5,10 +5,10 @@ const ACTUALIZADO = "Junio 2026"
 // NOTA: completá los datos entre corchetes con los de tu empresa (razón social,
 // CUIT, domicilio, email de contacto) antes de usarlo comercialmente, y revisalo
 // con un asesor legal. Es un punto de partida, no asesoramiento jurídico.
-const RAZON_SOCIAL = "[Razón social del titular de Flop]"
-const CUIT = "[CUIT]"
-const DOMICILIO = "[Domicilio legal]"
-const CONTACTO = "[email de contacto]"
+const RAZON_SOCIAL = "Santiago Zabalegui"
+const CUIT = "20-40668840-3"
+const DOMICILIO = "General Manuel Dorrego 485, San Rafael, Mendoza"
+const CONTACTO = "santiagozabalegui@gmail.com"
 
 export default function TerminosPage() {
   return (

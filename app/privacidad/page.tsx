@@ -4,10 +4,10 @@ const ACTUALIZADO = "Junio 2026"
 
 // NOTA: completá los datos entre corchetes con los de tu empresa antes de usarlo
 // comercialmente, y revisalo con un asesor legal. Punto de partida, no asesoramiento.
-const RAZON_SOCIAL = "[Razón social del titular de Flop]"
-const CUIT = "[CUIT]"
-const DOMICILIO = "[Domicilio legal]"
-const CONTACTO = "[email de contacto]"
+const RAZON_SOCIAL = "Santiago Zabalegui"
+const CUIT = "20-40668840-3"
+const DOMICILIO = "General Manuel Dorrego 485, San Rafael, Mendoza"
+const CONTACTO = "santiagozabalegui@gmail.com"
 
 export default function PrivacidadPage() {
   return (
