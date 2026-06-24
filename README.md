@@ -1,36 +1,47 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Flop
 
-## Getting Started
+Sistema de gestión multi-rubro (distribuidoras, veterinarias, comercios) construido como SaaS multicuenta. Next.js 16 (App Router) + Supabase (Postgres con RLS) + Vercel.
 
-First, run the development server:
+Cada cliente es una **organización** aislada por `organizacion_id` con Row Level Security. Los módulos visibles se configuran por rubro y por rol (admin / veterinario / recepción).
+
+## Desarrollo
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev      # http://localhost:3000
+npm run build    # build de producción
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Variables de entorno (`.env.local`)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Variable | Descripción |
+|----------|-------------|
+| `NEXT_PUBLIC_SUPABASE_URL` | URL base del proyecto Supabase (`https://<ref>.supabase.co`, **sin** `/rest/v1`) |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Anon key de Supabase |
+| `SUPABASE_SERVICE_ROLE_KEY` | Service role key (solo server: APIs `/api/*`) |
+| `NEXT_PUBLIC_APP_URL` | URL pública de la app (ej. `https://floppa-vet.vercel.app`) |
+| `NEXT_PUBLIC_OWNER_EMAIL` | Email del dueño de la plataforma (ve `/admin`) |
+| `MP_ACCESS_TOKEN_PROD` / `MP_ACCESS_TOKEN_TEST` | Access token de MercadoPago (prod / pruebas) |
+| `MP_WEBHOOK_SECRET` | Secreto de la app MP para validar la firma del webhook (opcional pero recomendado) |
+| `RESEND_API_KEY` / `RESEND_FROM` | Envío de mails (recordatorios, cumpleaños). `RESEND_FROM` necesita dominio verificado para mandar a terceros |
+| `CRON_SECRET` | Protege el cron diario `/api/cron/recordatorios` |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Base de datos
 
-## Learn More
+El esquema y las políticas RLS están en los `.sql` de la raíz. Para aplicar una migración:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+node scripts/run_sql.mjs <archivo.sql>
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Migraciones clave: `migration_multitenant.sql` (multitenancy + RLS), `fase_b_seguridad.sql` (aislamiento), `fix_paywall.sql` (el cliente no puede auto-activarse), `paywall_acceso.sql` (el equipo puede leer la suscripción de su org para el gate de vencimiento).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Cobro / suscripciones
 
-## Deploy on Vercel
+- Onboarding crea una suscripción **trial** (15 días) con el plan del rubro.
+- Al vencer, el layout bloquea el acceso (paywall) hasta reactivar desde **Configuración**.
+- Pago recurrente con MercadoPago (`/api/mp/crear-link` → preapproval; `/api/webhook/mercadopago` actualiza el estado).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Nota de build (Next 16)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+`next build` puede fallar **localmente en Windows** al prerenderizar la página interna `/_global-error` con un `InvariantError` (bug conocido de Next 16, no del código de la app: ver [vercel/next.js#87719](https://github.com/vercel/next.js/issues/87719)). El build en Vercel (Linux) no se ve afectado. Las rutas de la app se fuerzan a dinámicas desde el root layout (Server Component), así que no se prerenderizan.

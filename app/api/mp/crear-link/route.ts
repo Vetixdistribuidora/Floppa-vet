@@ -8,7 +8,7 @@ function getAccessToken() {
     : process.env.MP_ACCESS_TOKEN_TEST
 }
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://distribuidora-vet.vercel.app"
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://floppa-vet.vercel.app"
 
 export async function POST(req: NextRequest) {
   try {
@@ -18,13 +18,22 @@ export async function POST(req: NextRequest) {
     const ACCESS_TOKEN = getAccessToken()
     if (!ACCESS_TOKEN) return NextResponse.json({ error: "Credenciales MP no configuradas" }, { status: 500 })
 
+    // Precio real según el plan del rubro (o el precio custom del cliente).
+    // Antes estaba hardcodeado en 60000 e ignoraba el plan elegido en el onboarding.
+    const { data: susc } = await supabaseAdmin
+      .from("suscripciones")
+      .select("precio_custom, planes(precio)")
+      .eq("email", email)
+      .maybeSingle()
+    const monto = Number(susc?.precio_custom ?? (susc as any)?.planes?.precio ?? 60000)
+
     // Crear suscripción recurrente en MercadoPago (preapproval)
     const body = {
       reason: `Flop — ${nombre_negocio || email}`,
       auto_recurring: {
         frequency: 1,
         frequency_type: "months",
-        transaction_amount: 60000,
+        transaction_amount: monto,
         currency_id: "ARS",
       },
       payer_email: email,
