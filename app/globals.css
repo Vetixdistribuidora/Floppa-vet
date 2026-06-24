@@ -220,9 +220,9 @@ input, select, textarea {
   .modal-inner { padding: 22px 18px !important; }
 
   /* Modales: el overlay scrollea y el contenido arranca arriba, para SIEMPRE poder
-     llegar a los botones (Crear/Guardar) en pantallas chicas. Apunta solo a los
-     overlays oscuros (no toca toasts, menú lateral ni pantallas de carga). */
-  div[style*="fixed"][style*="rgba(0,0,0,0."] {
+     llegar a los botones (Crear/Guardar) en pantallas chicas. Apunta a los overlays
+     de modal (fixed + centrado); no toca toasts, menú lateral ni pantallas de carga. */
+  div[style*="position: fixed"][style*="justify-content: center"] {
     align-items: flex-start !important;
     overflow-y: auto !important;
   }
