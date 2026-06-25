@@ -96,7 +96,11 @@ export default function AdminPage() {
     setOrgForm({ rubro: org.rubro || "distribuidora", modulos: modulosActivos(org.modulos), precio: s.precio_custom != null ? String(s.precio_custom) : "" })
     setCargandoOrg(false)
   }
-  function aplicarRubroAdmin(rubro: string) { setOrgForm(f => ({ ...f, rubro, modulos: PRESETS_RUBRO[rubro] || f.modulos })) }
+  function aplicarRubroAdmin(rubro: string) {
+    // Personalizado: el admin cura los módulos a mano → NO pisar la selección actual.
+    // Los demás rubros sí aplican su preset.
+    setOrgForm(f => ({ ...f, rubro, modulos: rubro === "personalizado" ? f.modulos : (PRESETS_RUBRO[rubro] || f.modulos) }))
+  }
   function toggleModAdmin(key: string) { setOrgForm(f => ({ ...f, modulos: f.modulos.includes(key) ? f.modulos.filter(k => k !== key) : [...f.modulos, key] })) }
   async function guardarPlan() {
     if (!editor) return

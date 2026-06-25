@@ -53,8 +53,12 @@ export default function OnboardingPage() {
     const modulos = PRESETS_RUBRO[rubro] || DEFAULT_MODULOS
     await supabase.from("organizaciones").update({ rubro, modulos }).eq("id", orgId)
 
-    // Suscripción trial (10 días) con el plan del rubro
-    const planId = planes.find(p => p.rubro === rubro)?.id ?? 1
+    // Suscripción trial (10 días) con el plan del rubro.
+    // Consultamos el plan DIRECTO a la base para no depender del estado `planes`:
+    // si todavía no cargó, antes caía al plan 1 (Distribuidora) y la suscripción
+    // quedaba desfasada del rubro elegido (ej. Personalizado mostraba Distribuidora).
+    const { data: planRow } = await supabase.from("planes").select("id").eq("rubro", rubro).eq("activo", true).maybeSingle()
+    const planId = planRow?.id ?? planes.find(p => p.rubro === rubro)?.id ?? 1
     const { data: { user } } = await supabase.auth.getUser()
     if (user?.email) {
       const venc = new Date(); venc.setDate(venc.getDate() + 10)
