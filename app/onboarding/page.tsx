@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 import Logo from "@/components/Logo"
-import { RUBROS, PRESETS_RUBRO, DEFAULT_MODULOS } from "@/lib/modulos"
+import { RUBROS, PRESETS_RUBRO, DEFAULT_MODULOS, MODULOS } from "@/lib/modulos"
 
 export default function OnboardingPage() {
   const router = useRouter()
@@ -27,9 +27,14 @@ export default function OnboardingPage() {
   }, [])
 
   const precioDe = (r: string) => {
+    if (r === "personalizado") return "A convenir"
     const p = planes.find(x => x.rubro === r)
     return p ? "$" + Math.round(Number(p.precio)).toLocaleString("es-AR") + "/mes" : ""
   }
+
+  // Módulos (con su nombre lindo) que incluye cada rubro, para mostrar "qué aporta el plan"
+  const incluyeDe = (r: string) =>
+    (PRESETS_RUBRO[r] || []).map(k => MODULOS.find(m => m.key === k)?.label || k)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -120,41 +125,61 @@ export default function OnboardingPage() {
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {RUBROS.map(r => {
                 const sel = rubro === r.key
+                const mods = incluyeDe(r.key)
                 return (
                   <button
                     key={r.key} type="button" onClick={() => setRubro(r.key)}
                     style={{
-                      display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10,
-                      padding: "13px 16px", borderRadius: 12, cursor: "pointer", textAlign: "left",
+                      display: "flex", flexDirection: "column", alignItems: "stretch",
+                      padding: 0, borderRadius: 12, cursor: "pointer", textAlign: "left", overflow: "hidden",
                       background: sel ? "rgba(138,154,91,0.14)" : "rgba(255,255,255,0.04)",
                       border: `1px solid ${sel ? "#8a9a5b" : "rgba(255,255,255,0.1)"}`,
                       transition: "all .15s",
                     }}>
-                    <span style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                      <span style={{
-                        width: 18, height: 18, borderRadius: "50%", flexShrink: 0,
-                        border: `2px solid ${sel ? "#8a9a5b" : "#4b5563"}`,
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                      }}>
-                        {sel && <span style={{ width: 9, height: 9, borderRadius: "50%", background: "#8a9a5b" }} />}
+                    {/* Fila principal: rubro + precio */}
+                    <span style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, padding: "13px 16px" }}>
+                      <span style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                        <span style={{
+                          width: 18, height: 18, borderRadius: "50%", flexShrink: 0,
+                          border: `2px solid ${sel ? "#8a9a5b" : "#4b5563"}`,
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                        }}>
+                          {sel && <span style={{ width: 9, height: 9, borderRadius: "50%", background: "#8a9a5b" }} />}
+                        </span>
+                        <span style={{ color: "white", fontSize: 14, fontWeight: 600 }}>{r.label}</span>
                       </span>
-                      <span style={{ color: "white", fontSize: 14, fontWeight: 600 }}>{r.label}</span>
+                      <span style={{ color: sel ? "#a8b67d" : "#6b7280", fontSize: 13, fontWeight: 700, whiteSpace: "nowrap" }}>
+                        {precioDe(r.key)}
+                      </span>
                     </span>
-                    <span style={{ color: sel ? "#a8b67d" : "#6b7280", fontSize: 13, fontWeight: 700, whiteSpace: "nowrap" }}>
-                      {precioDe(r.key)}
-                    </span>
+                    {/* Detalle "qué incluye" — al seleccionar el rubro */}
+                    {sel && (
+                      <span style={{ display: "block", padding: "12px 16px 14px", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
+                        {r.key === "personalizado" ? (
+                          <span style={{ display: "block", fontSize: 12.5, color: "#a8b67d", lineHeight: 1.5 }}>
+                            Plan a medida: arrancás con lo esencial (productos, ventas, caja) y habilitamos los módulos que necesites. Te pasamos el precio según lo que armemos.
+                          </span>
+                        ) : (
+                          <>
+                            <span style={{ display: "block", fontSize: 10.5, color: "#7e8a5e", fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase", marginBottom: 8 }}>Incluye</span>
+                            <span style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                              {mods.map(m => (
+                                <span key={m} style={{ fontSize: 11.5, color: "#d7e0bf", background: "rgba(138,154,91,0.16)", border: "1px solid rgba(138,154,91,0.3)", borderRadius: 999, padding: "3px 9px" }}>
+                                  {m}
+                                </span>
+                              ))}
+                            </span>
+                          </>
+                        )}
+                      </span>
+                    )}
                   </button>
                 )
               })}
             </div>
             <div style={{ fontSize: 12, color: "#4b5563", marginTop: 10 }}>
-              Definí los módulos y el plan. Podés cambiarlo después desde Configuración. Empezás con 15 días gratis.
+              Tocá un rubro para ver qué incluye. Podés ajustar los módulos después desde Configuración. Empezás con 15 días gratis.
             </div>
-            {rubro === "personalizado" && (
-              <div style={{ fontSize: 12, color: "#a8b67d", background: "rgba(138,154,91,0.10)", border: "1px solid rgba(138,154,91,0.25)", borderRadius: 10, padding: "10px 12px", marginTop: 10 }}>
-                Arrancás con lo esencial (productos, ventas, caja). Contanos qué combinación necesitás y habilitamos el resto de los módulos en tu plan.
-              </div>
-            )}
           </div>
 
           {error && (
