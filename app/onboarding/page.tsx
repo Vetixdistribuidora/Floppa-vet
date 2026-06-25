@@ -53,11 +53,11 @@ export default function OnboardingPage() {
     const modulos = PRESETS_RUBRO[rubro] || DEFAULT_MODULOS
     await supabase.from("organizaciones").update({ rubro, modulos }).eq("id", orgId)
 
-    // Suscripción trial (15 días) con el plan del rubro
+    // Suscripción trial (10 días) con el plan del rubro
     const planId = planes.find(p => p.rubro === rubro)?.id ?? 1
     const { data: { user } } = await supabase.auth.getUser()
     if (user?.email) {
-      const venc = new Date(); venc.setDate(venc.getDate() + 15)
+      const venc = new Date(); venc.setDate(venc.getDate() + 10)
       await supabase.from("suscripciones").upsert({
         email: user.email,
         nombre_negocio: nombre.trim(),
@@ -178,7 +178,7 @@ export default function OnboardingPage() {
               })}
             </div>
             <div style={{ fontSize: 12, color: "#4b5563", marginTop: 10 }}>
-              Tocá un rubro para ver qué incluye. Podés ajustar los módulos después desde Configuración. Empezás con 15 días gratis.
+              Tocá un rubro para ver qué incluye. Podés ajustar los módulos después desde Configuración. Empezás con 10 días gratis.
             </div>
           </div>
 

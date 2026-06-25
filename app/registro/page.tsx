@@ -67,7 +67,7 @@ export default function RegistroPage() {
           <p style={{ color: "#9ca3af", fontSize: 14, lineHeight: 1.6, marginBottom: 24 }}>
             Te enviamos un email de confirmación a <strong style={{ color: "white" }}>{email}</strong>.
             <br /><br />
-            Confirmá tu email y después iniciá sesión. Tenés <strong style={{ color: "#fbbf24" }}>15 días de prueba gratuita</strong>.
+            Confirmá tu email y después iniciá sesión. Tenés <strong style={{ color: "#fbbf24" }}>10 días de prueba gratuita</strong>.
           </p>
           <button
             onClick={() => router.push("/login")}
@@ -212,7 +212,7 @@ export default function RegistroPage() {
           </div>
 
           <div style={{ textAlign: "center", marginTop: 14, fontSize: 11, color: "#4b5563", lineHeight: 1.5 }}>
-            15 días de prueba gratuita · Sin tarjeta requerida
+            10 días de prueba gratuita · Sin tarjeta requerida
           </div>
 
           <div style={{ textAlign: "center", marginTop: 12, fontSize: 11, color: "#4b5563", lineHeight: 1.6 }}>

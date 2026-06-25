@@ -57,9 +57,9 @@ export default function ConfiguracionPage() {
       .eq("email", user.email)
       .maybeSingle()
 
-    // Si no tiene fila todavía → crear trial automáticamente (15 días)
+    // Si no tiene fila todavía → crear trial automáticamente (10 días)
     if (!data) {
-      const venc = new Date(); venc.setDate(venc.getDate() + 15)
+      const venc = new Date(); venc.setDate(venc.getDate() + 10)
       const { data: nuevo } = await supabase
         .from("suscripciones")
         .insert({

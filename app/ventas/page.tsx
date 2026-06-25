@@ -1271,6 +1271,14 @@ thead th:last-child{text-align:right}
     generarHTMLEImprimir({ nroFactura, clienteSeleccionado, carrito: carritoEfectivo, subtotal, ivaNum, total, esCuentaCorriente, metodoCobro, saldoCliente }, tipo)
   }
 
+  // Recibo de la venta en curso (para veterinaria, reemplaza al Remito en "Nueva venta").
+  async function imprimirReciboPreview() {
+    if (!clienteSeleccionado || carrito.length === 0) return
+    const carritoEfectivo = carrito.map(item => ({ ...item, precio: precioEfectivo(item) }))
+    const saldoCliente = clienteId ? await getSaldoCliente(clienteId) : 0
+    generarReciboHTMLEImprimir({ nroFactura, clienteSeleccionado, carrito: carritoEfectivo, subtotal, ivaNum, total, esCuentaCorriente, metodoCobro, fecha: new Date().toLocaleDateString("es-AR"), saldoCliente })
+  }
+
   // Búsqueda tolerante: ignora acentos y matchea aunque junten o separen palabras
   const sinAcentos = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")
   const terminoBusqVentas = sinAcentos(busquedaProducto.trim().replace(/\s+/g, " "))
@@ -1612,10 +1620,17 @@ thead th:last-child{text-align:right}
                     style={{ padding: "11px", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, color: "#9ca3af", fontSize: 12, fontWeight: 600, cursor: "pointer", opacity: !clienteSeleccionado || carrito.length === 0 ? 0.4 : 1 }}>
                     🖨️ Presupuesto
                   </button>
-                  <button onClick={() => imprimirTicket("remito")} disabled={!clienteSeleccionado || carrito.length === 0}
-                    style={{ padding: "11px", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, color: "#9ca3af", fontSize: 12, fontWeight: 600, cursor: "pointer", opacity: !clienteSeleccionado || carrito.length === 0 ? 0.4 : 1 }}>
-                    📦 Remito
-                  </button>
+                  {rubroOrg === "veterinaria" ? (
+                    <button onClick={imprimirReciboPreview} disabled={!clienteSeleccionado || carrito.length === 0}
+                      style={{ padding: "11px", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, color: "#9ca3af", fontSize: 12, fontWeight: 600, cursor: "pointer", opacity: !clienteSeleccionado || carrito.length === 0 ? 0.4 : 1 }}>
+                      🧾 Recibo
+                    </button>
+                  ) : (
+                    <button onClick={() => imprimirTicket("remito")} disabled={!clienteSeleccionado || carrito.length === 0}
+                      style={{ padding: "11px", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, color: "#9ca3af", fontSize: 12, fontWeight: 600, cursor: "pointer", opacity: !clienteSeleccionado || carrito.length === 0 ? 0.4 : 1 }}>
+                      📦 Remito
+                    </button>
+                  )}
                 </div>
               </div>
               {carrito.length > 0 && (
@@ -2133,12 +2148,14 @@ thead th:last-child{text-align:right}
                 style={{ flex: 1, minWidth: 110, padding: "10px", background: "linear-gradient(135deg, #059669, #10b981)", border: "none", borderRadius: 10, color: "white", fontSize: 13, fontWeight: 700, cursor: "pointer", opacity: reimprimiendo || loadingDetalle ? 0.6 : 1 }}>
                 🧾 Recibo
               </button>
-              <button
-                onClick={() => reimprimir(ventaDetalle, detalleItems.length ? detalleItems : undefined, "remito")}
-                disabled={reimprimiendo || loadingDetalle}
-                style={{ flex: 1, minWidth: 110, padding: "10px", background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 10, color: "#e2e8f0", fontSize: 13, fontWeight: 700, cursor: "pointer", opacity: reimprimiendo || loadingDetalle ? 0.6 : 1 }}>
-                📦 Remito
-              </button>
+              {rubroOrg !== "veterinaria" && (
+                <button
+                  onClick={() => reimprimir(ventaDetalle, detalleItems.length ? detalleItems : undefined, "remito")}
+                  disabled={reimprimiendo || loadingDetalle}
+                  style={{ flex: 1, minWidth: 110, padding: "10px", background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 10, color: "#e2e8f0", fontSize: 13, fontWeight: 700, cursor: "pointer", opacity: reimprimiendo || loadingDetalle ? 0.6 : 1 }}>
+                  📦 Remito
+                </button>
+              )}
               {ventaDetalle.estado !== "anulada" && (
                 <button onClick={() => abrirModalNC(ventaDetalle)} disabled={loadingDetalle || cargandoItemsNC} style={{ flex: 1, minWidth: 120, padding: "10px", background: "linear-gradient(135deg, #059669, #10b981)", border: "none", borderRadius: 10, color: "white", fontSize: 13, fontWeight: 700, cursor: "pointer", opacity: (loadingDetalle || cargandoItemsNC) ? 0.6 : 1 }}>
                   {cargandoItemsNC ? "Cargando..." : "↩️ Nota de Crédito"}

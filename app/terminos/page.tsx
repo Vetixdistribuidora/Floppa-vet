@@ -40,7 +40,7 @@ export default function TerminosPage() {
 
         <h2 style={h2}>3. Suscripción, prueba y pagos</h2>
         <p style={p}>
-          El Servicio incluye un período de prueba gratuito (15 días). Finalizado, se requiere una
+          El Servicio incluye un período de prueba gratuito (10 días). Finalizado, se requiere una
           suscripción mensual cuyo precio depende del rubro/plan elegido. Los pagos se procesan a
           través de MercadoPago con renovación automática mensual. Podés cancelar cuando quieras; la
           cancelación detiene futuras renovaciones y el acceso continúa hasta el fin del período pago.
