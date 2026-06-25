@@ -29,6 +29,9 @@ export default function ConfiguracionPage() {
   const [mostrarRubroSel, setMostrarRubroSel] = useState(true)
   const [guardandoEmpresa, setGuardandoEmpresa] = useState(false)
   const [empresaGuardada, setEmpresaGuardada] = useState(false)
+  const [numForm, setNumForm] = useState({ factura: "", recibo: "", nota: "" })
+  const [guardandoNum, setGuardandoNum] = useState(false)
+  const [numGuardado, setNumGuardado] = useState(false)
   const [subiendoLogo, setSubiendoLogo] = useState(false)
   const logoInputRef = useRef<HTMLInputElement>(null)
   const [esAdmin, setEsAdmin] = useState(false)
@@ -88,6 +91,11 @@ export default function ConfiguracionPage() {
       })
       setModulosRolSel(orgData.modulos_rol || {})
       setMostrarRubroSel(orgData.mostrar_rubro !== false)
+      setNumForm({
+        factura: String(orgData.next_nro_factura ?? 1),
+        recibo: String(orgData.next_nro_recibo ?? 1),
+        nota: String(orgData.next_nro_nota ?? 1),
+      })
     }
     // Rol del usuario actual + equipo
     const { data: miOu } = await supabase.from("org_usuarios").select("rol").eq("user_id", user.id).maybeSingle()
@@ -171,6 +179,20 @@ export default function ConfiguracionPage() {
     setGuardandoEmpresa(false)
     setEmpresaGuardada(true)
     setTimeout(() => setEmpresaGuardada(false), 2500)
+  }
+
+  async function guardarNumeracion() {
+    if (!org) return
+    setGuardandoNum(true)
+    const payload = {
+      next_nro_factura: Math.max(1, parseInt(numForm.factura, 10) || 1),
+      next_nro_recibo: Math.max(1, parseInt(numForm.recibo, 10) || 1),
+      next_nro_nota: Math.max(1, parseInt(numForm.nota, 10) || 1),
+    }
+    await supabase.from("organizaciones").update(payload).eq("id", org.id)
+    setOrg({ ...org, ...payload })
+    setNumForm({ factura: String(payload.next_nro_factura), recibo: String(payload.next_nro_recibo), nota: String(payload.next_nro_nota) })
+    setGuardandoNum(false); setNumGuardado(true); setTimeout(() => setNumGuardado(false), 2500)
   }
 
   async function iniciarSuscripcion() {
@@ -519,6 +541,54 @@ export default function ConfiguracionPage() {
           {guardandoEmpresa ? "Guardando..." : empresaGuardada ? "✓ Guardado" : "Guardar datos"}
         </button>
       </div>
+
+      {/* ── Numeración de comprobantes (solo admin) ──────────────────────────── */}
+      {esAdmin && (
+      <div style={{
+        background: "white", border: "1px solid #e2e8f0",
+        borderRadius: 20, padding: "24px 28px",
+        boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
+      }}>
+        <h2 style={{ margin: "0 0 4px", color: "#1d1b12", fontSize: 17, fontWeight: 700 }}>🔢 Numeración de comprobantes</h2>
+        <p style={{ margin: "0 0 6px", color: "#64748b", fontSize: 13 }}>
+          Definí desde qué número siguen tus comprobantes (por ejemplo, para continuar la numeración
+          de tu sistema anterior). El valor es el <b>próximo número</b> que se va a emitir.
+        </p>
+        <p style={{ margin: "0 0 18px", color: "#b45309", fontSize: 12.5, background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 8, padding: "8px 12px" }}>
+          ⚠️ Poné un número mayor al último ya emitido, para no repetir comprobantes.
+        </p>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: 14 }}>
+          {[
+            { k: "factura", label: "Próx. N° de venta / presupuesto" },
+            { k: "recibo",  label: "Próx. N° de recibo" },
+            { k: "nota",    label: "Próx. N° de nota de crédito" },
+          ].map(f => (
+            <div key={f.k}>
+              <label style={{ display: "block", fontSize: 11, color: "#64748b", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 5 }}>
+                {f.label}
+              </label>
+              <input
+                type="number" min={1} inputMode="numeric"
+                value={(numForm as any)[f.k]}
+                onChange={e => setNumForm(prev => ({ ...prev, [f.k]: e.target.value }))}
+                style={{ width: "100%", padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 14, color: "#1d1b12", outline: "none", boxSizing: "border-box" }}
+              />
+            </div>
+          ))}
+        </div>
+        <button
+          onClick={guardarNumeracion}
+          disabled={guardandoNum}
+          style={{
+            marginTop: 16, padding: "11px 20px",
+            background: numGuardado ? "#16a34a" : "#1d1b12",
+            border: "none", borderRadius: 9, color: "white",
+            fontSize: 13, fontWeight: 700, cursor: guardandoNum ? "not-allowed" : "pointer",
+          }}>
+          {guardandoNum ? "Guardando..." : numGuardado ? "✓ Guardado" : "Guardar numeración"}
+        </button>
+      </div>
+      )}
 
       {/* ── Cuenta ───────────────────────────────────────────────────────────── */}
       <div style={{

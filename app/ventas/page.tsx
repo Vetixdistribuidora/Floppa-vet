@@ -701,8 +701,8 @@ thead th:last-child{text-align:right}
 
   async function cargar() {
     try {
-      // Clientes, primera página de productos y último nro de factura en paralelo
-      const [{ data: c }, primeraPageData, { data: ultima }] = await Promise.all([
+      // Clientes, primera página de productos, último nro de factura y el contador de la org en paralelo
+      const [{ data: c }, primeraPageData, { data: ultima }, { data: orgNum }] = await Promise.all([
         supabase.from("clientes").select("*").order("nombre"),
         supabase.from("productos")
           .select("id, nombre, precio_venta, stock, categoria, laboratorio, es_servicio")
@@ -710,6 +710,7 @@ thead th:last-child{text-align:right}
           .range(0, 999)
           .then(r => r.data || []),
         supabase.from("ventas").select("nro_factura").order("id", { ascending: false }).limit(1).maybeSingle(),
+        supabase.from("organizaciones").select("next_nro_factura").maybeSingle(),
       ])
 
       // Continuar paginando si hay más de 1000 productos
@@ -729,10 +730,16 @@ thead th:last-child{text-align:right}
 
       setClientes(c || [])
       setProductos(todosProductos)
-      if (ultima?.nro_factura) {
+      // El próximo número sale del contador editable de la organización (Configuración).
+      // Si el cliente lo personalizó (>1) o ya hay ventas, mostramos ese número; si es una
+      // org nueva sin numerar (contador 1 y sin ventas), el presupuesto va sin número.
+      const proximo = Number(orgNum?.next_nro_factura ?? 0)
+      if (proximo > 1) {
+        setNroFactura(String(proximo).padStart(5, "0"))
+      } else if (ultima?.nro_factura) {
         const num = parseInt(ultima.nro_factura, 10)
-        if (!isNaN(num)) setNroFactura(String(num + 1).padStart(5, "0"))
-      } else { setNroFactura("") } // sin ventas todavía → el presupuesto va sin número
+        setNroFactura(isNaN(num) ? "" : String(num + 1).padStart(5, "0"))
+      } else { setNroFactura("") } // org nueva sin ventas → el presupuesto va sin número
     } catch (e) {
       console.error("Error cargando datos de venta:", e)
     }
