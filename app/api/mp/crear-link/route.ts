@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
       auto_recurring: {
         frequency: 1,
         frequency_type: "months",
-        transaction_amount: monto,
+        transaction_amount: Math.round(monto),
         currency_id: "ARS",
       },
       payer_email: email,
@@ -54,9 +54,13 @@ export async function POST(req: NextRequest) {
 
     if (!mpRes.ok) {
       console.error("Error MP crear preapproval:", mpData)
+      // El "Internal server error" genérico de MP no le dice nada al usuario.
+      const detalle = mpData.message && mpData.message !== "Internal server error" ? mpData.message : null
       return NextResponse.json(
-        { error: mpData.message || "Error al crear la suscripción en MercadoPago" },
-        { status: 500 }
+        { error: detalle
+            ? "MercadoPago rechazó la operación: " + detalle
+            : "MercadoPago no pudo procesar la suscripción en este momento. Reintentá en unos minutos o escribinos." },
+        { status: 502 }
       )
     }
 
