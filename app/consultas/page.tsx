@@ -41,7 +41,16 @@ function fechaCorta(f: string | null) {
 const labelStyle: React.CSSProperties = { display: "block", fontSize: 11, fontWeight: 700, color: "#64748b", letterSpacing: 0.4, marginBottom: 5, textTransform: "uppercase" }
 const inputStyle: React.CSSProperties = { width: "100%", padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 9, fontSize: 14, color: "#1d1b12", outline: "none", boxSizing: "border-box", background: "white" }
 
-const formVacio = () => ({ paciente_id: "", fecha: hoyISO(), motivo: "", diagnostico: "", tratamiento: "", peso: "", temperatura: "", notas: "", para_cobrar: "", cobrarItems: [] as any[] })
+// Tipos de consulta con su color, para distinguirlos en la historia clínica.
+const TIPOS_CONSULTA = [
+  { key: "consulta", label: "Consulta", color: "#4f46e5", bg: "#eef2ff" },
+  { key: "control",  label: "Control",  color: "#0d9488", bg: "#ecfdf5" },
+  { key: "cirugia",  label: "Cirugía",  color: "#9333ea", bg: "#faf5ff" },
+  { key: "urgencia", label: "Urgencia", color: "#dc2626", bg: "#fef2f2" },
+]
+const tipoConsulta = (k?: string) => TIPOS_CONSULTA.find(t => t.key === k) || TIPOS_CONSULTA[0]
+
+const formVacio = () => ({ paciente_id: "", fecha: hoyISO(), tipo: "consulta", motivo: "", diagnostico: "", tratamiento: "", peso: "", temperatura: "", notas: "", para_cobrar: "", cobrarItems: [] as any[] })
 function resumenItems(items: any[]): string {
   return (items || []).filter(i => i.producto_id).map(i => `${i.cantidad > 1 ? i.cantidad + "x " : ""}${i.nombre}`).join(", ")
 }
@@ -121,7 +130,7 @@ export default function ConsultasPage() {
   function abrirEditar(c: any) {
     setEditId(c.id)
     setForm({
-      paciente_id: String(c.paciente_id), fecha: c.fecha || hoyISO(),
+      paciente_id: String(c.paciente_id), fecha: c.fecha || hoyISO(), tipo: c.tipo || "consulta",
       motivo: c.motivo || "", diagnostico: c.diagnostico || "", tratamiento: c.tratamiento || "",
       peso: c.peso ?? "", temperatura: c.temperatura ?? "", notas: c.notas || "", para_cobrar: c.para_cobrar || "",
       cobrarItems: Array.isArray(c.cobrar_items) ? c.cobrar_items : [],
@@ -152,7 +161,7 @@ export default function ConsultasPage() {
     setGuardando(true)
     const items = form.cobrarItems || []
     const payload = {
-      paciente_id: Number(form.paciente_id), fecha: form.fecha || hoyISO(),
+      paciente_id: Number(form.paciente_id), fecha: form.fecha || hoyISO(), tipo: form.tipo || "consulta",
       motivo: form.motivo.trim() || null, diagnostico: form.diagnostico.trim() || null,
       tratamiento: form.tratamiento.trim() || null,
       peso: form.peso === "" ? null : Number(form.peso),
@@ -357,12 +366,14 @@ export default function ConsultasPage() {
             // ── Consulta ──
             const c = ev.data
             const pac = c.pacientes
+            const tc = tipoConsulta(c.tipo)
             const dueño = pac?.clientes ? `${pac.clientes.nombre || ""} ${pac.clientes.apellido || ""}`.trim() : ""
             return (
-              <div key={ev.id} style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 14, padding: "16px 18px", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
+              <div key={ev.id} style={{ background: "white", border: "1px solid #e2e8f0", borderLeft: `4px solid ${tc.color}`, borderRadius: 14, padding: "16px 18px", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10, gap: 10 }}>
                   <div>
-                    <div style={{ fontWeight: 700, fontSize: 15, color: "#1d1b12" }}>
+                    <div style={{ fontWeight: 700, fontSize: 15, color: "#1d1b12", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                      <span style={{ background: tc.bg, color: tc.color, fontSize: 10.5, fontWeight: 800, padding: "2px 9px", borderRadius: 999, textTransform: "uppercase", letterSpacing: 0.3 }}>{tc.label}</span>
                       {pac?.nombre || "Paciente"} {pac?.especie && <span style={{ color: "#94a3b8", fontWeight: 500, fontSize: 13 }}>· {pac.especie}</span>}
                     </div>
                     <div style={{ fontSize: 12.5, color: "#64748b", marginTop: 2 }}>
@@ -429,6 +440,21 @@ export default function ConsultasPage() {
               <div>
                 <label style={labelStyle}>Fecha</label>
                 <input type="date" value={form.fecha} onChange={e => setForm({ ...form, fecha: e.target.value })} style={inputStyle} />
+              </div>
+              <div style={{ gridColumn: "1 / -1" }}>
+                <label style={labelStyle}>Tipo</label>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                  {TIPOS_CONSULTA.map(t => {
+                    const sel = (form.tipo || "consulta") === t.key
+                    return (
+                      <button key={t.key} type="button" onClick={() => setForm({ ...form, tipo: t.key })}
+                        style={{ padding: "7px 14px", borderRadius: 999, fontSize: 13, fontWeight: 700, cursor: "pointer",
+                          border: `1.5px solid ${sel ? t.color : "#e2e8f0"}`, background: sel ? t.bg : "white", color: sel ? t.color : "#64748b" }}>
+                        {t.label}
+                      </button>
+                    )
+                  })}
+                </div>
               </div>
               <div style={{ gridColumn: "1 / -1" }}>
                 <label style={labelStyle}>Motivo de consulta</label>

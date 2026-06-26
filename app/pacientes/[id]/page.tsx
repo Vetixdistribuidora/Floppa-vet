@@ -8,6 +8,14 @@ import { empresaEncabezadoHTML, empresaInfoHTML, empresaNombre } from "@/lib/emp
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts"
 
 const OLIVA = "#6f7d49"
+// Tipos de consulta con color (mismos que en la historia clínica de /consultas).
+const TIPOS_C: Record<string, { label: string; color: string; bg: string }> = {
+  consulta: { label: "Consulta", color: "#4f46e5", bg: "#eef2ff" },
+  control:  { label: "Control",  color: "#0d9488", bg: "#ecfdf5" },
+  cirugia:  { label: "Cirugía",  color: "#9333ea", bg: "#faf5ff" },
+  urgencia: { label: "Urgencia", color: "#dc2626", bg: "#fef2f2" },
+}
+const tipoC = (k?: string) => TIPOS_C[k || "consulta"] || TIPOS_C.consulta
 const f = (d: string | null) => d ? new Date(d + "T00:00:00").toLocaleDateString("es-AR") : "—"
 function edadDe(fecha: string | null): string {
   if (!fecha) return "—"
@@ -187,15 +195,20 @@ export default function FichaPaciente() {
         </div>
         {consultas.length === 0 ? <p style={{ color: "#94a3b8", fontSize: 13, margin: 0 }}>Sin consultas.</p> : (
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {consultas.map(c => (
-              <div key={c.id} style={{ borderBottom: "1px solid #f1f5f9", paddingBottom: 9, fontSize: 13 }}>
-                <div style={{ fontWeight: 700, color: "#475569", marginBottom: 3 }}>🗓 {f(c.fecha)}</div>
+            {consultas.map(c => {
+              const tc = tipoC(c.tipo)
+              return (
+              <div key={c.id} style={{ borderLeft: `3px solid ${tc.color}`, paddingLeft: 10, borderBottom: "1px solid #f1f5f9", paddingBottom: 9, fontSize: 13 }}>
+                <div style={{ fontWeight: 700, color: "#475569", marginBottom: 3, display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
+                  <span style={{ background: tc.bg, color: tc.color, fontSize: 10, fontWeight: 800, padding: "1px 8px", borderRadius: 999, textTransform: "uppercase", letterSpacing: 0.3 }}>{tc.label}</span>
+                  🗓 {f(c.fecha)}
+                </div>
                 {c.motivo && <div><b style={{ color: "#4b5a2c" }}>Motivo:</b> {c.motivo}</div>}
                 {c.diagnostico && <div><b style={{ color: "#4b5a2c" }}>Dx:</b> {c.diagnostico}</div>}
                 {c.tratamiento && <div><b style={{ color: "#4b5a2c" }}>Tto:</b> {c.tratamiento}</div>}
                 {c.para_cobrar && !c.cobrado && <div style={{ color: "#c2410c", fontWeight: 700 }}>💲 A cobrar: {c.para_cobrar}</div>}
               </div>
-            ))}
+            )})}
           </div>
         )}
       </div>
