@@ -454,17 +454,19 @@ export default function Productos() {
   }, [mostrarAgregar])
 
   async function agregar() {
-    if (!nombre.trim() || costo === "" || margen === "" || (stock === "" && !esServicio)) { mostrarToast("⚠️ Completá todos los campos", "error"); return }
+    // Solo el nombre y el precio (neto) son obligatorios. Los demás campos numéricos
+    // (margen, flete, pérdida, stock) que se dejen vacíos se asumen en 0.
+    if (!nombre.trim() || costo === "") { mostrarToast("⚠️ Completá al menos el nombre y el precio", "error"); return }
     if (!esServicio && Number(stock) < 0) { mostrarToast("⚠️ El stock no puede ser negativo", "error"); return }
     if (Number(costo) < 0) { mostrarToast("⚠️ El precio neto no puede ser negativo", "error"); return }
     setGuardandoAgregar(true)
     try {
       const costoNum   = Number(costo)
-      const ivaNum     = Number(margen)
+      const ivaNum     = Number(margen) || 0
       const fleteNum   = Number(fleteProducto) || 0
       const perdidaNum = Number(perdidaProducto) || 0
       const precioVenta = Math.round(costoNum * (1 + ivaNum / 100) * (1 + fleteNum / 100) * (1 + perdidaNum / 100) * 100) / 100
-      const { data, error } = await supabase.from("productos").insert([{ nombre, costo: costoNum, margen: ivaNum, flete: fleteNum, perdida: perdidaNum, precio_venta: precioVenta, stock: esServicio ? 0 : Number(stock), categoria: categoria.trim(), laboratorio: laboratorio.trim(), es_servicio: esServicio }]).select()
+      const { data, error } = await supabase.from("productos").insert([{ nombre, costo: costoNum, margen: ivaNum, flete: fleteNum, perdida: perdidaNum, precio_venta: precioVenta, stock: esServicio ? 0 : (Number(stock) || 0), categoria: categoria.trim(), laboratorio: laboratorio.trim(), es_servicio: esServicio }]).select()
       if (error) { mostrarToast("❌ " + error.message, "error"); return }
       supabase.rpc("registrar_auditoria", { accion: "crear", tabla: "productos", registro_id: data?.[0]?.id || 0 }) // fire-and-forget
       mostrarToast("✅ Producto agregado", "ok")
@@ -1212,29 +1214,16 @@ export default function Productos() {
                         {badgeLote}
                       </div>
                       <div style={{ fontSize: 11, color: "#6b7280", marginTop: 2, flexWrap: "wrap", display: "flex", gap: 8, alignItems: "center" }}>
-                        {esVet ? (
-                          <>
-                            <span style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 6, padding: "2px 8px" }}>
-                              Neto <b style={{ color: "#374151" }}>{formatearPrecio(p.costo)}</b>
-                            </span>
-                            <span style={{ background: "#f4f2e6", border: "1px solid #cdd6a8", borderRadius: 6, padding: "2px 8px" }}>
-                              Margen <b style={{ color: "#55692f" }}>{p.margen ?? 0}%</b>
-                            </span>
-                            <span style={{ color: "#d1d5db" }}>·</span>
-                            <span style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 6, padding: "2px 8px" }}>
-                              💲 Precio <b style={{ color: "#15803d" }}>{formatearPrecio(p.precio_venta)}</b>
-                            </span>
-                          </>
-                        ) : (
-                          <>
-                            <span style={{ background: "#f4f2e6", border: "1px solid #cdd6a8", borderRadius: 6, padding: "2px 8px" }}>
-                              🏥 Vet. <b style={{ color: "#55692f" }}>{formatearPrecio(Math.round(p.precio_venta * 1.30 * 100) / 100)}</b>
-                            </span>
-                            <span style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 6, padding: "2px 8px" }}>
-                              🌾 Prod. <b style={{ color: "#15803d" }}>{formatearPrecio(Math.round(p.precio_venta * 1.58 * 100) / 100)}</b>
-                            </span>
-                          </>
-                        )}
+                        <span style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 6, padding: "2px 8px" }}>
+                          Neto <b style={{ color: "#374151" }}>{formatearPrecio(p.costo)}</b>
+                        </span>
+                        <span style={{ background: "#f4f2e6", border: "1px solid #cdd6a8", borderRadius: 6, padding: "2px 8px" }}>
+                          Margen <b style={{ color: "#55692f" }}>{p.margen ?? 0}%</b>
+                        </span>
+                        <span style={{ color: "#d1d5db" }}>·</span>
+                        <span style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 6, padding: "2px 8px" }}>
+                          💲 Precio <b style={{ color: "#15803d" }}>{formatearPrecio(p.precio_venta)}</b>
+                        </span>
                         <span style={{ color: "#d1d5db" }}>·</span>
                         {p.es_servicio ? <span style={{ color: "#4338ca" }}>🩺 Servicio</span> : <span>Stock: <b style={{ color: p.stock === 0 ? "#dc2626" : p.stock <= 5 ? "#92400e" : "#374151" }}>{p.stock}</b></span>}
                       </div>

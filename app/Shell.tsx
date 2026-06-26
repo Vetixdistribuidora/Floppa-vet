@@ -25,6 +25,16 @@ function suscripcionVencida(s: { estado?: string; fecha_vencimiento?: string | n
   return false
 }
 
+// Ordena los módulos del menú según la preferencia de la org (orden_modulos).
+// Los que no estén en la lista quedan al final, en su orden por defecto.
+function ordenarModulos<T extends { key: string }>(mods: T[], orden: string[] | null): T[] {
+  if (!orden || !orden.length) return mods
+  return [...mods].sort((a, b) => {
+    const ia = orden.indexOf(a.key), ib = orden.indexOf(b.key)
+    return (ia < 0 ? 9999 : ia) - (ib < 0 ? 9999 : ib)
+  })
+}
+
 export default function Shell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const [usuario, setUsuario] = useState<any>(null)
@@ -33,6 +43,8 @@ export default function Shell({ children }: { children: React.ReactNode }) {
   const [modulosRol, setModulosRol] = useState<Record<string, string[]>>({})
   const [rol, setRol] = useState<string>("admin")
   const [rubro, setRubro] = useState<string>("")
+  const [rubroDisplay, setRubroDisplay] = useState<string>("")
+  const [orden, setOrden] = useState<string[] | null>(null)
   const [mostrarRubro, setMostrarRubro] = useState<boolean>(true)
   const [sidebarAbierto, setSidebarAbierto] = useState(false)
   const [authListo, setAuthListo] = useState(false)
@@ -66,10 +78,11 @@ export default function Shell({ children }: { children: React.ReactNode }) {
         if (usuarioIdRef.current === session.user.id) return
         usuarioIdRef.current = session.user.id
         setUsuario(session.user)
-        const { data: org } = await supabase.from("organizaciones").select("id, nombre, direccion, telefono, email, logo_url, modulos, modulos_rol, rubro, mostrar_rubro").maybeSingle()
+        const { data: org } = await supabase.from("organizaciones").select("id, nombre, direccion, telefono, email, logo_url, modulos, modulos_rol, rubro, mostrar_rubro, rubro_display, orden_modulos").maybeSingle()
         if (org) {
           setOrgNombre(org.nombre); setEmpresa(org); setModulos(org.modulos); setModulosRol(org.modulos_rol || {})
           setRubro(org.rubro || ""); setMostrarRubro(org.mostrar_rubro !== false)
+          setRubroDisplay(org.rubro_display || ""); setOrden(Array.isArray(org.orden_modulos) ? org.orden_modulos : null)
           const { data: ou } = await supabase.from("org_usuarios").select("rol").maybeSingle()
           setRol(ou?.rol || "admin")
           // Suscripción de la organización (para el paywall)
@@ -304,14 +317,14 @@ export default function Shell({ children }: { children: React.ReactNode }) {
           <div style={{ overflow: "hidden" }}>
             <div style={{ fontWeight: "800", fontSize: "15px", letterSpacing: "1px", color: "white", lineHeight: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 150 }}>{orgNombre}</div>
             {mostrarRubro && rubro && (
-              <div style={{ fontSize: "9px", color: "#6f7d49", letterSpacing: "2px", marginTop: "3px", textTransform: "uppercase", fontWeight: "600" }}>{RUBROS.find(r => r.key === rubro)?.label || rubro}</div>
+              <div style={{ fontSize: "9px", color: "#6f7d49", letterSpacing: "2px", marginTop: "3px", textTransform: "uppercase", fontWeight: "600" }}>{RUBROS.find(r => r.key === (rubroDisplay || rubro))?.label || rubroDisplay || rubro}</div>
             )}
           </div>
         </div>
 
         {/* NAV */}
         <nav>
-          {MODULOS.filter(m => m.core || modulosVisibles(rol, modulosActivos(modulos), modulosRol).includes(m.key)).map(m => {
+          {ordenarModulos(MODULOS.filter(m => m.core || modulosVisibles(rol, modulosActivos(modulos), modulosRol).includes(m.key)), orden).map(m => {
             const active = m.path === "/" ? pathname === "/" : pathname.startsWith(m.path)
             return (
               <Link key={m.key} href={m.path} style={getItemStyle(m.path)} onClick={() => setSidebarAbierto(false)}>

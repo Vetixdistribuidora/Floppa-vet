@@ -32,6 +32,10 @@ export default function ConfiguracionPage() {
   const [numForm, setNumForm] = useState({ factura: "", recibo: "", nota: "" })
   const [guardandoNum, setGuardandoNum] = useState(false)
   const [numGuardado, setNumGuardado] = useState(false)
+  const [rubroDisplay, setRubroDisplay] = useState("")
+  const [ordenForm, setOrdenForm] = useState<string[]>([])
+  const [guardandoOrden, setGuardandoOrden] = useState(false)
+  const [ordenGuardado, setOrdenGuardado] = useState(false)
   const [subiendoLogo, setSubiendoLogo] = useState(false)
   const logoInputRef = useRef<HTMLInputElement>(null)
   const [esAdmin, setEsAdmin] = useState(false)
@@ -96,6 +100,12 @@ export default function ConfiguracionPage() {
         recibo: String(orgData.next_nro_recibo ?? 1),
         nota: String(orgData.next_nro_nota ?? 1),
       })
+      setRubroDisplay(orgData.rubro_display || "")
+      // Orden de pestañas: incluye los módulos del menú (Inicio + activos). Respeta lo
+      // guardado (que siga vigente) y agrega al final los que aún no estén ordenados.
+      const menuKeys = MODULOS.filter(m => m.core || modulosActivos(orgData.modulos).includes(m.key)).map(m => m.key)
+      const guardado = Array.isArray(orgData.orden_modulos) ? orgData.orden_modulos as string[] : []
+      setOrdenForm([...guardado.filter(k => menuKeys.includes(k)), ...menuKeys.filter(k => !guardado.includes(k))])
     }
     // Rol del usuario actual + equipo
     const { data: miOu } = await supabase.from("org_usuarios").select("rol").eq("user_id", user.id).maybeSingle()
@@ -172,6 +182,7 @@ export default function ConfiguracionPage() {
       telefono: empresaForm.telefono,
       email: empresaForm.email,
       mostrar_rubro: mostrarRubroSel,
+      rubro_display: rubroDisplay || null,
     }
     await supabase.from("organizaciones").update(payload).eq("id", org.id)
     setOrg({ ...org, ...payload })
@@ -193,6 +204,22 @@ export default function ConfiguracionPage() {
     setOrg({ ...org, ...payload })
     setNumForm({ factura: String(payload.next_nro_factura), recibo: String(payload.next_nro_recibo), nota: String(payload.next_nro_nota) })
     setGuardandoNum(false); setNumGuardado(true); setTimeout(() => setNumGuardado(false), 2500)
+  }
+
+  function moverModulo(i: number, dir: -1 | 1) {
+    setOrdenForm(prev => {
+      const arr = [...prev]; const j = i + dir
+      if (j < 0 || j >= arr.length) return prev
+      ;[arr[i], arr[j]] = [arr[j], arr[i]]
+      return arr
+    })
+  }
+  async function guardarOrden() {
+    if (!org) return
+    setGuardandoOrden(true)
+    await supabase.from("organizaciones").update({ orden_modulos: ordenForm }).eq("id", org.id)
+    setOrg({ ...org, orden_modulos: ordenForm })
+    setGuardandoOrden(false); setOrdenGuardado(true); setTimeout(() => setOrdenGuardado(false), 2500)
   }
 
   async function iniciarSuscripcion() {
@@ -320,7 +347,7 @@ export default function ConfiguracionPage() {
           <div style={{ background: "rgba(255,255,255,0.04)", borderRadius: 10, padding: "12px 14px" }}>
             <div style={{ fontSize: 10, color: "#6b7280", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>Precio</div>
             <div style={{ color: "white", fontSize: 14, fontWeight: 700, marginTop: 4 }}>
-              {esOwner ? "Gratis" : fmt(suscripcion?.planes?.precio || 60000) + "/mes"}
+              {esOwner ? "Gratis" : fmt(suscripcion?.precio_custom ?? suscripcion?.planes?.precio ?? 60000) + "/mes"}
             </div>
           </div>
           {suscripcion?.fecha_vencimiento && !esOwner && (
@@ -526,9 +553,20 @@ export default function ConfiguracionPage() {
           <input type="checkbox" checked={mostrarRubroSel} onChange={e => setMostrarRubroSel(e.target.checked)}
             style={{ width: 16, height: 16, accentColor: "#6f7d49", cursor: "pointer" }} />
           <span style={{ fontSize: 13, color: "#334155" }}>
-            Mostrar el rubro{org?.rubro ? ` («${RUBROS.find(r => r.key === org.rubro)?.label || org.rubro}»)` : ""} debajo del nombre en el menú
+            Mostrar el rubro debajo del nombre en el menú
           </span>
         </label>
+        {mostrarRubroSel && (
+          <div style={{ marginTop: 10, marginBottom: 4 }}>
+            <label style={{ display: "block", fontSize: 11, color: "#64748b", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 5 }}>Etiqueta de rubro a mostrar</label>
+            <select value={rubroDisplay} onChange={e => setRubroDisplay(e.target.value)}
+              style={{ width: "100%", maxWidth: 300, padding: "9px 12px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 14, color: "#1d1b12", background: "white", boxSizing: "border-box" }}>
+              <option value="">Por defecto ({RUBROS.find(r => r.key === org?.rubro)?.label || org?.rubro || "rubro real"})</option>
+              {RUBROS.filter(r => r.key !== "personalizado").map(r => <option key={r.key} value={r.key}>{r.label}</option>)}
+            </select>
+            <div style={{ fontSize: 11.5, color: "#94a3b8", marginTop: 5 }}>Ideal para «Personalizado»: elegí cómo se ve la etiqueta (ej. «Veterinaria») en vez de «Personalizado».</div>
+          </div>
+        )}
         <button
           onClick={guardarEmpresa}
           disabled={guardandoEmpresa}
@@ -586,6 +624,50 @@ export default function ConfiguracionPage() {
             fontSize: 13, fontWeight: 700, cursor: guardandoNum ? "not-allowed" : "pointer",
           }}>
           {guardandoNum ? "Guardando..." : numGuardado ? "✓ Guardado" : "Guardar numeración"}
+        </button>
+      </div>
+      )}
+
+      {/* ── Orden de las pestañas (solo admin) ───────────────────────────────── */}
+      {esAdmin && (
+      <div style={{
+        background: "white", border: "1px solid #e2e8f0",
+        borderRadius: 20, padding: "24px 28px",
+        boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
+      }}>
+        <h2 style={{ margin: "0 0 4px", color: "#1d1b12", fontSize: 17, fontWeight: 700 }}>↕️ Orden de las pestañas</h2>
+        <p style={{ margin: "0 0 18px", color: "#64748b", fontSize: 13 }}>
+          Reordená el menú a tu gusto con las flechas. El orden se aplica a todo el equipo.
+        </p>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6, maxWidth: 420 }}>
+          {ordenForm.map((k, i) => {
+            const m = MODULOS.find(x => x.key === k)
+            if (!m) return null
+            return (
+              <div key={k} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, padding: "9px 12px", border: "1px solid #e7e1cf", borderRadius: 10, background: "#faf9f1" }}>
+                <span style={{ fontSize: 13.5, fontWeight: 600, color: "#1d1b12" }}>
+                  <span style={{ color: "#a8a48f", marginRight: 8 }}>{i + 1}</span>{m.label}
+                </span>
+                <span style={{ display: "flex", gap: 6 }}>
+                  <button onClick={() => moverModulo(i, -1)} disabled={i === 0}
+                    style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 7, padding: "4px 10px", fontSize: 14, cursor: i === 0 ? "not-allowed" : "pointer", opacity: i === 0 ? 0.35 : 1, color: "#475569" }}>↑</button>
+                  <button onClick={() => moverModulo(i, 1)} disabled={i === ordenForm.length - 1}
+                    style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 7, padding: "4px 10px", fontSize: 14, cursor: i === ordenForm.length - 1 ? "not-allowed" : "pointer", opacity: i === ordenForm.length - 1 ? 0.35 : 1, color: "#475569" }}>↓</button>
+                </span>
+              </div>
+            )
+          })}
+        </div>
+        <button
+          onClick={guardarOrden}
+          disabled={guardandoOrden}
+          style={{
+            marginTop: 16, padding: "11px 20px",
+            background: ordenGuardado ? "#16a34a" : "#1d1b12",
+            border: "none", borderRadius: 9, color: "white",
+            fontSize: 13, fontWeight: 700, cursor: guardandoOrden ? "not-allowed" : "pointer",
+          }}>
+          {guardandoOrden ? "Guardando..." : ordenGuardado ? "✓ Guardado" : "Guardar orden"}
         </button>
       </div>
       )}
