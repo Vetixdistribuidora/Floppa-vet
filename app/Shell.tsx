@@ -9,6 +9,7 @@ import { supabase } from "@/lib/supabase"
 import { setEmpresa } from "@/lib/empresa"
 import Logo from "@/components/Logo"
 import { MODULOS, modulosActivos, modulosVisibles, RUBROS } from "@/lib/modulos"
+import { getTema } from "@/lib/temas"
 
 // ── Paywall: ¿la suscripción de la organización está vencida? ────────────────
 // Bloquea el acceso cuando la suscripción no está vigente. El owner de la
@@ -46,6 +47,8 @@ export default function Shell({ children }: { children: React.ReactNode }) {
   const [rubroDisplay, setRubroDisplay] = useState<string>("")
   const [orden, setOrden] = useState<string[] | null>(null)
   const [logoUrl, setLogoUrl] = useState<string | null>(null)
+  const [tema, setTema] = useState<string>("")
+  const t = getTema(tema)
   const [mostrarRubro, setMostrarRubro] = useState<boolean>(true)
   const [sidebarAbierto, setSidebarAbierto] = useState(false)
   const [authListo, setAuthListo] = useState(false)
@@ -79,12 +82,12 @@ export default function Shell({ children }: { children: React.ReactNode }) {
         if (usuarioIdRef.current === session.user.id) return
         usuarioIdRef.current = session.user.id
         setUsuario(session.user)
-        const { data: org } = await supabase.from("organizaciones").select("id, nombre, direccion, telefono, email, logo_url, modulos, modulos_rol, rubro, mostrar_rubro, rubro_display, orden_modulos").maybeSingle()
+        const { data: org } = await supabase.from("organizaciones").select("id, nombre, direccion, telefono, email, logo_url, modulos, modulos_rol, rubro, mostrar_rubro, rubro_display, orden_modulos, tema").maybeSingle()
         if (org) {
           setOrgNombre(org.nombre); setEmpresa(org); setModulos(org.modulos); setModulosRol(org.modulos_rol || {})
           setRubro(org.rubro || ""); setMostrarRubro(org.mostrar_rubro !== false)
           setRubroDisplay(org.rubro_display || ""); setOrden(Array.isArray(org.orden_modulos) ? org.orden_modulos : null)
-          setLogoUrl(org.logo_url || null)
+          setLogoUrl(org.logo_url || null); setTema(org.tema || "")
           const { data: ou } = await supabase.from("org_usuarios").select("rol").maybeSingle()
           setRol(ou?.rol || "admin")
           // Suscripción de la organización (para el paywall)
@@ -121,9 +124,9 @@ export default function Shell({ children }: { children: React.ReactNode }) {
       fontSize: "14px",
       marginBottom: "6px",
       transition: "all 0.2s ease",
-      background: active ? "#2a2718" : "transparent",
+      background: active ? t.activeBg : "transparent",
       color: active ? "white" : "#9ca3af",
-      borderLeft: active ? "3px solid #8a9a5b" : "3px solid transparent",
+      borderLeft: active ? `3px solid ${t.accent}` : "3px solid transparent",
     }
   }
 
@@ -287,7 +290,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
   const SidebarContent = () => (
     <div style={{
       width: "230px",
-      background: "#14130d",
+      background: t.sidebarBg,
       color: "white",
       height: "100vh",
       display: "flex",
@@ -298,7 +301,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
       <div style={{ padding: "20px", flex: 1, overflowY: "auto", minHeight: 0 }}>
         {/* LOGO */}
         <div style={{ marginBottom: "28px", display: "flex", alignItems: "center", gap: "12px" }}>
-          <div style={{ flexShrink: 0, filter: "drop-shadow(0 4px 12px rgba(80,96,55,0.4))" }}>
+          <div style={{ flexShrink: 0, filter: `drop-shadow(0 4px 12px ${t.glow})` }}>
             {logoUrl
               ? <img src={logoUrl} alt="" style={{ width: 44, height: 44, objectFit: "contain", borderRadius: 10, background: "white", padding: 2 }} />
               : <Logo size={40} />}
@@ -344,7 +347,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
       <div style={{ borderTop: "1px solid #2a2718", padding: "14px 16px", display: "flex", alignItems: "center", gap: "10px" }}>
         <div style={{
           width: "34px", height: "34px", borderRadius: "50%",
-          background: "linear-gradient(135deg, #6f7d49, #4b5a2c)",
+          background: t.grad,
           display: "flex", alignItems: "center", justifyContent: "center",
           fontSize: "13px", fontWeight: "700", color: "white", flexShrink: 0,
         }}>
@@ -440,7 +443,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
 
               <div style={{
                 width: "36px", height: "36px", borderRadius: "10px",
-                background: "linear-gradient(135deg, #4b5a2c, #6f7d49)",
+                background: t.grad,
                 display: "flex", alignItems: "center", justifyContent: "center",
                 boxShadow: "0 2px 8px rgba(80,96,55,0.35)"
               }}>

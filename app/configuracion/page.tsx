@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase"
 import { setEmpresa } from "@/lib/empresa"
 import Logo from "@/components/Logo"
 import { MODULOS, modulosActivos, ROLES_CONFIGURABLES, RUBROS } from "@/lib/modulos"
+import { TEMAS } from "@/lib/temas"
 
 function fmt(n: number) {
   return "$" + Math.round(n).toLocaleString("es-AR")
@@ -36,6 +37,7 @@ export default function ConfiguracionPage() {
   const [ordenForm, setOrdenForm] = useState<string[]>([])
   const [guardandoOrden, setGuardandoOrden] = useState(false)
   const [ordenGuardado, setOrdenGuardado] = useState(false)
+  const [temaSel, setTemaSel] = useState("olivo")
   const [subiendoLogo, setSubiendoLogo] = useState(false)
   const logoInputRef = useRef<HTMLInputElement>(null)
   const [esAdmin, setEsAdmin] = useState(false)
@@ -101,6 +103,7 @@ export default function ConfiguracionPage() {
         nota: String(orgData.next_nro_nota ?? 1),
       })
       setRubroDisplay(orgData.rubro_display || "")
+      setTemaSel(orgData.tema || "olivo")
       // Orden de pestañas: incluye los módulos del menú (Inicio + activos). Respeta lo
       // guardado (que siga vigente) y agrega al final los que aún no estén ordenados.
       const menuKeys = MODULOS.filter(m => m.core || modulosActivos(orgData.modulos).includes(m.key)).map(m => m.key)
@@ -220,6 +223,12 @@ export default function ConfiguracionPage() {
     await supabase.from("organizaciones").update({ orden_modulos: ordenForm }).eq("id", org.id)
     setOrg({ ...org, orden_modulos: ordenForm })
     setGuardandoOrden(false); setOrdenGuardado(true); setTimeout(() => setOrdenGuardado(false), 2500)
+  }
+  async function guardarTema(key: string) {
+    if (!org) return
+    setTemaSel(key)
+    await supabase.from("organizaciones").update({ tema: key }).eq("id", org.id)
+    window.location.reload() // recarga para aplicar la paleta al menú
   }
 
   async function iniciarSuscripcion() {
@@ -669,6 +678,36 @@ export default function ConfiguracionPage() {
           }}>
           {guardandoOrden ? "Guardando..." : ordenGuardado ? "✓ Guardado" : "Guardar orden"}
         </button>
+      </div>
+      )}
+
+      {/* ── Color / tema del menú (solo admin) ───────────────────────────────── */}
+      {esAdmin && (
+      <div style={{
+        background: "white", border: "1px solid #e2e8f0",
+        borderRadius: 20, padding: "24px 28px",
+        boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
+      }}>
+        <h2 style={{ margin: "0 0 4px", color: "#1d1b12", fontSize: 17, fontWeight: 700 }}>🎨 Color del menú</h2>
+        <p style={{ margin: "0 0 18px", color: "#64748b", fontSize: 13 }}>
+          Elegí la paleta del menú lateral. Se aplica al instante (se recarga la página).
+        </p>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+          {Object.entries(TEMAS).map(([key, tm]) => {
+            const sel = temaSel === key
+            return (
+              <button key={key} onClick={() => guardarTema(key)} style={{
+                border: sel ? "2px solid #1d1b12" : "1px solid #e2e8f0", borderRadius: 12, padding: 8,
+                background: "white", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 7, width: 96,
+              }}>
+                <span style={{ width: "100%", height: 38, borderRadius: 8, background: tm.sidebarBg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <span style={{ width: 18, height: 18, borderRadius: "50%", background: tm.accent }} />
+                </span>
+                <span style={{ fontSize: 12.5, fontWeight: 700, color: "#1d1b12" }}>{tm.label}{sel ? " ✓" : ""}</span>
+              </button>
+            )
+          })}
+        </div>
       </div>
       )}
 
