@@ -45,6 +45,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
   const [rubro, setRubro] = useState<string>("")
   const [rubroDisplay, setRubroDisplay] = useState<string>("")
   const [orden, setOrden] = useState<string[] | null>(null)
+  const [logoUrl, setLogoUrl] = useState<string | null>(null)
   const [mostrarRubro, setMostrarRubro] = useState<boolean>(true)
   const [sidebarAbierto, setSidebarAbierto] = useState(false)
   const [authListo, setAuthListo] = useState(false)
@@ -83,6 +84,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
           setOrgNombre(org.nombre); setEmpresa(org); setModulos(org.modulos); setModulosRol(org.modulos_rol || {})
           setRubro(org.rubro || ""); setMostrarRubro(org.mostrar_rubro !== false)
           setRubroDisplay(org.rubro_display || ""); setOrden(Array.isArray(org.orden_modulos) ? org.orden_modulos : null)
+          setLogoUrl(org.logo_url || null)
           const { data: ou } = await supabase.from("org_usuarios").select("rol").maybeSingle()
           setRol(ou?.rol || "admin")
           // Suscripción de la organización (para el paywall)
@@ -312,7 +314,9 @@ export default function Shell({ children }: { children: React.ReactNode }) {
         {/* LOGO */}
         <div style={{ marginBottom: "28px", display: "flex", alignItems: "center", gap: "12px" }}>
           <div style={{ flexShrink: 0, filter: "drop-shadow(0 4px 12px rgba(80,96,55,0.4))" }}>
-            <Logo size={40} />
+            {logoUrl
+              ? <img src={logoUrl} alt="" style={{ width: 44, height: 44, objectFit: "contain", borderRadius: 10, background: "white", padding: 2 }} />
+              : <Logo size={40} />}
           </div>
           <div style={{ overflow: "hidden" }}>
             <div style={{ fontWeight: "800", fontSize: "15px", letterSpacing: "1px", color: "white", lineHeight: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 150 }}>{orgNombre}</div>
