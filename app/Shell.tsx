@@ -162,33 +162,18 @@ export default function Shell({ children }: { children: React.ReactNode }) {
     return ""
   }
 
+  // Ícono del encabezado: reutiliza el ícono SVG del módulo (mismo del menú) en vez
+  // de un emoji, para un look más profesional y consistente.
   const getPageIcon = () => {
-    if (pathname === "/") return "🏠"
-    if (pathname.startsWith("/productos")) return "📦"
-    if (pathname.startsWith("/clientes")) return "👤"
-    if (pathname.startsWith("/sala")) return "🪑"
-    if (pathname.startsWith("/turnos")) return "📅"
-    if (pathname.startsWith("/internacion")) return "🏥"
-    if (pathname.startsWith("/tutores")) return "👥"
-    if (pathname.startsWith("/pacientes")) return "🐾"
-    if (pathname.startsWith("/consultas")) return "📋"
-    if (pathname.startsWith("/estudios")) return "📎"
-    if (pathname.startsWith("/recordatorios")) return "💉"
-    if (pathname.startsWith("/cobros")) return "💲"
-    if (pathname.startsWith("/ventas")) return "🛒"
-    if (pathname.startsWith("/proveedores")) return "🚚"
-    if (pathname.startsWith("/compras")) return "🧾"
-    if (pathname.startsWith("/cuentas")) return "📄"
-    if (pathname.startsWith("/caja")) return "💵"
-    if (pathname.startsWith("/reportes")) return "📊"
-    if (pathname.startsWith("/deudores")) return "⚠️"
-    if (pathname.startsWith("/tienda-online")) return "🛍️"
-    if (pathname.startsWith("/pedidos")) return "📋"
-    if (pathname.startsWith("/cheques")) return "🏦"
-    if (pathname.startsWith("/mermas")) return "📉"
-    if (pathname.startsWith("/configuracion")) return "⚙️"
-    if (pathname.startsWith("/admin")) return "⭐"
-    return ""
+    const mod = MODULOS.find(m => m.path === "/" ? pathname === "/" : pathname.startsWith(m.path))
+    if (mod) return mod.icon
+    if (pathname.startsWith("/configuracion")) return (
+      <><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></>
+    )
+    if (pathname.startsWith("/admin")) return (
+      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+    )
+    return null
   }
 
   const inicialAvatar = usuario?.email?.charAt(0).toUpperCase() ?? "?"
@@ -457,9 +442,9 @@ export default function Shell({ children }: { children: React.ReactNode }) {
                 width: "36px", height: "36px", borderRadius: "10px",
                 background: "linear-gradient(135deg, #4b5a2c, #6f7d49)",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: "16px", boxShadow: "0 2px 8px rgba(80,96,55,0.35)"
+                boxShadow: "0 2px 8px rgba(80,96,55,0.35)"
               }}>
-                {getPageIcon()}
+                <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 20, height: 20 }}>{getPageIcon()}</svg>
               </div>
               <div>
                 <div style={{ fontWeight: "800", fontSize: "16px", color: "#1d1b12", lineHeight: 1.2 }}>{getTitle()}</div>
