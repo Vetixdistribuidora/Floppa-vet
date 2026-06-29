@@ -261,7 +261,13 @@ export default function LoginPage() {
             {loading ? "Ingresando..." : "Ingresar"}
           </button>
 
-          <div style={{ textAlign: "center", marginTop: 20, fontSize: 13, color: "#6b7280" }}>
+          <div style={{ textAlign: "center", marginTop: 14, fontSize: 13 }}>
+            <a href="/recuperar" style={{ color: "#9aa86a", textDecoration: "none", fontWeight: 600 }}>
+              ¿Olvidaste tu contraseña?
+            </a>
+          </div>
+
+          <div style={{ textAlign: "center", marginTop: 14, fontSize: 13, color: "#6b7280" }}>
             ¿No tenés cuenta?{" "}
             <a href="/registro" style={{ color: "#8a9a5b", textDecoration: "none", fontWeight: 600 }}>
               Registrarse

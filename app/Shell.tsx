@@ -60,7 +60,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
   useEffect(() => { pathnameRef.current = pathname }, [pathname])
 
   // Páginas públicas que NO requieren autenticación
-  const RUTAS_PUBLICAS = ["/login", "/onboarding", "/registro", "/terminos", "/privacidad"]
+  const RUTAS_PUBLICAS = ["/login", "/onboarding", "/registro", "/terminos", "/privacidad", "/recuperar", "/reset-password"]
 
   useEffect(() => {
     // Garantizar que, apenas se restaura la sesión desde el almacenamiento, las
@@ -110,7 +110,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
   const isLoginPage = pathname === "/login"
   const isOnboarding = pathname === "/onboarding"
   const isRegistro = pathname === "/registro"
-  const isLegal = pathname === "/terminos" || pathname === "/privacidad"
+  const isLegal = pathname === "/terminos" || pathname === "/privacidad" || pathname === "/recuperar" || pathname === "/reset-password"
 
   const getItemStyle = (path: string) => {
     const active = path === "/" ? pathname === "/" : pathname.startsWith(path)
