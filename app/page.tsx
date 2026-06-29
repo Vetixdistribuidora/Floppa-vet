@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase"
 import { useRouter } from "next/navigation"
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts"
 import DashboardVet from "@/components/DashboardVet"
+import Icon from "@/components/Icon"
 import { modulosActivos } from "@/lib/modulos"
 
 // Módulos que definen "tiene parte clínica" / "tiene parte comercial".
@@ -309,23 +310,23 @@ function DashboardComercial() {
   )
 
   const kpiCards = [
-    { titulo: "Ventas hoy", valor: fmt(kpis.totalHoy), sub: `${kpis.cantidadHoy} venta${kpis.cantidadHoy !== 1 ? "s" : ""}`, icon: "☀️", color: "#6f7d49", onClick: () => abrirModal("ventasHoy") },
-    { titulo: "Ingresos hoy", valor: fmt(kpis.cobradoHoy ?? 0), sub: "Cobrado + pagos CC recibidos", icon: "💵", color: "#10b981", onClick: undefined },
-    { titulo: "Ventas del mes", valor: fmt(kpis.totalMes), sub: `${kpis.cantidadVentas} ventas`, icon: "📅", color: "#647a3e", onClick: () => abrirModal("ventasMes") },
-    { titulo: "Ingresos del mes", valor: fmt(kpis.cobradoMes ?? 0), sub: "Cobrado + pagos CC recibidos", icon: "🏦", color: "#059669", onClick: undefined },
-    { titulo: "Compras del mes", valor: fmt(kpis.totalComprasMes), sub: "Total gastado en compras", icon: "🛒", color: "#f59e0b", onClick: undefined },
-    { titulo: "Ganancia", valor: fmt(kpis.ganancia), sub: `Margen ${kpis.margen?.toFixed(1)}%`, icon: "💰", color: "#22c55e", onClick: undefined },
-    { titulo: "Crecimiento", valor: (kpis.crecimiento >= 0 ? "+" : "") + kpis.crecimiento?.toFixed(1) + "%", sub: "vs mismo tramo mes anterior", icon: "📈", color: kpis.crecimiento >= 0 ? "#22c55e" : "#ef4444", onClick: undefined },
-    { titulo: "Capital en stock", valor: fmt(kpis.capitalStock), sub: "Costo × stock", icon: "📦", color: "#a78bfa", onClick: undefined },
-    { titulo: "Cuentas corrientes", valor: fmt(kpis.totalCC), sub: `${kpis.cantidadCC} venta${kpis.cantidadCC !== 1 ? "s" : ""} pendiente${kpis.cantidadCC !== 1 ? "s" : ""}`, icon: "🕐", color: "#ef4444", onClick: () => abrirModal("cuentasCC") },
+    { titulo: "Ventas hoy", valor: fmt(kpis.totalHoy), sub: `${kpis.cantidadHoy} venta${kpis.cantidadHoy !== 1 ? "s" : ""}`, icon: "sun", color: "#6f7d49", onClick: () => abrirModal("ventasHoy") },
+    { titulo: "Ingresos hoy", valor: fmt(kpis.cobradoHoy ?? 0), sub: "Cobrado + pagos CC recibidos", icon: "cash", color: "#10b981", onClick: undefined },
+    { titulo: "Ventas del mes", valor: fmt(kpis.totalMes), sub: `${kpis.cantidadVentas} ventas`, icon: "calendar", color: "#647a3e", onClick: () => abrirModal("ventasMes") },
+    { titulo: "Ingresos del mes", valor: fmt(kpis.cobradoMes ?? 0), sub: "Cobrado + pagos CC recibidos", icon: "bank", color: "#059669", onClick: undefined },
+    { titulo: "Compras del mes", valor: fmt(kpis.totalComprasMes), sub: "Total gastado en compras", icon: "cart", color: "#f59e0b", onClick: undefined },
+    { titulo: "Ganancia", valor: fmt(kpis.ganancia), sub: `Margen ${kpis.margen?.toFixed(1)}%`, icon: "coins", color: "#22c55e", onClick: undefined },
+    { titulo: "Crecimiento", valor: (kpis.crecimiento >= 0 ? "+" : "") + kpis.crecimiento?.toFixed(1) + "%", sub: "vs mismo tramo mes anterior", icon: "trending", color: kpis.crecimiento >= 0 ? "#22c55e" : "#ef4444", onClick: undefined },
+    { titulo: "Capital en stock", valor: fmt(kpis.capitalStock), sub: "Costo × stock", icon: "box", color: "#a78bfa", onClick: undefined },
+    { titulo: "Cuentas corrientes", valor: fmt(kpis.totalCC), sub: `${kpis.cantidadCC} venta${kpis.cantidadCC !== 1 ? "s" : ""} pendiente${kpis.cantidadCC !== 1 ? "s" : ""}`, icon: "clock", color: "#ef4444", onClick: () => abrirModal("cuentasCC") },
   ]
 
   const alertaCards = [
-    { titulo: "Sin stock", valor: alertas.sinStock.length, icon: "📭", tipo: "sinStock" as ModalTipo, sub: "0 unidades" },
-    { titulo: "Stock bajo", valor: alertas.stockBajo.length, icon: "⚠️", tipo: "stockBajo" as ModalTipo, sub: "1 a 5 unidades" },
-    { titulo: "Sin ventas", valor: alertas.sinVentasCount ?? alertas.sinVentas.length, icon: "🚫", tipo: "sinVentas" as ModalTipo, sub: "Nunca vendidos" },
-    { titulo: "Sin rotación", valor: alertas.sinRotacionCount ?? alertas.sinRotacion.length, icon: "🔄", tipo: "sinRotacion" as ModalTipo, sub: "Sin ventas 30 días" },
-    { titulo: "Vencen en 90d", valor: lotesPorVencer.length, icon: "📅", tipo: "lotes" as ModalTipo, sub: "Lotes próximos" },
+    { titulo: "Sin stock", valor: alertas.sinStock.length, icon: "inbox", tipo: "sinStock" as ModalTipo, sub: "0 unidades" },
+    { titulo: "Stock bajo", valor: alertas.stockBajo.length, icon: "alert", tipo: "stockBajo" as ModalTipo, sub: "1 a 5 unidades" },
+    { titulo: "Sin ventas", valor: alertas.sinVentasCount ?? alertas.sinVentas.length, icon: "ban", tipo: "sinVentas" as ModalTipo, sub: "Nunca vendidos" },
+    { titulo: "Sin rotación", valor: alertas.sinRotacionCount ?? alertas.sinRotacion.length, icon: "refresh", tipo: "sinRotacion" as ModalTipo, sub: "Sin ventas 30 días" },
+    { titulo: "Vencen en 90d", valor: lotesPorVencer.length, icon: "calendar", tipo: "lotes" as ModalTipo, sub: "Lotes próximos" },
   ]
 
   return (
@@ -350,7 +351,7 @@ function DashboardComercial() {
             <div style={{ paddingLeft: 8 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
                 <span style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", letterSpacing: 0.5, textTransform: "uppercase" }}>{k.titulo}</span>
-                <span style={{ fontSize: 18 }}>{k.icon}</span>
+                <Icon name={k.icon} size={18} color={k.color} />
               </div>
               <div style={{ fontSize: 24, fontWeight: 800, color: "#1d1b12", lineHeight: 1 }}>{k.valor}</div>
               <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 6 }}>
@@ -364,7 +365,7 @@ function DashboardComercial() {
 
       {/* Alertas */}
       <div style={{ marginBottom: 24 }}>
-        <h2 style={{ fontSize: 14, fontWeight: 700, color: "#64748b", letterSpacing: 1, textTransform: "uppercase", marginBottom: 12 }}>⚠️ Alertas</h2>
+        <h2 style={{ fontSize: 14, fontWeight: 700, color: "#64748b", letterSpacing: 1, textTransform: "uppercase", marginBottom: 12 }}>Alertas</h2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 14 }}>
           {alertaCards.map(a => {
             const hayProblema = a.valor > 0
@@ -382,7 +383,7 @@ function DashboardComercial() {
                 onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.transform = "translateY(0)" }}
               >
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-                  <span style={{ fontSize: 20 }}>{a.icon}</span>
+                  <Icon name={a.icon} size={20} color={hayProblema ? "#f87171" : "#22c55e"} />
                   <span style={{ fontSize: 22, fontWeight: 800, color: hayProblema ? "#f87171" : "#22c55e" }}>{a.valor}</span>
                 </div>
                 <div style={{ fontSize: 13, fontWeight: 700, color: hayProblema ? "white" : "#374151" }}>{a.titulo}</div>
@@ -399,7 +400,7 @@ function DashboardComercial() {
       {/* Top productos del mes */}
       {topProductosMes.length > 0 && (
         <div style={{ marginBottom: 24 }}>
-          <h2 style={{ fontSize: 14, fontWeight: 700, color: "#64748b", letterSpacing: 1, textTransform: "uppercase", marginBottom: 12 }}>🏆 Más vendidos este mes</h2>
+          <h2 style={{ fontSize: 14, fontWeight: 700, color: "#64748b", letterSpacing: 1, textTransform: "uppercase", marginBottom: 12 }}>Más vendidos este mes</h2>
           <div style={{ background: "white", borderRadius: 16, border: "1px solid #e2e8f0", boxShadow: "0 1px 4px rgba(0,0,0,0.05)", overflow: "hidden" }}>
             {topProductosMes.map((p, idx) => (
               <div key={p.nombre} style={{
