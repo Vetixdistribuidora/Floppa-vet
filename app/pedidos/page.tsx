@@ -85,7 +85,7 @@ function ItemPedido({ item, onCantidadChange, onNotasChange, onEliminar }: {
         <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
           {[5, 10, 20].map(n => (
             <button key={n} onClick={() => { setCantidad(String(n)); onCantidadChange(item, n) }}
-              style={{ padding: "4px 9px", border: "1px solid #e2e8f0", borderRadius: 7, background: cantidad === String(n) ? "#4b5a2c" : "#f8fafc", color: cantidad === String(n) ? "white" : "#64748b", fontSize: 12, cursor: "pointer", fontWeight: 700 }}>
+              style={{ padding: "4px 9px", border: "1px solid #e2e8f0", borderRadius: 7, background: cantidad === String(n) ? "var(--accent-dark)" : "#f8fafc", color: cantidad === String(n) ? "white" : "#64748b", fontSize: 12, cursor: "pointer", fontWeight: 700 }}>
               {n}
             </button>
           ))}
@@ -459,7 +459,7 @@ export default function Pedidos() {
                 placeholder="Buscar proveedor…"
                 style={{
                   width: "100%", padding: "10px 14px 10px 36px",
-                  border: `2px solid ${proveedorSelec ? "#22c55e" : "#6f7d49"}`,
+                  border: `2px solid ${proveedorSelec ? "#22c55e" : "var(--accent)"}`,
                   borderRadius: 10, fontSize: 14, fontWeight: 600,
                   color: "#1d1b12", background: esNuevo ? "white" : "#f8fafc",
                   outline: "none", boxSizing: "border-box",
@@ -482,7 +482,7 @@ export default function Pedidos() {
                     style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "11px 16px", background: "none", border: "none", borderBottom: "1px solid #f1f5f9", cursor: "pointer", textAlign: "left" }}
                     onMouseEnter={e => (e.currentTarget.style.background = "#f8fafc")}
                     onMouseLeave={e => (e.currentTarget.style.background = "none")}>
-                    <div style={{ width: 32, height: 32, borderRadius: "50%", background: "linear-gradient(135deg,#6f7d49,#4b5a2c)", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: 13, fontWeight: 700, flexShrink: 0 }}>
+                    <div style={{ width: 32, height: 32, borderRadius: "50%", background: "linear-gradient(135deg,var(--accent),var(--accent-dark))", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: 13, fontWeight: 700, flexShrink: 0 }}>
                       {prov.nombre.charAt(0).toUpperCase()}
                     </div>
                     <span style={{ fontSize: 14, fontWeight: 600, color: "#1d1b12" }}>{prov.nombre}</span>
@@ -513,7 +513,7 @@ export default function Pedidos() {
           {/* Botón crear (nuevo) */}
           {esNuevo && (
             <button onClick={crearPedido} disabled={creando || !proveedorSelec}
-              style={{ padding: "10px 22px", background: "linear-gradient(135deg,#4b5a2c,#6f7d49)", border: "none", borderRadius: 10, color: "white", fontSize: 14, fontWeight: 700, cursor: "pointer", opacity: creando || !busqProveedor.trim() ? 0.5 : 1, flexShrink: 0, alignSelf: "flex-end" }}>
+              style={{ padding: "10px 22px", background: "linear-gradient(135deg,var(--accent-dark),var(--accent))", border: "none", borderRadius: 10, color: "white", fontSize: 14, fontWeight: 700, cursor: "pointer", opacity: creando || !busqProveedor.trim() ? 0.5 : 1, flexShrink: 0, alignSelf: "flex-end" }}>
               {creando ? "Creando…" : "Crear pedido →"}
             </button>
           )}
@@ -526,7 +526,7 @@ export default function Pedidos() {
                 📊 Excel
               </button>
               <button onClick={toggleEstado} disabled={guardandoEstado}
-                style={{ padding: "9px 16px", borderRadius: 9, fontSize: 13, fontWeight: 700, cursor: "pointer", background: pedidoActivo.estado === "borrador" ? "linear-gradient(135deg,#4b5a2c,#6f7d49)" : "#fffbeb", color: pedidoActivo.estado === "borrador" ? "white" : "#d97706", border: pedidoActivo.estado === "enviado" ? "1px solid #fde68a" : "none" }}>
+                style={{ padding: "9px 16px", borderRadius: 9, fontSize: 13, fontWeight: 700, cursor: "pointer", background: pedidoActivo.estado === "borrador" ? "linear-gradient(135deg,var(--accent-dark),var(--accent))" : "#fffbeb", color: pedidoActivo.estado === "borrador" ? "white" : "#d97706", border: pedidoActivo.estado === "enviado" ? "1px solid #fde68a" : "none" }}>
                 {pedidoActivo.estado === "borrador" ? "✅ Marcar enviado" : "📝 Borrador"}
               </button>
               <button onClick={() => setConfirmEliminar(pedidoActivo)}
@@ -563,7 +563,7 @@ export default function Pedidos() {
                     onChange={e => setBusqueda(e.target.value)}
                     placeholder="Buscar producto o laboratorio…"
                     style={{ width: "100%", padding: "10px 14px 10px 36px", border: "1.5px solid #e2e8f0", borderRadius: 9, fontSize: 13, color: "#1d1b12", outline: "none", background: "#f8fafc", boxSizing: "border-box", transition: "border-color 0.15s" }}
-                    onFocus={e => (e.target.style.borderColor = "#6f7d49")}
+                    onFocus={e => (e.target.style.borderColor = "var(--accent)")}
                     onBlur={e => (e.target.style.borderColor = "#e2e8f0")}
                   />
                   {busqueda && (
@@ -576,12 +576,12 @@ export default function Pedidos() {
                 <div style={{ overflowX: "auto", paddingBottom: 4 }}>
                   <div style={{ display: "flex", gap: 5, width: "max-content" }}>
                     <button onClick={() => setFiltroLab("")}
-                      style={{ padding: "4px 11px", borderRadius: 20, border: "none", cursor: "pointer", fontSize: 11, fontWeight: 700, whiteSpace: "nowrap", background: filtroLab === "" ? "#4b5a2c" : "#f1f5f9", color: filtroLab === "" ? "white" : "#64748b" }}>
+                      style={{ padding: "4px 11px", borderRadius: 20, border: "none", cursor: "pointer", fontSize: 11, fontWeight: 700, whiteSpace: "nowrap", background: filtroLab === "" ? "var(--accent-dark)" : "#f1f5f9", color: filtroLab === "" ? "white" : "#64748b" }}>
                       Todos
                     </button>
                     {laboratorios.map(lab => (
                       <button key={lab} onClick={() => setFiltroLab(filtroLab === lab ? "" : lab)}
-                        style={{ padding: "4px 11px", borderRadius: 20, border: "none", cursor: "pointer", fontSize: 11, fontWeight: 600, whiteSpace: "nowrap", background: filtroLab === lab ? "#4b5a2c" : "#f1f5f9", color: filtroLab === lab ? "white" : "#64748b" }}>
+                        style={{ padding: "4px 11px", borderRadius: 20, border: "none", cursor: "pointer", fontSize: 11, fontWeight: 600, whiteSpace: "nowrap", background: filtroLab === lab ? "var(--accent-dark)" : "#f1f5f9", color: filtroLab === lab ? "white" : "#64748b" }}>
                         {lab}
                       </button>
                     ))}
@@ -608,13 +608,13 @@ export default function Pedidos() {
                         </div>
                         <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
                           <StockChip stock={prod.stock} />
-                          <span style={{ width: 24, height: 24, background: "#f4f2e6", border: "1px solid #cdd6a8", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", color: "#5b6b34", fontSize: 16, fontWeight: 700 }}>+</span>
+                          <span style={{ width: 24, height: 24, background: "#f4f2e6", border: "1px solid #cdd6a8", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--accent)", fontSize: 16, fontWeight: 700 }}>+</span>
                         </div>
                       </button>
                     ))}
                     {productosFiltrados.length > productosVisibles.length && (
                       <button onClick={() => setPaginaProd(p => p + 1)}
-                        style={{ width: "100%", padding: "12px", background: "none", border: "none", borderTop: "1px solid #f1f5f9", color: "#6f7d49", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+                        style={{ width: "100%", padding: "12px", background: "none", border: "none", borderTop: "1px solid #f1f5f9", color: "var(--accent)", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
                         Ver {Math.min(60, productosFiltrados.length - productosVisibles.length)} más de {productosFiltrados.length - productosVisibles.length} restantes ↓
                       </button>
                     )}
@@ -629,7 +629,7 @@ export default function Pedidos() {
                 <div style={{ fontSize: 12, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: 0.5 }}>
                   Lista del pedido
                   {itemsPedido.length > 0 && (
-                    <span style={{ marginLeft: 8, background: "#4b5a2c", color: "white", borderRadius: 99, fontSize: 11, padding: "1px 8px", fontWeight: 800 }}>{itemsPedido.length}</span>
+                    <span style={{ marginLeft: 8, background: "var(--accent-dark)", color: "white", borderRadius: 99, fontSize: 11, padding: "1px 8px", fontWeight: 800 }}>{itemsPedido.length}</span>
                   )}
                 </div>
                 {itemsPedido.length > 0 && (
@@ -693,7 +693,7 @@ export default function Pedidos() {
           </p>
         </div>
         <button onClick={abrirNuevo}
-          style={{ background: "linear-gradient(135deg,#4b5a2c,#6f7d49)", color: "white", border: "none", borderRadius: 11, padding: "11px 22px", fontSize: 14, fontWeight: 700, cursor: "pointer", boxShadow: "0 2px 8px rgba(111,125,73,0.3)" }}>
+          style={{ background: "linear-gradient(135deg,var(--accent-dark),var(--accent))", color: "white", border: "none", borderRadius: 11, padding: "11px 22px", fontSize: 14, fontWeight: 700, cursor: "pointer", boxShadow: "0 2px 8px rgba(111,125,73,0.3)" }}>
           + Nuevo pedido
         </button>
       </div>
@@ -728,7 +728,7 @@ export default function Pedidos() {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 320px), 1fr))", gap: 16 }}>
           {pedidosFiltrados.map(p => (
             <div key={p.id} style={{ background: "white", borderRadius: 16, border: p.estado === "enviado" ? "1px solid #bbf7d0" : "1px solid #e2e8f0", boxShadow: "0 2px 8px rgba(0,0,0,0.06)", overflow: "hidden" }}>
-              <div style={{ height: 5, background: p.estado === "enviado" ? "linear-gradient(90deg,#16a34a,#22c55e)" : "linear-gradient(90deg,#5b6b34,#6f7d49)" }} />
+              <div style={{ height: 5, background: p.estado === "enviado" ? "linear-gradient(90deg,#16a34a,#22c55e)" : "linear-gradient(90deg,var(--accent),var(--accent))" }} />
               <div style={{ padding: "18px 20px" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
@@ -755,7 +755,7 @@ export default function Pedidos() {
                   </div>
                 )}
                 <div style={{ display: "flex", gap: 8 }}>
-                  <button onClick={() => abrirEditor(p)} style={{ flex: 1, padding: 9, background: "linear-gradient(135deg,#4b5a2c,#6f7d49)", border: "none", borderRadius: 9, color: "white", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>✏️ Ver / Editar</button>
+                  <button onClick={() => abrirEditor(p)} style={{ flex: 1, padding: 9, background: "linear-gradient(135deg,var(--accent-dark),var(--accent))", border: "none", borderRadius: 9, color: "white", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>✏️ Ver / Editar</button>
                   <button onClick={() => exportarExcel(p)} title="Exportar Excel" style={{ padding: "9px 13px", background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 9, color: "#16a34a", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>📊</button>
                   <button onClick={() => setConfirmEliminar(p)} title="Eliminar" style={{ padding: "9px 13px", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 9, color: "#dc2626", fontSize: 14, cursor: "pointer" }}>🗑️</button>
                 </div>

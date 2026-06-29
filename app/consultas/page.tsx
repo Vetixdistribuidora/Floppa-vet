@@ -5,7 +5,7 @@ import Link from "next/link"
 import { supabase } from "@/lib/supabase"
 import ComboBox from "@/components/ComboBox"
 
-const OLIVA = "#6f7d49"
+const OLIVA = "var(--accent)"
 const hoyISO = () => new Date().toISOString().split("T")[0]
 const TIPOS_EST = ["Análisis de sangre", "Análisis de orina", "Ecografía", "Radiografía", "Citología", "Biopsia", "Cultivo", "Raspaje", "Informe", "Certificado", "Otro"]
 const TIPOS_SAN = ["Vacuna Antirrábica", "Vacuna Quíntuple", "Vacuna Triple", "Vacuna Leucemia Felina", "Desparasitación Interna", "Desparasitación Externa", "Medicación", "Otro"]
@@ -274,7 +274,7 @@ export default function ConsultasPage() {
           <input type="date" value={filtroFecha} onChange={e => setFiltroFecha(e.target.value)} style={{ ...inputStyle, maxWidth: 165 }} />
           <button
             onClick={() => setFiltroFecha(filtroFecha ? "" : hoyISO())}
-            style={{ background: filtroFecha ? "#f1f5f9" : "#6f7d49", color: filtroFecha ? "#475569" : "white", border: filtroFecha ? "1px solid #e2e8f0" : "none", borderRadius: 9, padding: "10px 14px", fontSize: 13, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>
+            style={{ background: filtroFecha ? "#f1f5f9" : "var(--accent)", color: filtroFecha ? "#475569" : "white", border: filtroFecha ? "1px solid #e2e8f0" : "none", borderRadius: 9, padding: "10px 14px", fontSize: 13, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>
             {filtroFecha ? "Ver todas" : "Hoy"}
           </button>
         </div>
@@ -292,14 +292,14 @@ export default function ConsultasPage() {
 
       <div style={{ display: "flex", gap: 6, marginBottom: 14, flexWrap: "wrap" }}>
         {([["todos", "Todos"], ["consulta", "📋 Consultas"], ["estudio", "📎 Estudios"], ["sanidad", "💉 Sanidad"], ["internacion", "🏥 Internación"]] as const).map(([k, lab]) => (
-          <button key={k} onClick={() => setFiltroTipo(k)} style={{ border: `1px solid ${filtroTipo === k ? "#6f7d49" : "#e2e8f0"}`, background: filtroTipo === k ? "#eef0e0" : "white", color: filtroTipo === k ? "#4b5a2c" : "#64748b", borderRadius: 8, padding: "6px 13px", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>{lab}</button>
+          <button key={k} onClick={() => setFiltroTipo(k)} style={{ border: `1px solid ${filtroTipo === k ? "var(--accent)" : "#e2e8f0"}`, background: filtroTipo === k ? "#eef0e0" : "white", color: filtroTipo === k ? "var(--accent-dark)" : "#64748b", borderRadius: 8, padding: "6px 13px", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>{lab}</button>
         ))}
       </div>
 
       {pacienteFiltrado && (
-        <div style={{ background: "#f4f2e6", border: "1px solid #e6e8cf", borderRadius: 10, padding: "10px 16px", marginBottom: 16, fontSize: 13.5, color: "#4b5a2c", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ background: "#f4f2e6", border: "1px solid #e6e8cf", borderRadius: 10, padding: "10px 16px", marginBottom: 16, fontSize: 13.5, color: "var(--accent-dark)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <span>📋 Historia clínica de <b>{pacienteFiltrado.nombre}</b> — {eventos.length} registro(s) (historial completo)</span>
-          <button onClick={() => setFiltroPaciente("")} style={{ background: "transparent", border: "none", color: "#6f7d49", cursor: "pointer", fontWeight: 700, fontSize: 13 }}>Ver todas ✕</button>
+          <button onClick={() => setFiltroPaciente("")} style={{ background: "transparent", border: "none", color: "var(--accent)", cursor: "pointer", fontWeight: 700, fontSize: 13 }}>Ver todas ✕</button>
         </div>
       )}
 
@@ -402,18 +402,18 @@ export default function ConsultasPage() {
                       </div>
                     </div>
                   )}
-                  {c.motivo && <div style={{ whiteSpace: "pre-wrap" }}><b style={{ color: "#4b5a2c", fontWeight: 800 }}>Motivo:</b> {c.motivo}</div>}
-                  {c.diagnostico && <div style={{ whiteSpace: "pre-wrap" }}><b style={{ color: "#4b5a2c", fontWeight: 800 }}>Diagnóstico:</b> {c.diagnostico}</div>}
-                  {c.tratamiento && <div style={{ whiteSpace: "pre-wrap" }}><b style={{ color: "#4b5a2c", fontWeight: 800 }}>Tratamiento:</b> {c.tratamiento}</div>}
+                  {c.motivo && <div style={{ whiteSpace: "pre-wrap" }}><b style={{ color: "var(--accent-dark)", fontWeight: 800 }}>Motivo:</b> {c.motivo}</div>}
+                  {c.diagnostico && <div style={{ whiteSpace: "pre-wrap" }}><b style={{ color: "var(--accent-dark)", fontWeight: 800 }}>Diagnóstico:</b> {c.diagnostico}</div>}
+                  {c.tratamiento && <div style={{ whiteSpace: "pre-wrap" }}><b style={{ color: "var(--accent-dark)", fontWeight: 800 }}>Tratamiento:</b> {c.tratamiento}</div>}
                   {(c.peso != null || c.temperatura != null) && (
                     <div style={{ display: "flex", gap: 16, color: "#475569" }}>
-                      {c.peso != null && <span><b style={{ color: "#4b5a2c", fontWeight: 800 }}>Peso:</b> {c.peso} kg</span>}
-                      {c.temperatura != null && <span><b style={{ color: "#4b5a2c", fontWeight: 800 }}>Temp:</b> {c.temperatura}°</span>}
+                      {c.peso != null && <span><b style={{ color: "var(--accent-dark)", fontWeight: 800 }}>Peso:</b> {c.peso} kg</span>}
+                      {c.temperatura != null && <span><b style={{ color: "var(--accent-dark)", fontWeight: 800 }}>Temp:</b> {c.temperatura}°</span>}
                     </div>
                   )}
                   {c.notas && (
                     <div style={{ background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 8, padding: "8px 12px", marginTop: 2 }}>
-                      <b style={{ color: "#4b5a2c", fontWeight: 800 }}>Notas:</b>{" "}
+                      <b style={{ color: "var(--accent-dark)", fontWeight: 800 }}>Notas:</b>{" "}
                       <span style={{ fontWeight: 700, color: "#1d1b12", whiteSpace: "pre-wrap" }}>{c.notas}</span>
                     </div>
                   )}

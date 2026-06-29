@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 import { modulosActivos } from "@/lib/modulos"
 
-const OLIVA = "#6f7d49"
+const OLIVA = "var(--accent)"
 
 function Toast({ mensaje, tipo }: { mensaje: string; tipo: "ok" | "error" }) {
   return (
@@ -42,7 +42,7 @@ function CamposMascotaExtra({ peso, color, notas, etiquetas, onChange, onToggleE
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
           {ETIQUETAS_SUGERIDAS.map(et => {
             const on = (etiquetas || []).includes(et)
-            return <button key={et} type="button" onClick={() => onToggleEtq(et)} style={{ padding: "6px 12px", borderRadius: 999, cursor: "pointer", fontSize: 12.5, fontWeight: 700, border: on ? "1.5px solid #6f7d49" : "1px solid #e2e8f0", background: on ? "#f4f2e6" : "white", color: on ? "#4b5a2c" : "#64748b" }}>{on ? "✓ " : ""}{et}</button>
+            return <button key={et} type="button" onClick={() => onToggleEtq(et)} style={{ padding: "6px 12px", borderRadius: 999, cursor: "pointer", fontSize: 12.5, fontWeight: 700, border: on ? "1.5px solid var(--accent)" : "1px solid #e2e8f0", background: on ? "#f4f2e6" : "white", color: on ? "var(--accent-dark)" : "#64748b" }}>{on ? "✓ " : ""}{et}</button>
           })}
         </div>
       </div>
@@ -205,14 +205,14 @@ export default function TutoresPage() {
                 style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 14, padding: "14px 18px", boxShadow: "0 1px 4px rgba(0,0,0,0.04)", display: "flex", alignItems: "center", gap: 14, cursor: "pointer", transition: "box-shadow .15s, transform .15s" }}
                 onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = "0 4px 14px rgba(0,0,0,0.08)"; (e.currentTarget as HTMLDivElement).style.transform = "translateY(-1px)" }}
                 onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = "0 1px 4px rgba(0,0,0,0.04)"; (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)" }}>
-                <div style={{ width: 44, height: 44, borderRadius: "50%", background: "#eef0e0", color: "#4b5a2c", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 18, flexShrink: 0 }}>{inicial}</div>
+                <div style={{ width: 44, height: 44, borderRadius: "50%", background: "#eef0e0", color: "var(--accent-dark)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 18, flexShrink: 0 }}>{inicial}</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
                     <span style={{ fontWeight: 700, fontSize: 15.5, color: "#1d1b12" }}>{nombreCompleto || "Sin nombre"}</span>
                     {mascotas.length > 0 && (
                       <span style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
                         {mascotas.map((m: string, i: number) => (
-                          <span key={i} style={{ background: "#f4f2e6", border: "1px solid #e6e8cf", color: "#6f7d49", fontSize: 11.5, fontWeight: 700, padding: "2px 9px", borderRadius: 999 }}>🐾 {m}</span>
+                          <span key={i} style={{ background: "#f4f2e6", border: "1px solid #e6e8cf", color: "var(--accent)", fontSize: 11.5, fontWeight: 700, padding: "2px 9px", borderRadius: 999 }}>🐾 {m}</span>
                         ))}
                       </span>
                     )}
@@ -230,7 +230,7 @@ export default function TutoresPage() {
                 </div>
                 <div className="card-actions" style={{ display: "flex", gap: 6, flexShrink: 0 }}>
                   <button onClick={e => { e.stopPropagation(); abrirSala(t) }} title="Agregar a sala de espera" style={{ background: "#ccfbf1", border: "1px solid #99f6e4", borderRadius: 7, padding: "6px 10px", cursor: "pointer", fontSize: 13, color: "#0d9488", fontWeight: 700 }}>🪑</button>
-                  <button onClick={e => { e.stopPropagation(); abrirAddPac(t) }} title="Agregar mascota" style={{ background: "#f4f2e6", border: "1px solid #e6e8cf", borderRadius: 7, padding: "6px 10px", cursor: "pointer", fontSize: 13, color: "#6f7d49", fontWeight: 700 }}>🐾+</button>
+                  <button onClick={e => { e.stopPropagation(); abrirAddPac(t) }} title="Agregar mascota" style={{ background: "#f4f2e6", border: "1px solid #e6e8cf", borderRadius: 7, padding: "6px 10px", cursor: "pointer", fontSize: 13, color: "var(--accent)", fontWeight: 700 }}>🐾+</button>
                   <button onClick={e => { e.stopPropagation(); abrirEditar(t) }} title="Editar" style={{ background: "#f1f5f9", border: "1px solid #e2e8f0", borderRadius: 7, padding: "6px 10px", cursor: "pointer", fontSize: 13, color: "#475569" }}>✎</button>
                   <button onClick={e => { e.stopPropagation(); setConfirmEliminar(t) }} title="Eliminar" style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 7, padding: "6px 10px", cursor: "pointer", fontSize: 13, color: "#dc2626" }}>🗑</button>
                 </div>
@@ -283,7 +283,7 @@ export default function TutoresPage() {
             {/* Primera mascota — solo al crear un tutor nuevo */}
             {!editId && (
               <div style={{ marginTop: 18, border: "1px solid #e6e8cf", background: "#faf9f1", borderRadius: 12, padding: "14px 16px" }}>
-                <div style={{ fontSize: 12.5, fontWeight: 800, color: "#4b5a2c", marginBottom: 4 }}>🐾 Primera mascota <span style={{ color: "#94a3b8", fontWeight: 500 }}>(opcional)</span></div>
+                <div style={{ fontSize: 12.5, fontWeight: 800, color: "var(--accent-dark)", marginBottom: 4 }}>🐾 Primera mascota <span style={{ color: "#94a3b8", fontWeight: 500 }}>(opcional)</span></div>
                 <div style={{ fontSize: 11.5, color: "#94a3b8", marginBottom: 12 }}>Si la cargás, se crea automáticamente en Pacientes ligada a este tutor.</div>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
                   <div>

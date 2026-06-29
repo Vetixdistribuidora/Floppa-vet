@@ -6,7 +6,7 @@ import ComboBox from "@/components/ComboBox"
 import { abrirWhatsApp } from "@/lib/whatsapp"
 import { empresaNombre } from "@/lib/empresa"
 
-const OLIVA = "#6f7d49"
+const OLIVA = "var(--accent)"
 const TIPOS = ["Vacuna Antirrábica", "Vacuna Quíntuple", "Vacuna Triple", "Vacuna Leucemia Felina", "Desparasitación Interna", "Desparasitación Externa", "Medicación", "Otro"]
 const hoyISO = () => new Date().toISOString().split("T")[0]
 
@@ -205,7 +205,7 @@ export default function RecordatoriosPage() {
                   {r.pacientes?.clientes?.email && (
                     <button onClick={() => enviarEmailTutor(r)} disabled={enviando === r.id}
                       title={r.email_enviado_at ? "Reenviar email al tutor" : "Enviar email al tutor"}
-                      style={{ background: r.email_enviado_at ? "#f4f2e6" : "#eef0e0", border: "1px solid #e6e8cf", borderRadius: 7, padding: "5px 10px", cursor: enviando === r.id ? "wait" : "pointer", fontSize: 13, color: "#6f7d49", fontWeight: 700 }}>
+                      style={{ background: r.email_enviado_at ? "#f4f2e6" : "#eef0e0", border: "1px solid #e6e8cf", borderRadius: 7, padding: "5px 10px", cursor: enviando === r.id ? "wait" : "pointer", fontSize: 13, color: "var(--accent)", fontWeight: 700 }}>
                       {enviando === r.id ? "…" : r.email_enviado_at ? "📧✓" : "📧"}
                     </button>
                   )}

@@ -5,10 +5,10 @@ import { supabase } from "@/lib/supabase"
 import ComboBox from "@/components/ComboBox"
 import { nowARInput, isoToARInput, arInputToISO, fmtFechaHoraAR, fmtFechaAR } from "@/lib/fecha"
 
-const OLIVA = "#6f7d49"
+const OLIVA = "var(--accent)"
 const TIPO_REG: Record<string, { label: string; icon: string; bg: string; color: string }> = {
   constante:  { label: "Constantes", icon: "🌡", bg: "#eff6ff", color: "#1d4ed8" },
-  medicacion: { label: "Medicación", icon: "💊", bg: "#eef0e0", color: "#4b5a2c" },
+  medicacion: { label: "Medicación", icon: "💊", bg: "#eef0e0", color: "var(--accent-dark)" },
   evolucion:  { label: "Evolución",  icon: "📝", bg: "#fffbeb", color: "#b45309" },
 }
 
@@ -201,7 +201,7 @@ export default function InternacionPage() {
             : filtrada.map(i => {
               const sel = activa?.id === i.id
               return (
-                <div key={i.id} onClick={() => abrirFicha(i)} style={{ background: sel ? "#f4f2e6" : "white", border: `1px solid ${sel ? "#cdd6a8" : "#e2e8f0"}`, borderLeft: sel ? "3px solid #6f7d49" : "3px solid transparent", borderRadius: 12, padding: "12px 14px", cursor: "pointer" }}>
+                <div key={i.id} onClick={() => abrirFicha(i)} style={{ background: sel ? "#f4f2e6" : "white", border: `1px solid ${sel ? "#cdd6a8" : "#e2e8f0"}`, borderLeft: sel ? "3px solid var(--accent)" : "3px solid transparent", borderRadius: 12, padding: "12px 14px", cursor: "pointer" }}>
                   <div style={{ fontWeight: 700, fontSize: 14, color: "#1d1b12" }}>🐾 {i.pacientes?.nombre || "—"}{i.jaula && <span style={{ color: "#0d9488", fontWeight: 800 }}> · Jaula {i.jaula}</span>}</div>
                   <div style={{ fontSize: 12, color: "#64748b", marginTop: 2 }}>{i.motivo || "Sin motivo"}</div>
                   <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 4 }}>
@@ -283,7 +283,7 @@ export default function InternacionPage() {
                         style={{ background: reg.meds.length === 1 ? "#f8fafc" : "#fef2f2", border: `1px solid ${reg.meds.length === 1 ? "#e2e8f0" : "#fecaca"}`, color: reg.meds.length === 1 ? "#cbd5e1" : "#dc2626", borderRadius: 8, padding: "8px 11px", fontSize: 13, cursor: reg.meds.length === 1 ? "default" : "pointer", flexShrink: 0 }}>✕</button>
                     </div>
                   ))}
-                  <button type="button" onClick={addMed} style={{ background: "#eef0e0", border: "1px solid #cdd6a8", color: "#4b5a2c", borderRadius: 8, padding: "6px 12px", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>+ Agregar medicamento</button>
+                  <button type="button" onClick={addMed} style={{ background: "#eef0e0", border: "1px solid #cdd6a8", color: "var(--accent-dark)", borderRadius: 8, padding: "6px 12px", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>+ Agregar medicamento</button>
                 </div>
 
                 {/* Evolución */}

@@ -6,11 +6,11 @@ import ComboBox from "@/components/ComboBox"
 import { abrirWhatsApp } from "@/lib/whatsapp"
 import { empresaNombre } from "@/lib/empresa"
 
-const OLIVA = "#6f7d49"
+const OLIVA = "var(--accent)"
 const TIPOS = ["Consulta", "Control", "Vacunación", "Cirugía", "Peluquería", "Estudios", "Otro"]
 const ESTADOS: Record<string, { label: string; bg: string; color: string; bd: string }> = {
   reservado:  { label: "Reservado",  bg: "#eff6ff", color: "#1d4ed8", bd: "#bfdbfe" },
-  confirmado: { label: "Confirmado", bg: "#eef0e0", color: "#4b5a2c", bd: "#cdd6a8" },
+  confirmado: { label: "Confirmado", bg: "#eef0e0", color: "var(--accent-dark)", bd: "#cdd6a8" },
   atendido:   { label: "Atendido",   bg: "#dcfce7", color: "#15803d", bd: "#86efac" },
   ausente:    { label: "Ausente",    bg: "#fef2f2", color: "#dc2626", bd: "#fecaca" },
   cancelado:  { label: "Cancelado",  bg: "#f1f5f9", color: "#64748b", bd: "#e2e8f0" },
@@ -152,7 +152,7 @@ export default function TurnosPage() {
           <button onClick={() => moverMes(-1)} title="Mes anterior" style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 9, padding: "8px 12px", fontSize: 15, cursor: "pointer", color: "#475569" }}>←</button>
           <span style={{ fontSize: 16, fontWeight: 800, color: "#1d1b12", textTransform: "capitalize", minWidth: 150, textAlign: "center" }}>{mesNombre(mesAncla)}</span>
           <button onClick={() => moverMes(1)} title="Mes siguiente" style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 9, padding: "8px 12px", fontSize: 15, cursor: "pointer", color: "#475569" }}>→</button>
-          <button onClick={() => { setMesAncla(new Date(new Date().getFullYear(), new Date().getMonth(), 1)); setFecha(hoyISO()) }} style={{ background: "#eef0e0", border: "1px solid #cdd6a8", borderRadius: 9, padding: "8px 12px", fontSize: 13, fontWeight: 700, cursor: "pointer", color: "#4b5a2c" }}>Hoy</button>
+          <button onClick={() => { setMesAncla(new Date(new Date().getFullYear(), new Date().getMonth(), 1)); setFecha(hoyISO()) }} style={{ background: "#eef0e0", border: "1px solid #cdd6a8", borderRadius: 9, padding: "8px 12px", fontSize: 13, fontWeight: 700, cursor: "pointer", color: "var(--accent-dark)" }}>Hoy</button>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <input type="date" value={fecha} onChange={e => irAFecha(e.target.value)} title="Filtrar por fecha" style={{ ...inputStyle, width: "auto", padding: "8px 12px" }} />
@@ -175,10 +175,10 @@ export default function TurnosPage() {
             return (
               <button key={i} onClick={() => setFecha(iso)}
                 style={{ minHeight: 56, borderRadius: 10, padding: "6px 4px", cursor: "pointer", textAlign: "center", position: "relative",
-                  border: sel ? "2px solid #6f7d49" : esHoy ? "1px solid #cdd6a8" : "1px solid #eef0f3",
+                  border: sel ? "2px solid var(--accent)" : esHoy ? "1px solid #cdd6a8" : "1px solid #eef0f3",
                   background: sel ? "#eef0e0" : "white" }}>
-                <div style={{ fontSize: 13, fontWeight: esHoy || sel ? 800 : 600, color: sel ? "#4b5a2c" : "#1d1b12" }}>{d.getDate()}</div>
-                {n > 0 && <div style={{ marginTop: 4, fontSize: 10, fontWeight: 700, color: "white", background: "#6f7d49", borderRadius: 999, padding: "1px 6px", display: "inline-block" }}>{n}</div>}
+                <div style={{ fontSize: 13, fontWeight: esHoy || sel ? 800 : 600, color: sel ? "var(--accent-dark)" : "#1d1b12" }}>{d.getDate()}</div>
+                {n > 0 && <div style={{ marginTop: 4, fontSize: 10, fontWeight: 700, color: "white", background: "var(--accent)", borderRadius: 999, padding: "1px 6px", display: "inline-block" }}>{n}</div>}
               </button>
             )
           })}
@@ -194,7 +194,7 @@ export default function TurnosPage() {
         <div style={{ textAlign: "center", padding: "40px 20px", color: "#94a3b8" }}>
           <div style={{ fontSize: 40, marginBottom: 12 }}>📅</div>
           <p style={{ fontWeight: 600, color: "#475569" }}>No hay turnos para este día</p>
-          <button onClick={abrirNuevo} style={{ marginTop: 10, background: "#eef0e0", border: "1px solid #cdd6a8", borderRadius: 9, padding: "8px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer", color: "#4b5a2c" }}>+ Agendar turno este día</button>
+          <button onClick={abrirNuevo} style={{ marginTop: 10, background: "#eef0e0", border: "1px solid #cdd6a8", borderRadius: 9, padding: "8px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer", color: "var(--accent-dark)" }}>+ Agendar turno este día</button>
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -203,7 +203,7 @@ export default function TurnosPage() {
             const tutor = t.clientes ? `${t.clientes.nombre || ""} ${t.clientes.apellido || ""}`.trim() : ""
             return (
               <div key={t.id} style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 12, padding: "12px 16px", display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
-                <div style={{ textAlign: "center", background: "#f4f2e6", color: "#4b5a2c", borderRadius: 9, padding: "8px 12px", minWidth: 70, fontWeight: 800, fontSize: 16 }}>
+                <div style={{ textAlign: "center", background: "#f4f2e6", color: "var(--accent-dark)", borderRadius: 9, padding: "8px 12px", minWidth: 70, fontWeight: 800, fontSize: 16 }}>
                   {(t.hora || "").slice(0, 5)}
                   <div style={{ fontSize: 10, fontWeight: 600, color: "#94a3b8" }}>{t.duracion || 30}'</div>
                 </div>

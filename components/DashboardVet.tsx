@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabase"
 import { abrirWhatsApp } from "@/lib/whatsapp"
 import { empresaNombre } from "@/lib/empresa"
 
-const OLIVA = "#6f7d49"
+const OLIVA = "var(--accent)"
 const hoyISO = () => new Date().toLocaleDateString("sv-SE")
 const card: React.CSSProperties = { background: "white", border: "1px solid #e2e8f0", borderRadius: 16, padding: "18px 20px", boxShadow: "0 1px 4px rgba(0,0,0,0.05)" }
 const h3: React.CSSProperties = { margin: "0 0 12px", fontSize: 14, fontWeight: 800, color: "#1d1b12" }
@@ -31,7 +31,7 @@ function edadAnios(fnac: string): number | null {
   return a
 }
 
-const ESTADO_COL: Record<string, string> = { reservado: "#1d4ed8", confirmado: "#4b5a2c", atendido: "#15803d", ausente: "#dc2626", cancelado: "#64748b" }
+const ESTADO_COL: Record<string, string> = { reservado: "#1d4ed8", confirmado: "var(--accent-dark)", atendido: "#15803d", ausente: "#dc2626", cancelado: "#64748b" }
 
 export default function DashboardVet() {
   const [loading, setLoading] = useState(true)
@@ -166,7 +166,7 @@ export default function DashboardVet() {
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {turnos.slice(0, 6).map(t => (
                 <div key={t.id} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 13, borderBottom: "1px solid #f1f5f9", paddingBottom: 7 }}>
-                  <span style={{ fontWeight: 800, color: "#4b5a2c", minWidth: 46 }}>{(t.hora || "").slice(0, 5)}</span>
+                  <span style={{ fontWeight: 800, color: "var(--accent-dark)", minWidth: 46 }}>{(t.hora || "").slice(0, 5)}</span>
                   <span style={{ flex: 1, minWidth: 0 }}><b style={{ color: "#1d1b12" }}>{t.tipo || "Turno"}</b>{t.pacientes ? ` · ${t.pacientes.nombre}` : ""}</span>
                   <span style={{ fontSize: 11, fontWeight: 700, color: ESTADO_COL[t.estado] || "#64748b", textTransform: "capitalize" }}>{t.estado}</span>
                 </div>

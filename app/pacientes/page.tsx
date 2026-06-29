@@ -8,7 +8,7 @@ import ComboBox from "@/components/ComboBox"
 const ESPECIES = ["Perro", "Gato", "Ave", "Conejo", "Roedor", "Reptil", "Equino", "Otro"]
 const ESPECIE_EMOJI: Record<string, string> = { Perro: "🐶", Gato: "🐈", Ave: "🐦", Conejo: "🐰", Roedor: "🐹", Reptil: "🦎", Equino: "🐴", Otro: "🐾" }
 const emojiEsp = (e: string | null) => ESPECIE_EMOJI[e || ""] || "🐾"
-const OLIVA = "#6f7d49"
+const OLIVA = "var(--accent)"
 
 function Toast({ mensaje, tipo }: { mensaje: string; tipo: "ok" | "error" }) {
   return (
@@ -216,8 +216,8 @@ export default function PacientesPage() {
       {/* Banner: filtrando por tutor */}
       {tutorFiltrado && (
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, background: "#f4f2e6", border: "1px solid #e6e8cf", borderRadius: 10, padding: "10px 14px", marginBottom: 14, flexWrap: "wrap" }}>
-          <span style={{ fontSize: 13.5, color: "#4b5a2c", fontWeight: 700 }}>🐾 Mostrando mascotas de {`${tutorFiltrado.nombre || ""} ${tutorFiltrado.apellido || ""}`.trim()}</span>
-          <button onClick={limpiarFiltroTutor} style={{ background: "white", border: "1px solid #e6e8cf", borderRadius: 8, padding: "5px 12px", fontSize: 12.5, fontWeight: 700, color: "#6f7d49", cursor: "pointer" }}>Ver todos ✕</button>
+          <span style={{ fontSize: 13.5, color: "var(--accent-dark)", fontWeight: 700 }}>🐾 Mostrando mascotas de {`${tutorFiltrado.nombre || ""} ${tutorFiltrado.apellido || ""}`.trim()}</span>
+          <button onClick={limpiarFiltroTutor} style={{ background: "white", border: "1px solid #e6e8cf", borderRadius: 8, padding: "5px 12px", fontSize: 12.5, fontWeight: 700, color: "var(--accent)", cursor: "pointer" }}>Ver todos ✕</button>
         </div>
       )}
 
@@ -257,7 +257,7 @@ export default function PacientesPage() {
                 </div>
                 <div style={{ minWidth: 0, flex: 1 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                    <Link href={`/pacientes/${p.id}`} title="Ver ficha completa" style={{ fontWeight: 700, fontSize: 16, color: "#4b5a2c", textDecoration: "none" }}>
+                    <Link href={`/pacientes/${p.id}`} title="Ver ficha completa" style={{ fontWeight: 700, fontSize: 16, color: "var(--accent-dark)", textDecoration: "none" }}>
                       <span>{emojiEsp(p.especie)}</span> {p.nombre}
                       {p.raza && <span style={{ fontWeight: 500, color: "#94a3b8", fontSize: 14 }}> · {p.raza}</span>}
                     </Link>
@@ -267,24 +267,24 @@ export default function PacientesPage() {
                 </div>
                 <div className="pac-card-actions" style={{ display: "flex", gap: 6, flexWrap: "wrap", flexShrink: 0 }}>
                   <button onClick={() => abrirSala(p)} title="Agregar a sala de espera" style={{ background: "#ccfbf1", border: "1px solid #99f6e4", borderRadius: 7, padding: "4px 9px", cursor: "pointer", fontSize: 12, color: "#0d9488", fontWeight: 700 }}>🪑</button>
-                  <Link href={`/consultas?paciente=${p.id}`} title="Historia clínica (consultas, estudios y sanidad)" style={{ background: "#f4f2e6", border: "1px solid #e6e8cf", borderRadius: 7, padding: "4px 10px", cursor: "pointer", fontSize: 12, color: "#6f7d49", textDecoration: "none", fontWeight: 700, whiteSpace: "nowrap" }}>📋 Historia clínica</Link>
-                  <Link href={`/consultas?paciente=${p.id}&nueva=consulta`} title="Agregar a la historia clínica" style={{ background: "#eef0e0", border: "1px solid #cdd6a8", borderRadius: 7, padding: "4px 9px", cursor: "pointer", fontSize: 12, color: "#4b5a2c", textDecoration: "none", fontWeight: 700 }}>＋</Link>
+                  <Link href={`/consultas?paciente=${p.id}`} title="Historia clínica (consultas, estudios y sanidad)" style={{ background: "#f4f2e6", border: "1px solid #e6e8cf", borderRadius: 7, padding: "4px 10px", cursor: "pointer", fontSize: 12, color: "var(--accent)", textDecoration: "none", fontWeight: 700, whiteSpace: "nowrap" }}>📋 Historia clínica</Link>
+                  <Link href={`/consultas?paciente=${p.id}&nueva=consulta`} title="Agregar a la historia clínica" style={{ background: "#eef0e0", border: "1px solid #cdd6a8", borderRadius: 7, padding: "4px 9px", cursor: "pointer", fontSize: 12, color: "var(--accent-dark)", textDecoration: "none", fontWeight: 700 }}>＋</Link>
                   <button onClick={() => abrirEditar(p)} title="Editar" style={{ background: "#f1f5f9", border: "1px solid #e2e8f0", borderRadius: 7, padding: "4px 9px", cursor: "pointer", fontSize: 12, color: "#475569" }}>✎</button>
                   <button onClick={() => setConfirmEliminar(p)} title="Eliminar" style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 7, padding: "4px 9px", cursor: "pointer", fontSize: 12, color: "#dc2626" }}>🗑</button>
                 </div>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginTop: 2 }}>
                 <span style={{ fontSize: 12.5, color: "#475569", fontWeight: 600 }}>{p.especie || "—"}</span>
-                {(p.etiquetas || []).map((et: string) => <span key={et} style={{ background: "#eef0e0", color: "#4b5a2c", fontSize: 10.5, fontWeight: 700, padding: "2px 8px", borderRadius: 999 }}>{et}</span>)}
+                {(p.etiquetas || []).map((et: string) => <span key={et} style={{ background: "#eef0e0", color: "var(--accent-dark)", fontSize: 10.5, fontWeight: 700, padding: "2px 8px", borderRadius: 999 }}>{et}</span>)}
               </div>
               <div style={{ display: "flex", gap: 14, flexWrap: "wrap", fontSize: 12.5, color: "#475569", marginTop: 8 }}>
-                <span><b style={{ color: "#4b5a2c", fontWeight: 800 }}>Edad:</b> {edadDe(p.fecha_nacimiento)}</span>
-                {p.sexo && <span><b style={{ color: "#4b5a2c", fontWeight: 800 }}>Sexo:</b> {p.sexo}</span>}
-                {p.peso != null && <span><b style={{ color: "#4b5a2c", fontWeight: 800 }}>Peso:</b> {p.peso} kg</span>}
+                <span><b style={{ color: "var(--accent-dark)", fontWeight: 800 }}>Edad:</b> {edadDe(p.fecha_nacimiento)}</span>
+                {p.sexo && <span><b style={{ color: "var(--accent-dark)", fontWeight: 800 }}>Sexo:</b> {p.sexo}</span>}
+                {p.peso != null && <span><b style={{ color: "var(--accent-dark)", fontWeight: 800 }}>Peso:</b> {p.peso} kg</span>}
                 {(() => { const c = cumpleInfo(p.fecha_nacimiento); return c ? <span style={{ color: c.dias === 0 ? "#d97706" : "#475569", fontWeight: c.dias === 0 ? 700 : 400 }}>🎂 {c.dia}{c.dias === 0 ? " ¡hoy!" : c.dias <= 30 ? ` (en ${c.dias}d)` : ""}</span> : null })()}
               </div>
               <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid #f1f5f9", fontSize: 12.5, color: "#475569" }}>
-                <b style={{ color: "#4b5a2c", fontWeight: 800 }}>Tutor:</b>{" "}
+                <b style={{ color: "var(--accent-dark)", fontWeight: 800 }}>Tutor:</b>{" "}
                 {p.clientes ? `${p.clientes.nombre || ""} ${p.clientes.apellido || ""}`.trim() : <span style={{ color: "#94a3b8", fontStyle: "italic" }}>sin asignar</span>}
               </div>
               {p.notas && (
@@ -400,7 +400,7 @@ export default function PacientesPage() {
                     return (
                       <button key={et} type="button"
                         onClick={() => setForm({ ...form, etiquetas: on ? form.etiquetas.filter((x: string) => x !== et) : [...(form.etiquetas || []), et] })}
-                        style={{ padding: "6px 12px", borderRadius: 999, cursor: "pointer", fontSize: 12.5, fontWeight: 700, border: on ? "1.5px solid #6f7d49" : "1px solid #e2e8f0", background: on ? "#f4f2e6" : "white", color: on ? "#4b5a2c" : "#64748b" }}>
+                        style={{ padding: "6px 12px", borderRadius: 999, cursor: "pointer", fontSize: 12.5, fontWeight: 700, border: on ? "1.5px solid var(--accent)" : "1px solid #e2e8f0", background: on ? "#f4f2e6" : "white", color: on ? "var(--accent-dark)" : "#64748b" }}>
                         {on ? "✓ " : ""}{et}
                       </button>
                     )

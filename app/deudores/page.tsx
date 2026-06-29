@@ -601,8 +601,8 @@ export default function Deudores() {
                     return (
                       <button key={pct} onClick={() => setMontoCobro(String(val))} style={{
                         flex: 1, padding: "6px 0", borderRadius: 8,
-                        border: activo ? "1px solid #6f7d49" : "1px solid rgba(255,255,255,0.1)",
-                        background: activo ? "#6f7d49" : "rgba(255,255,255,0.05)",
+                        border: activo ? "1px solid var(--accent)" : "1px solid rgba(255,255,255,0.1)",
+                        background: activo ? "var(--accent)" : "rgba(255,255,255,0.05)",
                         color: activo ? "white" : "#9ca3af",
                         fontSize: 11, fontWeight: 600, cursor: "pointer"
                       }}>{pct}%</button>
@@ -675,8 +675,8 @@ export default function Deudores() {
                             {/* Checkbox visual */}
                             <div style={{
                               width: 18, height: 18, borderRadius: 5, flexShrink: 0,
-                              border: `2px solid ${sel ? "#6f7d49" : "rgba(255,255,255,0.2)"}`,
-                              background: sel ? "#6f7d49" : "transparent",
+                              border: `2px solid ${sel ? "var(--accent)" : "rgba(255,255,255,0.2)"}`,
+                              background: sel ? "var(--accent)" : "transparent",
                               display: "flex", alignItems: "center", justifyContent: "center",
                             }}>
                               {sel && <span style={{ color: "white", fontSize: 11, fontWeight: 900, lineHeight: 1 }}>✓</span>}

@@ -73,7 +73,7 @@ const labelStyle: React.CSSProperties = {
 };
 
 const btnPrimario: React.CSSProperties = {
-  background: "linear-gradient(135deg, #5b6b34, #6f7d49)",
+  background: "linear-gradient(135deg, var(--accent), var(--accent))",
   color: "white", border: "none", borderRadius: 10,
   padding: "11px 22px", fontSize: 14, fontWeight: 700, cursor: "pointer",
   boxShadow: "0 2px 8px rgba(111,125,73,0.3)",
@@ -425,7 +425,7 @@ export default function MermasPage() {
           <button key={p} onClick={() => setFiltroPeriodo(p)} style={{
             padding: "6px 14px", borderRadius: 20, fontSize: 12, fontWeight: 600, cursor: "pointer",
             border: filtroPeriodo === p ? "none" : "1px solid #e2e8f0",
-            background: filtroPeriodo === p ? "#4b5a2c" : "#f8fafc",
+            background: filtroPeriodo === p ? "var(--accent-dark)" : "#f8fafc",
             color: filtroPeriodo === p ? "white" : "#64748b",
           }}>
             {{ todo: "Todo", hoy: "Hoy", semana: "Esta semana", mes: "Este mes" }[p]}
@@ -600,7 +600,7 @@ export default function MermasPage() {
       {/* ── Nota explicativa ─────────────────────────────────────────────────── */}
       <div style={{
         marginTop: 16, padding: "14px 18px", borderRadius: 10,
-        background: "#f4f2e6", border: "1px solid #cdd6a8", fontSize: 12, color: "#4b5a2c",
+        background: "#f4f2e6", border: "1px solid #cdd6a8", fontSize: 12, color: "var(--accent-dark)",
       }}>
         💡 <strong>Pérdida por costo:</strong> dinero que ya gastaste en el producto (cantidad × costo).
         &nbsp;&nbsp;<strong>Margen no ganado:</strong> ganancia que dejaste de obtener (cantidad × (PV − costo)).

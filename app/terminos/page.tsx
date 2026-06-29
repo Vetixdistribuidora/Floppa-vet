@@ -101,10 +101,10 @@ export default function TerminosPage() {
 
 const wrap: React.CSSProperties = { minHeight: "100vh", background: "#14130d", padding: "40px 20px", fontFamily: "DM Sans, Segoe UI, sans-serif" }
 const card: React.CSSProperties = { maxWidth: 760, margin: "0 auto", background: "#fbfaf6", borderRadius: 16, padding: "44px 48px", boxShadow: "0 24px 64px rgba(0,0,0,0.4)" }
-const back: React.CSSProperties = { color: "#6f7d49", textDecoration: "none", fontSize: 13, fontWeight: 700 }
+const back: React.CSSProperties = { color: "var(--accent)", textDecoration: "none", fontSize: 13, fontWeight: 700 }
 const h1: React.CSSProperties = { fontSize: 26, fontWeight: 800, color: "#1d1b12", margin: "18px 0 6px" }
 const h2: React.CSSProperties = { fontSize: 17, fontWeight: 800, color: "#1d1b12", margin: "26px 0 8px" }
 const p: React.CSSProperties = { fontSize: 14.5, lineHeight: 1.7, color: "#3f3b30", margin: "0 0 10px" }
-const a: React.CSSProperties = { color: "#6f7d49", fontWeight: 700 }
+const a: React.CSSProperties = { color: "var(--accent)", fontWeight: 700 }
 const meta: React.CSSProperties = { fontSize: 12.5, color: "#8a8675", margin: "0 0 18px" }
 const metaFoot: React.CSSProperties = { fontSize: 12, color: "#a8a48f", marginTop: 30, textAlign: "center" }

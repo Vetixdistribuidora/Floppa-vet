@@ -70,8 +70,8 @@ export default function ResetPasswordPage() {
         .field { margin-bottom: 14px; }
         .field label { display: block; font-size: 11px; font-weight: 700; color: #9ca3af; letter-spacing: 0.5px; margin-bottom: 6px; text-transform: uppercase; }
         .field input { width: 100%; padding: 12px 14px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 9px; color: white; font-size: 14px; font-family: inherit; outline: none; }
-        .field input:focus { border-color: #8a9a5b; }
-        .btn { width: 100%; padding: 13px; background: linear-gradient(135deg, #4b5a2c, #6f7d49); border: none; border-radius: 10px; color: white; font-size: 14px; font-weight: 700; font-family: inherit; cursor: pointer; margin-top: 6px; box-shadow: 0 4px 16px rgba(80,96,55,0.4); }
+        .field input:focus { border-color: var(--accent-light); }
+        .btn { width: 100%; padding: 13px; background: linear-gradient(135deg, var(--accent-dark), var(--accent)); border: none; border-radius: 10px; color: white; font-size: 14px; font-weight: 700; font-family: inherit; cursor: pointer; margin-top: 6px; box-shadow: 0 4px 16px rgba(80,96,55,0.4); }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
       `}</style>
       <div className="wrap">

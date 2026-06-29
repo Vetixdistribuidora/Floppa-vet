@@ -479,7 +479,7 @@ export default function ProveedoresPage() {
           </p>
         </div>
         <button onClick={abrirCrear} className="prov-header-btn" style={{
-          background: "linear-gradient(135deg, #5b6b34, #6f7d49)", color: "white",
+          background: "linear-gradient(135deg, var(--accent), var(--accent))", color: "white",
           border: "none", borderRadius: 10, padding: "10px 18px",
           fontSize: 13, fontWeight: 700, cursor: "pointer",
           boxShadow: "0 2px 8px rgba(111,125,73,0.3)"
@@ -513,7 +513,7 @@ export default function ProveedoresPage() {
               <div style={{ display: "flex", alignItems: "center", gap: 14, flex: 1, minWidth: 0 }}>
                 <div style={{
                   width: 44, height: 44, borderRadius: "50%", flexShrink: 0,
-                  background: "linear-gradient(135deg, #4b5a2c, #6f7d49)",
+                  background: "linear-gradient(135deg, var(--accent-dark), var(--accent))",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   fontSize: 16, fontWeight: 800, color: "white"
                 }}>
@@ -566,7 +566,7 @@ export default function ProveedoresPage() {
                     borderRadius: 8, padding: "7px 14px", fontSize: 12, fontWeight: 700, cursor: "pointer"
                   }}>↩️ NC</button>
                   <button onClick={() => abrirHistorial(p)} style={{
-                    background: "#f4f2e6", color: "#5b6b34", border: "1px solid #cdd6a8",
+                    background: "#f4f2e6", color: "var(--accent)", border: "1px solid #cdd6a8",
                     borderRadius: 8, padding: "7px 14px", fontSize: 12, fontWeight: 700, cursor: "pointer"
                   }}>📋 Pagos</button>
                   <button onClick={() => abrirEditar(p)} style={{
@@ -644,7 +644,7 @@ export default function ProveedoresPage() {
               }}>Cancelar</button>
               <button onClick={guardar} disabled={guardando} style={{
                 flex: 1, padding: "11px",
-                background: "linear-gradient(135deg, #5b6b34, #6f7d49)",
+                background: "linear-gradient(135deg, var(--accent), var(--accent))",
                 border: "none", borderRadius: 10, color: "white",
                 fontSize: 13, fontWeight: 700, cursor: "pointer",
                 opacity: guardando ? 0.5 : 1
@@ -792,8 +792,8 @@ export default function ProveedoresPage() {
                           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                             <div style={{
                               width: 18, height: 18, borderRadius: 5, flexShrink: 0,
-                              border: `2px solid ${sel ? "#6f7d49" : "rgba(255,255,255,0.2)"}`,
-                              background: sel ? "#6f7d49" : "transparent",
+                              border: `2px solid ${sel ? "var(--accent)" : "rgba(255,255,255,0.2)"}`,
+                              background: sel ? "var(--accent)" : "transparent",
                               display: "flex", alignItems: "center", justifyContent: "center",
                             }}>
                               {sel && <span style={{ color: "white", fontSize: 11, fontWeight: 900, lineHeight: 1 }}>✓</span>}
@@ -1040,7 +1040,7 @@ export default function ProveedoresPage() {
 
         const colorMetodo = (m: string) => ({
           bg:    m === "Transferencia" ? "rgba(96,165,250,0.15)"  : m === "Efectivo" ? "rgba(74,222,128,0.15)"  : m === "Cheque" ? "rgba(251,191,36,0.15)"  : "rgba(156,163,175,0.15)",
-          color: m === "Transferencia" ? "#8a9a5b"                : m === "Efectivo" ? "#4ade80"                : m === "Cheque" ? "#fbbf24"                : "#9ca3af",
+          color: m === "Transferencia" ? "var(--accent-light)"                : m === "Efectivo" ? "#4ade80"                : m === "Cheque" ? "#fbbf24"                : "#9ca3af",
         });
 
         const totalFiltrado = pagosFiltrados.reduce((s, p) => s + Number(p.monto), 0);
@@ -1080,7 +1080,7 @@ export default function ProveedoresPage() {
                         return (
                           <button key={op} onClick={() => setFiltroFechaHist(op)} style={{
                             padding: "5px 12px", borderRadius: 7, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 600,
-                            background: active ? "#5b6b34" : "transparent",
+                            background: active ? "var(--accent)" : "transparent",
                             color: active ? "white" : "#9ca3af",
                             transition: "all 0.15s",
                           }}>{labels[op]}</button>

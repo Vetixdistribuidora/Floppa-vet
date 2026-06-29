@@ -111,7 +111,7 @@ export default function FichaPaciente() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
         <button onClick={() => router.push("/pacientes")} style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 9, padding: "8px 14px", fontSize: 13, fontWeight: 600, color: "#475569", cursor: "pointer" }}>← Pacientes</button>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <Link href={`/consultas?paciente=${id}`} style={{ background: "#eef0e0", border: "1px solid #cdd6a8", borderRadius: 9, padding: "9px 16px", fontSize: 13, fontWeight: 700, color: "#4b5a2c", textDecoration: "none" }}>📋 Historia clínica</Link>
+          <Link href={`/consultas?paciente=${id}`} style={{ background: "#eef0e0", border: "1px solid #cdd6a8", borderRadius: 9, padding: "9px 16px", fontSize: 13, fontWeight: 700, color: "var(--accent-dark)", textDecoration: "none" }}>📋 Historia clínica</Link>
           {p.fallecido
             ? <button onClick={revertirDeceso} style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 9, padding: "9px 14px", fontSize: 13, fontWeight: 600, color: "#475569", cursor: "pointer" }}>↩ Revertir deceso</button>
             : <button onClick={() => setModalDeceso(true)} style={{ background: "white", border: "1px solid #fecaca", borderRadius: 9, padding: "9px 14px", fontSize: 13, fontWeight: 600, color: "#b91c1c", cursor: "pointer" }}>🕊 Marcar deceso</button>}
@@ -132,7 +132,7 @@ export default function FichaPaciente() {
         <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
           <div style={{ fontSize: 22, fontWeight: 800, color: "#1d1b12" }}>🐾 {p.nombre}</div>
           {p.fallecido && <span style={{ background: "#7b2cbf", color: "white", fontSize: 11.5, fontWeight: 800, padding: "3px 12px", borderRadius: 999 }}>🕊 Fallecido{p.fecha_deceso ? ` · ${f(p.fecha_deceso)}` : ""}</span>}
-          {(p.etiquetas || []).map((et: string) => <span key={et} style={{ background: "#eef0e0", color: "#4b5a2c", fontSize: 11, fontWeight: 700, padding: "2px 9px", borderRadius: 999 }}>{et}</span>)}
+          {(p.etiquetas || []).map((et: string) => <span key={et} style={{ background: "#eef0e0", color: "var(--accent-dark)", fontSize: 11, fontWeight: 700, padding: "2px 9px", borderRadius: 999 }}>{et}</span>)}
         </div>
         <div style={{ display: "flex", gap: 16, flexWrap: "wrap", fontSize: 13, color: "#475569", marginTop: 10 }}>
           <span><b style={{ color: "#64748b" }}>Especie:</b> {p.especie || "—"}</span>
@@ -203,9 +203,9 @@ export default function FichaPaciente() {
                   <span style={{ background: tc.bg, color: tc.color, fontSize: 10, fontWeight: 800, padding: "1px 8px", borderRadius: 999, textTransform: "uppercase", letterSpacing: 0.3 }}>{tc.label}</span>
                   🗓 {f(c.fecha)}
                 </div>
-                {c.motivo && <div><b style={{ color: "#4b5a2c" }}>Motivo:</b> {c.motivo}</div>}
-                {c.diagnostico && <div><b style={{ color: "#4b5a2c" }}>Dx:</b> {c.diagnostico}</div>}
-                {c.tratamiento && <div><b style={{ color: "#4b5a2c" }}>Tto:</b> {c.tratamiento}</div>}
+                {c.motivo && <div><b style={{ color: "var(--accent-dark)" }}>Motivo:</b> {c.motivo}</div>}
+                {c.diagnostico && <div><b style={{ color: "var(--accent-dark)" }}>Dx:</b> {c.diagnostico}</div>}
+                {c.tratamiento && <div><b style={{ color: "var(--accent-dark)" }}>Tto:</b> {c.tratamiento}</div>}
                 {c.para_cobrar && !c.cobrado && <div style={{ color: "#c2410c", fontWeight: 700 }}>💲 A cobrar: {c.para_cobrar}</div>}
               </div>
             )})}

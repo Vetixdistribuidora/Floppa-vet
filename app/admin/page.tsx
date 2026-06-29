@@ -142,7 +142,7 @@ export default function AdminPage() {
       {/* KPIs */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 14, marginBottom: 24 }}>
         {[
-          { label: "Total clientes", valor: suscripciones.length, color: "#6f7d49", icon: "👥" },
+          { label: "Total clientes", valor: suscripciones.length, color: "var(--accent)", icon: "👥" },
           { label: "Activos",         valor: totales.activos,       color: "#4ade80", icon: "✅" },
           { label: "En trial",        valor: totales.trial,         color: "#fbbf24", icon: "⏳" },
           { label: "Vencidos",        valor: totales.vencidos,      color: "#f87171", icon: "❌" },
@@ -186,7 +186,7 @@ export default function AdminPage() {
             <label style={{ display: "block", fontSize: 10.5, color: "#64748b", fontWeight: 700, textTransform: "uppercase", marginBottom: 4 }}>Nota (a quién)</label>
             <input value={invForm.nota} onChange={e => setInvForm(f => ({ ...f, nota: e.target.value }))} placeholder="Ej: Vet. San Roque" style={{ width: "100%", padding: "9px 12px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 13, color: "#1d1b12", boxSizing: "border-box" }} />
           </div>
-          <button onClick={generarInvitacion} disabled={generandoInv} style={{ background: "#6f7d49", color: "white", border: "none", borderRadius: 9, padding: "10px 18px", fontSize: 13.5, fontWeight: 700, cursor: generandoInv ? "wait" : "pointer", whiteSpace: "nowrap" }}>{generandoInv ? "Generando…" : "+ Generar código"}</button>
+          <button onClick={generarInvitacion} disabled={generandoInv} style={{ background: "var(--accent)", color: "white", border: "none", borderRadius: 9, padding: "10px 18px", fontSize: 13.5, fontWeight: 700, cursor: generandoInv ? "wait" : "pointer", whiteSpace: "nowrap" }}>{generandoInv ? "Generando…" : "+ Generar código"}</button>
         </div>
 
         {invitaciones.length > 0 && (
@@ -318,7 +318,7 @@ export default function AdminPage() {
                   {MODULOS_TOGGLEABLES.map(m => {
                     const on = orgForm.modulos.includes(m.key)
                     return (
-                      <button key={m.key} type="button" onClick={() => toggleModAdmin(m.key)} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 6, padding: "8px 10px", border: `1px solid ${on ? "#6f7d49" : "#e2e8f0"}`, background: on ? "#f4f2e6" : "white", borderRadius: 9, cursor: "pointer", fontSize: 12.5, fontWeight: 600, color: "#1d1b12" }}>
+                      <button key={m.key} type="button" onClick={() => toggleModAdmin(m.key)} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 6, padding: "8px 10px", border: `1px solid ${on ? "var(--accent)" : "#e2e8f0"}`, background: on ? "#f4f2e6" : "white", borderRadius: 9, cursor: "pointer", fontSize: 12.5, fontWeight: 600, color: "#1d1b12" }}>
                         {m.label}<span>{on ? "✓" : ""}</span>
                       </button>
                     )

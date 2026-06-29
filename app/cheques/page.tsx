@@ -282,7 +282,7 @@ export default function ChequesPage() {
           )}
         </p>
         <button onClick={abrirCrear} style={{
-          background: "linear-gradient(135deg, #5b6b34, #6f7d49)", color: "white",
+          background: "linear-gradient(135deg, var(--accent), var(--accent))", color: "white",
           border: "none", borderRadius: 10, padding: "10px 18px",
           fontSize: 13, fontWeight: 700, cursor: "pointer",
           boxShadow: "0 2px 8px rgba(111,125,73,0.3)",
@@ -680,7 +680,7 @@ export default function ChequesPage() {
               }}>Cancelar</button>
               <button onClick={guardar} disabled={guardando} style={{
                 flex: 2, padding: "11px",
-                background: "linear-gradient(135deg, #5b6b34, #6f7d49)",
+                background: "linear-gradient(135deg, var(--accent), var(--accent))",
                 border: "none", borderRadius: 10, color: "white",
                 fontSize: 13, fontWeight: 700, cursor: "pointer", opacity: guardando ? 0.5 : 1,
               }}>{guardando ? "Guardando..." : editando ? "Guardar cambios" : "Registrar cheque"}</button>

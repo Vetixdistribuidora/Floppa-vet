@@ -1367,7 +1367,7 @@ thead th:last-child{text-align:right}
                         else if (e.key === "Enter" && clienteIndice >= 0) { e.preventDefault(); seleccionarCliente(filtrados[clienteIndice]) }
                         else if (e.key === "Escape") { setClienteDropdown(false) }
                       }}
-                      style={{ width: "100%", padding: "10px 36px 10px 14px", border: clienteSeleccionado ? "1px solid #6f7d49" : "1px solid #d1d5db", borderRadius: 10, fontSize: 14, color: "#111827", outline: "none", boxSizing: "border-box", background: clienteSeleccionado ? "#f0f9ff" : "white" }}
+                      style={{ width: "100%", padding: "10px 36px 10px 14px", border: clienteSeleccionado ? "1px solid var(--accent)" : "1px solid #d1d5db", borderRadius: 10, fontSize: 14, color: "#111827", outline: "none", boxSizing: "border-box", background: clienteSeleccionado ? "#f0f9ff" : "white" }}
                     />
                     {clienteSeleccionado && (
                       <button onClick={limpiarCliente} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#94a3b8", fontSize: 16, padding: 0, lineHeight: 1 }}>×</button>
@@ -1673,7 +1673,7 @@ thead th:last-child{text-align:right}
           {ventasFiltradas.length > 0 && (
             <div className="ventas-resumen-cards" style={{ display: "flex", gap: 12, marginBottom: 16, flexWrap: "wrap" }}>
               {[
-                { label: "Ventas", valor: ventasFiltradas.length, color: "#6f7d49" },
+                { label: "Ventas", valor: ventasFiltradas.length, color: "var(--accent)" },
                 { label: "Total", valor: fmt(totalHistorial), color: "#16a34a" },
                 { label: "Cobradas", valor: ventasFiltradas.filter(v => v.estado === "cobrada").length, color: "#16a34a" },
                 { label: "En CC", valor: ventasFiltradas.filter(v => v.estado === "cuenta_corriente").length, color: "#d97706" },
@@ -1706,7 +1706,7 @@ thead th:last-child{text-align:right}
                     <div className="acciones" style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
                       <span style={{ fontSize: 16, fontWeight: 800, color: "#111827" }}>{fmt(Number(v.total))}</span>
                       <button onClick={() => verDetalle(v)} style={{ padding: "6px 12px", background: "#f1f5f9", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer", color: "#374151" }}>Ver</button>
-                      <button onClick={() => reimprimir(v)} disabled={reimprimiendo} style={{ padding: "6px 12px", background: "#f4f2e6", border: "1px solid #cdd6a8", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer", color: "#5b6b34" }}>🖨️</button>
+                      <button onClick={() => reimprimir(v)} disabled={reimprimiendo} style={{ padding: "6px 12px", background: "#f4f2e6", border: "1px solid #cdd6a8", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer", color: "var(--accent)" }}>🖨️</button>
                       {v.estado !== "anulada" && (
                         <button onClick={() => setConfirmAnular(v)} style={{ padding: "6px 12px", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer", color: "#dc2626" }}>Anular</button>
                       )}
@@ -1805,7 +1805,7 @@ thead th:last-child{text-align:right}
                         onChange={e => { setBorrBusqCliente(e.target.value); setBorrDropCliente(true); if (!e.target.value) setBorrClienteObj(null) }}
                         onFocus={() => setBorrDropCliente(true)}
                         onBlur={() => setTimeout(() => setBorrDropCliente(false), 150)}
-                        style={{ width: "100%", padding: "10px 36px 10px 14px", border: borrClienteObj ? "1px solid #6f7d49" : "1px solid #d1d5db", borderRadius: 10, fontSize: 14, color: "#111827", outline: "none", boxSizing: "border-box", background: borrClienteObj ? "#f0f9ff" : "white" }}
+                        style={{ width: "100%", padding: "10px 36px 10px 14px", border: borrClienteObj ? "1px solid var(--accent)" : "1px solid #d1d5db", borderRadius: 10, fontSize: 14, color: "#111827", outline: "none", boxSizing: "border-box", background: borrClienteObj ? "#f0f9ff" : "white" }}
                       />
                       {borrClienteObj && (
                         <button onClick={() => { setBorrClienteObj(null); setBorrBusqCliente("") }} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#94a3b8", fontSize: 18, padding: 0 }}>×</button>
@@ -1894,7 +1894,7 @@ thead th:last-child{text-align:right}
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
                       <p style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", letterSpacing: 1, textTransform: "uppercase", margin: 0 }}>Productos del pedido</p>
                       {(borrClienteObj?.porcentaje || 0) > 0 && (
-                        <span style={{ fontSize: 10, fontWeight: 700, background: "#f4f2e6", color: "#5b6b34", border: "1px solid #cdd6a8", borderRadius: 6, padding: "2px 8px" }}>
+                        <span style={{ fontSize: 10, fontWeight: 700, background: "#f4f2e6", color: "var(--accent)", border: "1px solid #cdd6a8", borderRadius: 6, padding: "2px 8px" }}>
                           +{borrClienteObj.porcentaje}% recargo cliente
                         </span>
                       )}
@@ -2001,7 +2001,7 @@ thead th:last-child{text-align:right}
                     <div style={{ textAlign: "right", flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8 }}>
                       <p style={{ margin: 0, fontWeight: 800, fontSize: 16, color: "#059669" }}>{fmt(Number(nc.total))}</p>
                       <button onClick={() => imprimirNC(nc)}
-                        style={{ background: "linear-gradient(135deg, #4b5a2c, #6f7d49)", border: "none", borderRadius: 8, padding: "6px 12px", fontSize: 11, color: "white", cursor: "pointer", fontWeight: 700 }}>
+                        style={{ background: "linear-gradient(135deg, var(--accent-dark), var(--accent))", border: "none", borderRadius: 8, padding: "6px 12px", fontSize: 11, color: "white", cursor: "pointer", fontWeight: 700 }}>
                         🖨️ Imprimir
                       </button>
                       {nc.estado !== "anulada" && (
@@ -2139,7 +2139,7 @@ thead th:last-child{text-align:right}
               <button
                 onClick={() => reimprimir(ventaDetalle, detalleItems.length ? detalleItems : undefined)}
                 disabled={reimprimiendo || loadingDetalle}
-                style={{ flex: 1, minWidth: 110, padding: "10px", background: "linear-gradient(135deg, #4b5a2c, #6f7d49)", border: "none", borderRadius: 10, color: "white", fontSize: 13, fontWeight: 700, cursor: "pointer", opacity: reimprimiendo || loadingDetalle ? 0.6 : 1 }}>
+                style={{ flex: 1, minWidth: 110, padding: "10px", background: "linear-gradient(135deg, var(--accent-dark), var(--accent))", border: "none", borderRadius: 10, color: "white", fontSize: 13, fontWeight: 700, cursor: "pointer", opacity: reimprimiendo || loadingDetalle ? 0.6 : 1 }}>
                 {reimprimiendo ? "Generando..." : "🖨️ Presupuesto"}
               </button>
               <button

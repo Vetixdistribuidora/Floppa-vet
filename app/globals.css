@@ -3,6 +3,12 @@
 
 :root {
   --font-app: 'DM Sans', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+  /* Color de acento del contenido (botones, resaltados). Por defecto oliva; el
+     Shell lo sobreescribe según el tema elegido por la organización. Si no hay
+     tema (login, comprobantes), queda este oliva. */
+  --accent: #6f7d49;
+  --accent-dark: #4b5a2c;
+  --accent-light: #8a9a5b;
 }
 
 body {

@@ -137,7 +137,7 @@ export default function OnboardingPage() {
                       display: "flex", flexDirection: "column", alignItems: "stretch",
                       padding: 0, borderRadius: 12, cursor: "pointer", textAlign: "left", overflow: "hidden",
                       background: sel ? "rgba(138,154,91,0.14)" : "rgba(255,255,255,0.04)",
-                      border: `1px solid ${sel ? "#8a9a5b" : "rgba(255,255,255,0.1)"}`,
+                      border: `1px solid ${sel ? "var(--accent-light)" : "rgba(255,255,255,0.1)"}`,
                       transition: "all .15s",
                     }}>
                     {/* Fila principal: rubro + precio */}
@@ -145,10 +145,10 @@ export default function OnboardingPage() {
                       <span style={{ display: "flex", alignItems: "center", gap: 12 }}>
                         <span style={{
                           width: 18, height: 18, borderRadius: "50%", flexShrink: 0,
-                          border: `2px solid ${sel ? "#8a9a5b" : "#4b5563"}`,
+                          border: `2px solid ${sel ? "var(--accent-light)" : "#4b5563"}`,
                           display: "flex", alignItems: "center", justifyContent: "center",
                         }}>
-                          {sel && <span style={{ width: 9, height: 9, borderRadius: "50%", background: "#8a9a5b" }} />}
+                          {sel && <span style={{ width: 9, height: 9, borderRadius: "50%", background: "var(--accent-light)" }} />}
                         </span>
                         <span style={{ color: "white", fontSize: 14, fontWeight: 600 }}>{r.label}</span>
                       </span>
@@ -196,7 +196,7 @@ export default function OnboardingPage() {
             type="submit" disabled={loading}
             style={{
               width: "100%", padding: "14px",
-              background: loading ? "#3a4322" : "linear-gradient(135deg, #4b5a2c, #6f7d49)",
+              background: loading ? "#3a4322" : "linear-gradient(135deg, var(--accent-dark), var(--accent))",
               border: "none", borderRadius: 12, color: "white", fontSize: 15, fontWeight: 700,
               cursor: loading ? "not-allowed" : "pointer", boxShadow: "0 4px 14px rgba(80,96,55,0.4)"
             }}>

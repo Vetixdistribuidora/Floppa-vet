@@ -303,16 +303,16 @@ function DashboardComercial() {
   if (errorCarga) return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 300, gap: 16 }}>
       <p style={{ color: "#f87171", fontWeight: 700, fontSize: 15 }}>{errorCarga}</p>
-      <button onClick={iniciar} style={{ background: "#6f7d49", color: "white", border: "none", borderRadius: 8, padding: "10px 20px", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
+      <button onClick={iniciar} style={{ background: "var(--accent)", color: "white", border: "none", borderRadius: 8, padding: "10px 20px", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
         Reintentar
       </button>
     </div>
   )
 
   const kpiCards = [
-    { titulo: "Ventas hoy", valor: fmt(kpis.totalHoy), sub: `${kpis.cantidadHoy} venta${kpis.cantidadHoy !== 1 ? "s" : ""}`, icon: "sun", color: "#6f7d49", onClick: () => abrirModal("ventasHoy") },
+    { titulo: "Ventas hoy", valor: fmt(kpis.totalHoy), sub: `${kpis.cantidadHoy} venta${kpis.cantidadHoy !== 1 ? "s" : ""}`, icon: "sun", color: "var(--accent)", onClick: () => abrirModal("ventasHoy") },
     { titulo: "Ingresos hoy", valor: fmt(kpis.cobradoHoy ?? 0), sub: "Cobrado + pagos CC recibidos", icon: "cash", color: "#10b981", onClick: undefined },
-    { titulo: "Ventas del mes", valor: fmt(kpis.totalMes), sub: `${kpis.cantidadVentas} ventas`, icon: "calendar", color: "#647a3e", onClick: () => abrirModal("ventasMes") },
+    { titulo: "Ventas del mes", valor: fmt(kpis.totalMes), sub: `${kpis.cantidadVentas} ventas`, icon: "calendar", color: "var(--accent)", onClick: () => abrirModal("ventasMes") },
     { titulo: "Ingresos del mes", valor: fmt(kpis.cobradoMes ?? 0), sub: "Cobrado + pagos CC recibidos", icon: "bank", color: "#059669", onClick: undefined },
     { titulo: "Compras del mes", valor: fmt(kpis.totalComprasMes), sub: "Total gastado en compras", icon: "cart", color: "#f59e0b", onClick: undefined },
     { titulo: "Ganancia", valor: fmt(kpis.ganancia), sub: `Margen ${kpis.margen?.toFixed(1)}%`, icon: "coins", color: "#22c55e", onClick: undefined },
@@ -388,7 +388,7 @@ function DashboardComercial() {
                 </div>
                 <div style={{ fontSize: 13, fontWeight: 700, color: hayProblema ? "white" : "#374151" }}>{a.titulo}</div>
                 <div style={{ fontSize: 11, color: hayProblema ? "#6b7280" : "#94a3b8", marginTop: 2 }}>{a.sub}</div>
-                <div style={{ fontSize: 11, color: hayProblema ? "#6f7d49" : "#94a3b8", marginTop: 6, fontWeight: 600 }}>
+                <div style={{ fontSize: 11, color: hayProblema ? "var(--accent)" : "#94a3b8", marginTop: 6, fontWeight: 600 }}>
                   {hayProblema ? "Ver detalle →" : "Sin problemas ✓"}
                 </div>
               </button>
@@ -423,14 +423,14 @@ function DashboardComercial() {
                 </div>
                 {/* Cantidad */}
                 <div style={{ textAlign: "right", flexShrink: 0 }}>
-                  <div style={{ fontSize: 16, fontWeight: 800, color: "#6f7d49" }}>{p.cantidad}</div>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: "var(--accent)" }}>{p.cantidad}</div>
                   <div style={{ fontSize: 10, color: "#94a3b8" }}>unidades</div>
                 </div>
                 {/* Barra */}
                 <div style={{ width: 80, flexShrink: 0 }}>
                   <div style={{ height: 6, borderRadius: 3, background: "#f1f5f9", overflow: "hidden" }}>
                     <div style={{
-                      height: "100%", borderRadius: 3, background: "#6f7d49",
+                      height: "100%", borderRadius: 3, background: "var(--accent)",
                       width: `${Math.round((p.cantidad / topProductosMes[0].cantidad) * 100)}%`
                     }} />
                   </div>
@@ -451,12 +451,12 @@ function DashboardComercial() {
             <div style={{ display: "flex", borderRadius: 8, overflow: "hidden", border: "1px solid #e2e8f0" }}>
               <button
                 onClick={() => setPeriodoGrafico("7dias")}
-                style={{ padding: "5px 12px", border: "none", cursor: "pointer", fontSize: 12, fontWeight: 700, background: periodoGrafico === "7dias" ? "#6f7d49" : "white", color: periodoGrafico === "7dias" ? "white" : "#6b7280" }}>
+                style={{ padding: "5px 12px", border: "none", cursor: "pointer", fontSize: 12, fontWeight: 700, background: periodoGrafico === "7dias" ? "var(--accent)" : "white", color: periodoGrafico === "7dias" ? "white" : "#6b7280" }}>
                 7 días
               </button>
               <button
                 onClick={() => setPeriodoGrafico("6meses")}
-                style={{ padding: "5px 12px", border: "none", cursor: "pointer", fontSize: 12, fontWeight: 700, background: periodoGrafico === "6meses" ? "#6f7d49" : "white", color: periodoGrafico === "6meses" ? "white" : "#6b7280" }}>
+                style={{ padding: "5px 12px", border: "none", cursor: "pointer", fontSize: 12, fontWeight: 700, background: periodoGrafico === "6meses" ? "var(--accent)" : "white", color: periodoGrafico === "6meses" ? "white" : "#6b7280" }}>
                 6 meses
               </button>
             </div>
@@ -492,7 +492,7 @@ function DashboardComercial() {
           <div style={{ background: "#1d1b12", borderRadius: 16, padding: 24, border: "1px solid rgba(255,255,255,0.06)", boxShadow: "0 4px 16px rgba(0,0,0,0.2)" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
               <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "white" }}>📅 Próximos vencimientos</h3>
-              <button onClick={() => abrirModal("lotes")} style={{ background: "rgba(111,125,73,0.15)", border: "none", color: "#6f7d49", fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 6, cursor: "pointer" }}>
+              <button onClick={() => abrirModal("lotes")} style={{ background: "rgba(111,125,73,0.15)", border: "none", color: "var(--accent)", fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 6, cursor: "pointer" }}>
                 Ver todos
               </button>
             </div>
@@ -550,7 +550,7 @@ function DashboardComercial() {
                     </div>
                     <div style={{ textAlign: "right" }}>
                       <div style={{ color: "#f87171", fontWeight: 700, fontSize: 14 }}>{fmtExacto(v.total)}</div>
-                      <div style={{ color: "#6f7d49", fontSize: 10, marginTop: 2 }}>Ver detalle →</div>
+                      <div style={{ color: "var(--accent)", fontSize: 10, marginTop: 2 }}>Ver detalle →</div>
                     </div>
                   </div>
                 ))}
@@ -686,7 +686,7 @@ function DashboardComercial() {
                     </div>
                     <div style={{ textAlign: "right" }}>
                       <div style={{ color: "#4ade80", fontWeight: 700, fontSize: 14 }}>{fmtExacto(v.total)}</div>
-                      <div style={{ color: "#6f7d49", fontSize: 10, marginTop: 2 }}>Ver detalle →</div>
+                      <div style={{ color: "var(--accent)", fontSize: 10, marginTop: 2 }}>Ver detalle →</div>
                     </div>
                   </div>
                 ))}
@@ -719,7 +719,7 @@ function DashboardComercial() {
                     </div>
                     <div style={{ textAlign: "right" }}>
                       <div style={{ color: "#4ade80", fontWeight: 700, fontSize: 14 }}>{fmtExacto(v.total)}</div>
-                      <div style={{ color: "#6f7d49", fontSize: 10, marginTop: 2 }}>Ver detalle →</div>
+                      <div style={{ color: "var(--accent)", fontSize: 10, marginTop: 2 }}>Ver detalle →</div>
                     </div>
                   </div>
                 ))}

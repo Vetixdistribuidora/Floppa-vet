@@ -21,7 +21,7 @@ function fechaOrden(f: string | null | undefined): number {
 // Métodos de pago (ingresos) ─────────────────────────────────────────────────
 const METODOS: Record<string, { label: string; icon: string; color: string }> = {
   efectivo:       { label: "Efectivo",       icon: "💵", color: "#16a34a" },
-  transferencia:  { label: "Transferencia",  icon: "🏦", color: "#5b6b34" },
+  transferencia:  { label: "Transferencia",  icon: "🏦", color: "var(--accent)" },
   cheque:         { label: "Cheque",         icon: "🧾", color: "#7c3aed" },
   echeq:          { label: "E-Cheq",         icon: "📲", color: "#0891b2" },
   tarjeta:        { label: "Tarjeta",        icon: "💳", color: "#ea580c" },
@@ -572,10 +572,10 @@ export default function CajaPage() {
       <>
       {/* ── Cards de saldo ── */}
       <div className="caja-cards" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 22 }}>
-        <SaldoCard titulo="Saldo de apertura" valor={apertura} sub="Arrastre del mes anterior" color="#647a3e" icon="📥" />
+        <SaldoCard titulo="Saldo de apertura" valor={apertura} sub="Arrastre del mes anterior" color="var(--accent)" icon="📥" />
         <SaldoCard titulo="Ingresos del mes" valor={ingresosMes} sub="Plata que entró" color="#16a34a" icon="💵" />
         <SaldoCard titulo="Egresos del mes" valor={egresosMes} sub="Plata que salió" color="#ef4444" icon="📤" />
-        <SaldoCard titulo="Saldo final" valor={cierre} sub="Pasa al mes siguiente" color={cierre >= 0 ? "#6f7d49" : "#ef4444"} icon="🏦" destacado />
+        <SaldoCard titulo="Saldo final" valor={cierre} sub="Pasa al mes siguiente" color={cierre >= 0 ? "var(--accent)" : "#ef4444"} icon="🏦" destacado />
       </div>
 
       {/* ── Paneles ingresos / egresos ── */}
@@ -738,7 +738,7 @@ export default function CajaPage() {
                         style={{
                           display: "inline-flex", alignItems: "center", gap: 5,
                           padding: "6px 10px", borderRadius: 999, cursor: "pointer", fontSize: 12, fontWeight: 700,
-                          border: activa ? "2px solid #6f7d49" : "1px solid rgba(255,255,255,0.15)",
+                          border: activa ? "2px solid var(--accent)" : "1px solid rgba(255,255,255,0.15)",
                           background: activa ? "rgba(111,125,73,0.18)" : "rgba(255,255,255,0.04)",
                           color: activa ? "white" : "#cbd5e1",
                         }}>
@@ -869,7 +869,7 @@ function Campo({ label, children }: { label: string; children: React.ReactNode }
 }
 
 const navBtn: React.CSSProperties = { width: 36, height: 36, borderRadius: 10, border: "1px solid #e2e8f0", background: "white", color: "#475569", fontSize: 14, cursor: "pointer", fontWeight: 700 }
-const btnPri: React.CSSProperties = { padding: "9px 16px", borderRadius: 10, border: "none", background: "linear-gradient(135deg, #4b5a2c, #6f7d49)", color: "white", fontSize: 13, fontWeight: 700, cursor: "pointer" }
+const btnPri: React.CSSProperties = { padding: "9px 16px", borderRadius: 10, border: "none", background: "linear-gradient(135deg, var(--accent-dark), var(--accent))", color: "white", fontSize: 13, fontWeight: 700, cursor: "pointer" }
 const btnSec: React.CSSProperties = { padding: "9px 14px", borderRadius: 10, border: "1px solid #e2e8f0", background: "white", color: "#475569", fontSize: 13, fontWeight: 600, cursor: "pointer" }
 const btnModalPri: React.CSSProperties = { flex: 2, padding: "11px", borderRadius: 10, border: "none", background: "linear-gradient(135deg, #16a34a, #22c55e)", color: "white", fontSize: 14, fontWeight: 700, cursor: "pointer" }
 const btnModalSec: React.CSSProperties = { flex: 1, padding: "11px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.15)", background: "rgba(255,255,255,0.05)", color: "#9ca3af", fontSize: 14, fontWeight: 600, cursor: "pointer" }

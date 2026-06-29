@@ -73,7 +73,7 @@ export default function RegistroPage() {
             onClick={() => router.push("/login")}
             style={{
               width: "100%", padding: "13px",
-              background: "linear-gradient(135deg, #4b5a2c, #6f7d49)",
+              background: "linear-gradient(135deg, var(--accent-dark), var(--accent))",
               border: "none", borderRadius: 10, color: "white",
               fontSize: 14, fontWeight: 700, cursor: "pointer",
               boxShadow: "0 4px 16px rgba(80,96,55,0.4)",
@@ -111,10 +111,10 @@ export default function RegistroPage() {
           border-radius: 9px; color: white; font-size: 14px;
           font-family: 'DM Sans', sans-serif; outline: none; transition: border-color 0.2s;
         }
-        .field input:focus { border-color: #8a9a5b; background: rgba(138,154,91,0.08); }
+        .field input:focus { border-color: var(--accent-light); background: rgba(138,154,91,0.08); }
         .field input::placeholder { color: #4b5563; }
         .btn-reg {
-          width: 100%; padding: 13px; background: linear-gradient(135deg, #4b5a2c, #6f7d49);
+          width: 100%; padding: 13px; background: linear-gradient(135deg, var(--accent-dark), var(--accent));
           border: none; border-radius: 10px; color: white; font-size: 14px; font-weight: 700;
           font-family: 'DM Sans', sans-serif; cursor: pointer; margin-top: 6px;
           box-shadow: 0 4px 16px rgba(80,96,55,0.4); transition: opacity 0.2s;
@@ -133,7 +133,7 @@ export default function RegistroPage() {
             <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 22, letterSpacing: 3, color: "white" }}>
               FLOP
             </div>
-            <div style={{ fontSize: 11, color: "#8a9a5b", letterSpacing: 2, fontWeight: 600, marginTop: 3, textTransform: "uppercase" }}>
+            <div style={{ fontSize: 11, color: "var(--accent-light)", letterSpacing: 2, fontWeight: 600, marginTop: 3, textTransform: "uppercase" }}>
               Crear cuenta
             </div>
           </div>

@@ -263,9 +263,9 @@ export default function Reportes() {
   const activePreset = getActivePreset()
   const presetStyle = (active: boolean): React.CSSProperties => ({
     padding: "6px 12px", borderRadius: 8,
-    border: active ? "1px solid #6f7d49" : "1px solid #e2e8f0",
+    border: active ? "1px solid var(--accent)" : "1px solid #e2e8f0",
     background: active ? "#f4f2e6" : "white",
-    color: active ? "#5b6b34" : "#6b7280",
+    color: active ? "var(--accent)" : "#6b7280",
     fontSize: 12, fontWeight: 600, cursor: "pointer",
   })
 
@@ -282,7 +282,7 @@ export default function Reportes() {
 
   const kpiCards = [
     {
-      label: "Total vendido", value: fmtExacto(kpis.total), icon: "💰", color: "#5b6b34", bg: "#f4f2e6",
+      label: "Total vendido", value: fmtExacto(kpis.total), icon: "💰", color: "var(--accent)", bg: "#f4f2e6",
       sub: `${kpis.cantVentas} venta${kpis.cantVentas !== 1 ? "s" : ""}`,
       chip: <CambioChip actual={kpis.total} ant={anterior.total} />,
     },
@@ -350,7 +350,7 @@ export default function Reportes() {
               style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid #e2e8f0", fontSize: 13, outline: "none", color: "#111827" }} />
           </div>
           <button onClick={cargar}
-            style={{ padding: "8px 18px", background: "linear-gradient(135deg, #5b6b34, #6f7d49)", color: "white", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap", boxShadow: "0 2px 8px rgba(111,125,73,0.3)" }}>
+            style={{ padding: "8px 18px", background: "linear-gradient(135deg, var(--accent), var(--accent))", color: "white", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap", boxShadow: "0 2px 8px rgba(111,125,73,0.3)" }}>
             Aplicar
           </button>
           {cargando && <span style={{ fontSize: 12, color: "#9ca3af" }}>Cargando...</span>}
@@ -439,7 +439,7 @@ export default function Reportes() {
             <div style={{ display: "flex", borderRadius: 8, overflow: "hidden", border: "1px solid #e2e8f0" }}>
               {([["facturacion", "$ Venta"], ["unidades", "Unid."], ["ganancia", "Ganancia"]] as const).map(([key, label]) => (
                 <button key={key} onClick={() => setTopTab(key)}
-                  style={{ padding: "4px 10px", border: "none", cursor: "pointer", fontSize: 11, fontWeight: 700, background: topTab === key ? "#6f7d49" : "white", color: topTab === key ? "white" : "#6b7280" }}>
+                  style={{ padding: "4px 10px", border: "none", cursor: "pointer", fontSize: 11, fontWeight: 700, background: topTab === key ? "var(--accent)" : "white", color: topTab === key ? "white" : "#6b7280" }}>
                   {label}
                 </button>
               ))}
@@ -452,13 +452,13 @@ export default function Reportes() {
               {topOrdenados.map((item, i) => {
                 const valor = topTab === "unidades" ? item.total_unidades : topTab === "ganancia" ? item.total_ganancia : item.total_revenue
                 const valorStr = topTab === "unidades" ? `${item.total_unidades} u.` : fmt(valor)
-                const colorBarra = topTab === "ganancia" ? (valor >= 0 ? "#22c55e" : "#ef4444") : "#6f7d49"
+                const colorBarra = topTab === "ganancia" ? (valor >= 0 ? "#22c55e" : "#ef4444") : "var(--accent)"
                 return (
                   <div key={item.producto_id}>
                     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
                       <span style={{
                         width: 22, height: 22, borderRadius: 6, flexShrink: 0,
-                        background: i < 3 ? "#4b5a2c" : "#f1f5f9",
+                        background: i < 3 ? "var(--accent-dark)" : "#f1f5f9",
                         color: i < 3 ? "white" : "#6b7280",
                         fontSize: 11, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center",
                       }}>{i + 1}</span>
@@ -491,7 +491,7 @@ export default function Reportes() {
                     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
                       <span style={{
                         width: 22, height: 22, borderRadius: 6, flexShrink: 0,
-                        background: i < 3 ? "#4b5a2c" : "#f1f5f9",
+                        background: i < 3 ? "var(--accent-dark)" : "#f1f5f9",
                         color: i < 3 ? "white" : "#6b7280",
                         fontSize: 11, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center",
                       }}>{i + 1}</span>

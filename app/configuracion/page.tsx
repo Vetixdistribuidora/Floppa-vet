@@ -322,7 +322,7 @@ export default function ConfiguracionPage() {
               <button
                 onClick={guardarNombre}
                 disabled={guardandoNombre}
-                style={{ padding: "9px 16px", background: "#6f7d49", border: "none", borderRadius: 8, color: "white", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+                style={{ padding: "9px 16px", background: "var(--accent)", border: "none", borderRadius: 8, color: "white", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
                 {guardandoNombre ? "..." : "Guardar"}
               </button>
               <button
@@ -416,7 +416,7 @@ export default function ConfiguracionPage() {
               disabled={creandoLink}
               style={{
                 width: "100%", padding: "13px",
-                background: creandoLink ? "rgba(111,125,73,0.5)" : "linear-gradient(135deg, #5b6b34, #6f7d49)",
+                background: creandoLink ? "rgba(111,125,73,0.5)" : "linear-gradient(135deg, var(--accent), var(--accent))",
                 border: "none", borderRadius: 10, color: "white",
                 fontSize: 14, fontWeight: 700, cursor: creandoLink ? "not-allowed" : "pointer",
                 boxShadow: creandoLink ? "none" : "0 4px 16px rgba(111,125,73,0.35)",
@@ -489,7 +489,7 @@ export default function ConfiguracionPage() {
                   const on = rolModulos(r.key).includes(key)
                   return (
                     <button key={key} type="button" onClick={() => toggleRolModulo(r.key, key)}
-                      style={{ padding: "6px 12px", borderRadius: 999, cursor: "pointer", fontSize: 12.5, fontWeight: 700, border: on ? "1.5px solid #6f7d49" : "1px solid #e2e8f0", background: on ? "#f4f2e6" : "white", color: on ? "#4b5a2c" : "#94a3b8" }}>
+                      style={{ padding: "6px 12px", borderRadius: 999, cursor: "pointer", fontSize: 12.5, fontWeight: 700, border: on ? "1.5px solid var(--accent)" : "1px solid #e2e8f0", background: on ? "#f4f2e6" : "white", color: on ? "var(--accent-dark)" : "#94a3b8" }}>
                       {on ? "✓ " : ""}{m?.label || key}
                     </button>
                   )
@@ -560,7 +560,7 @@ export default function ConfiguracionPage() {
         ))}
         <label style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 6, marginBottom: 4, cursor: "pointer", userSelect: "none" }}>
           <input type="checkbox" checked={mostrarRubroSel} onChange={e => setMostrarRubroSel(e.target.checked)}
-            style={{ width: 16, height: 16, accentColor: "#6f7d49", cursor: "pointer" }} />
+            style={{ width: 16, height: 16, accentColor: "var(--accent)", cursor: "pointer" }} />
           <span style={{ fontSize: 13, color: "#334155" }}>
             Mostrar el rubro debajo del nombre en el menú
           </span>

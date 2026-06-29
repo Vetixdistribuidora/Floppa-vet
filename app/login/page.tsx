@@ -165,7 +165,7 @@ export default function LoginPage() {
         }
 
         .field input:focus {
-          border-color: #8a9a5b;
+          border-color: var(--accent-light);
           background: rgba(138,154,91,0.08);
         }
 
@@ -187,7 +187,7 @@ export default function LoginPage() {
         .btn-login {
           width: 100%;
           padding: 13px;
-          background: linear-gradient(135deg, #4b5a2c, #6f7d49);
+          background: linear-gradient(135deg, var(--accent-dark), var(--accent));
           border: none;
           border-radius: 10px;
           color: white;
@@ -269,7 +269,7 @@ export default function LoginPage() {
 
           <div style={{ textAlign: "center", marginTop: 14, fontSize: 13, color: "#6b7280" }}>
             ¿No tenés cuenta?{" "}
-            <a href="/registro" style={{ color: "#8a9a5b", textDecoration: "none", fontWeight: 600 }}>
+            <a href="/registro" style={{ color: "var(--accent-light)", textDecoration: "none", fontWeight: 600 }}>
               Registrarse
             </a>
           </div>

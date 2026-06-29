@@ -39,7 +39,7 @@ const labelStyle: React.CSSProperties = {
   color: "#9ca3af", letterSpacing: "0.5px", marginBottom: "6px", textTransform: "uppercase",
 }
 const btnPrimario: React.CSSProperties = {
-  background: "linear-gradient(135deg, #5b6b34, #6f7d49)",
+  background: "linear-gradient(135deg, var(--accent), var(--accent))",
   color: "white", border: "none", borderRadius: 8,
   padding: "9px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer",
   boxShadow: "0 2px 8px rgba(111,125,73,0.3)"
@@ -905,7 +905,7 @@ export default function Productos() {
             <input placeholder="Categoría" value={categoria} onChange={e => setCategoria(e.target.value)} type="text"
               style={{ flex: "2 1 130px", minWidth: 0, padding: "10px 14px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", color: "white", fontSize: 13, outline: "none" }} />
             <label style={{ display: "flex", alignItems: "center", gap: 6, color: "#cbd5e1", fontSize: 12.5, fontWeight: 600, cursor: "pointer", flex: "1 1 140px", whiteSpace: "nowrap" }}>
-              <input type="checkbox" checked={esServicio} onChange={e => setEsServicio(e.target.checked)} style={{ width: 16, height: 16, accentColor: "#6f7d49", cursor: "pointer" }} />
+              <input type="checkbox" checked={esServicio} onChange={e => setEsServicio(e.target.checked)} style={{ width: 16, height: 16, accentColor: "var(--accent)", cursor: "pointer" }} />
               Servicio (sin stock)
             </label>
             <button onClick={agregar} style={{ ...btnPrimario, flexShrink: 0 }}>Guardar</button>
@@ -1035,7 +1035,7 @@ export default function Productos() {
                 <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 10, flexWrap: "wrap" }}>
                   <span style={{ fontSize: 12, color: "#6b7280" }}>
                     <b style={{ color: "#4ade80" }}>{mapped.length}</b> válidos ·{" "}
-                    <b style={{ color: "#8a9a5b" }}>{existentesCount}</b> actualizaciones ·{" "}
+                    <b style={{ color: "var(--accent-light)" }}>{existentesCount}</b> actualizaciones ·{" "}
                     <b style={{ color: "#fbbf24" }}>{nuevosCount}</b> nuevos
                     {descartados > 0 && (
                       <span title={`${sinNombre} sin nombre · ${sinCosto} sin precio válido`}>
@@ -1070,7 +1070,7 @@ export default function Productos() {
                           {colLaboratorio && <span style={{ fontSize: 11, color: "#9ca3af", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.laboratorio || <span style={{ color: "#374151" }}>—</span>}</span>}
                           <span style={{ fontSize: 12, color: "#4ade80", width: 90, textAlign: "right", fontWeight: 600 }}>${r.costo.toLocaleString("es-AR")}</span>
                           <span style={{ width: 50, textAlign: "center" }}>
-                            <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 5, background: esExistente ? "rgba(111,125,73,0.15)" : "rgba(251,191,36,0.15)", color: esExistente ? "#8a9a5b" : "#fbbf24" }}>
+                            <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 5, background: esExistente ? "rgba(111,125,73,0.15)" : "rgba(251,191,36,0.15)", color: esExistente ? "var(--accent-light)" : "#fbbf24" }}>
                               {esExistente ? "ACT." : "NUEVO"}
                             </span>
                           </span>
@@ -1158,7 +1158,7 @@ export default function Productos() {
                     </div>
                   </div>
                   <label style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 12, color: "#cbd5e1", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
-                    <input type="checkbox" checked={!!ep?.es_servicio} onChange={ev => setEditando(prev => ({ ...prev, [p.id]: { ...prev[p.id], es_servicio: ev.target.checked } }))} style={{ width: 16, height: 16, accentColor: "#6f7d49", cursor: "pointer" }} />
+                    <input type="checkbox" checked={!!ep?.es_servicio} onChange={ev => setEditando(prev => ({ ...prev, [p.id]: { ...prev[p.id], es_servicio: ev.target.checked } }))} style={{ width: 16, height: 16, accentColor: "var(--accent)", cursor: "pointer" }} />
                     Servicio (no controla stock · ej. Consulta, Inyectable)
                   </label>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 14, flexWrap: "wrap", gap: 10 }}>
@@ -1167,7 +1167,7 @@ export default function Productos() {
                       <span style={{ color: "#6b7280", fontSize: 11 }}>{esVet ? ` = Neto × (1+Margen${margenNum > 0 ? " " + margenNum + "%" : ""})` : ` = Neto × (1+IVA${margenNum > 0 ? " " + margenNum + "%" : ""}) × (1+Flete${fleteEditNum > 0 ? " " + fleteEditNum + "%" : ""}) × (1+Pérd.${perdidaEditNum > 0 ? " " + perdidaEditNum + "%" : ""})`}</span>
                     </span>
                     <div style={{ display: "flex", gap: 8 }}>
-                      <button onClick={() => guardarEdicion(p.id)} disabled={guardandoEdicion === p.id} style={{ background: "linear-gradient(135deg, #5b6b34, #6f7d49)", color: "white", border: "none", borderRadius: 8, padding: "8px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer", opacity: guardandoEdicion === p.id ? 0.6 : 1 }}>💾 Guardar</button>
+                      <button onClick={() => guardarEdicion(p.id)} disabled={guardandoEdicion === p.id} style={{ background: "linear-gradient(135deg, var(--accent), var(--accent))", color: "white", border: "none", borderRadius: 8, padding: "8px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer", opacity: guardandoEdicion === p.id ? 0.6 : 1 }}>💾 Guardar</button>
                       <button onClick={() => setEditando(prev => { const n = { ...prev }; delete n[p.id]; return n })} style={{ background: "rgba(255,255,255,0.07)", color: "#9ca3af", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, padding: "8px 16px", fontSize: 13, cursor: "pointer" }}>Cancelar</button>
                     </div>
                   </div>
@@ -1200,7 +1200,7 @@ export default function Productos() {
                           </span>
                         )}
                         {p.categoria && (
-                          <span style={{ background: "#f4f2e6", color: "#6f7d49", fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 5, border: "1px solid #cdd6a8" }}>
+                          <span style={{ background: "#f4f2e6", color: "var(--accent)", fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 5, border: "1px solid #cdd6a8" }}>
                             {p.categoria}
                           </span>
                         )}
@@ -1233,7 +1233,7 @@ export default function Productos() {
                     <div className="producto-item-acciones" style={{ display: "flex", gap: 6, flexShrink: 0 }}>
                       <button onClick={() => toggleLotes(p.id)} style={{
                         background: lotes.length > 0 ? "#f4f2e6" : "#f9fafb",
-                        color: lotes.length > 0 ? "#5b6b34" : "#9ca3af",
+                        color: lotes.length > 0 ? "var(--accent)" : "#9ca3af",
                         border: `1px solid ${lotes.length > 0 ? "#cdd6a8" : "#e5e7eb"}`,
                         borderRadius: 7, padding: "5px 10px", fontSize: 11, cursor: "pointer", fontWeight: 600
                       }}>📅 {lotes.length}</button>
@@ -1241,7 +1241,7 @@ export default function Productos() {
                         background: "#f0fdf4", color: "#16a34a", border: "1px solid #bbf7d0",
                         borderRadius: 7, padding: "5px 10px", fontSize: 11, cursor: "pointer", fontWeight: 600
                       }}>+ Lote</button>
-                      <button onClick={() => setEditando(prev => ({ ...prev, [p.id]: { ...p } }))} style={{ background: p.id in editando ? "#f4f2e6" : "#f1f5f9", color: p.id in editando ? "#5b6b34" : "#374151", border: `1px solid ${p.id in editando ? "#cdd6a8" : "#e2e8f0"}`, borderRadius: 7, padding: "5px 10px", fontSize: 11, cursor: "pointer", fontWeight: 600 }}>✏️</button>
+                      <button onClick={() => setEditando(prev => ({ ...prev, [p.id]: { ...p } }))} style={{ background: p.id in editando ? "#f4f2e6" : "#f1f5f9", color: p.id in editando ? "var(--accent)" : "#374151", border: `1px solid ${p.id in editando ? "#cdd6a8" : "#e2e8f0"}`, borderRadius: 7, padding: "5px 10px", fontSize: 11, cursor: "pointer", fontWeight: 600 }}>✏️</button>
                       <button onClick={() => setConfirmEliminar(p)} style={{ background: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca", borderRadius: 7, padding: "5px 10px", fontSize: 11, cursor: "pointer", fontWeight: 600 }}>🗑️</button>
                     </div>
                   </div>
@@ -1288,7 +1288,7 @@ export default function Productos() {
                                             }}
                                             onBlur={() => { const val = editandoCantidadLote?.valor ?? ""; guardarCantidadLote(l, val) }}
                                             disabled={guardandoCantidadLote}
-                                            style={{ width: 64, padding: "3px 6px", borderRadius: 6, border: "1px solid #6f7d49", fontSize: 12, outline: "none", textAlign: "center" }}
+                                            style={{ width: 64, padding: "3px 6px", borderRadius: 6, border: "1px solid var(--accent)", fontSize: 12, outline: "none", textAlign: "center" }}
                                           />
                                         </div>
                                       ) : (
@@ -1370,7 +1370,7 @@ export default function Productos() {
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                   {([["porcentaje", "% Porcentaje"], ["pesos", "$ Pesos fijos"], ["recalcular", "🔄 Recalcular"]] as const).map(([val, label]) => (
                     <button key={val} onClick={() => setAjusteTipo(val)}
-                      style={{ flex: 1, minWidth: 90, padding: "10px", borderRadius: 10, border: "1px solid " + (ajusteTipo === val ? (val === "recalcular" ? "#22c55e" : "#6f7d49") : "rgba(255,255,255,0.1)"), background: ajusteTipo === val ? (val === "recalcular" ? "rgba(34,197,94,0.2)" : "rgba(111,125,73,0.2)") : "transparent", color: ajusteTipo === val ? (val === "recalcular" ? "#4ade80" : "#a8b67d") : "#9ca3af", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+                      style={{ flex: 1, minWidth: 90, padding: "10px", borderRadius: 10, border: "1px solid " + (ajusteTipo === val ? (val === "recalcular" ? "#22c55e" : "var(--accent)") : "rgba(255,255,255,0.1)"), background: ajusteTipo === val ? (val === "recalcular" ? "rgba(34,197,94,0.2)" : "rgba(111,125,73,0.2)") : "transparent", color: ajusteTipo === val ? (val === "recalcular" ? "#4ade80" : "#a8b67d") : "#9ca3af", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
                       {label}
                     </button>
                   ))}

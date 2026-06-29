@@ -393,7 +393,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
           }
         `}</style>
       </head>
-      <body style={{ display: "flex" }}>
+      <body style={{ display: "flex", ["--accent" as any]: t.page, ["--accent-dark" as any]: t.pageDark, ["--accent-light" as any]: t.pageLight }}>
 
         {/* SIDEBAR desktop — fijo */}
         <aside className="desktop-sidebar" style={{ position: "sticky", top: 0, height: "100vh" }}>
