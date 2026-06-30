@@ -18,6 +18,11 @@ const PATHS: Record<string, React.ReactNode> = {
   refresh: <><path d="M23 4v6h-6M1 20v-6h6" /><path d="M3.5 9a9 9 0 0 1 14.9-3.4L23 10M1 14l4.6 4.4A9 9 0 0 0 20.5 15" /></>,
   trophy: <><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z" /><path d="M7 4H4v2a3 3 0 0 0 3 3M17 4h3v2a3 3 0 0 1-3 3" /></>,
   chart: <><path d="M3 3v18h18" /><rect x="7" y="11" width="3" height="6" /><rect x="13" y="7" width="3" height="10" /></>,
+  users: <><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></>,
+  hospital: <><path d="M3 21h18M5 21V7l7-4 7 4v14" /><path d="M12 9v6M9 12h6" /></>,
+  activity: <><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></>,
+  dollar: <><path d="M12 1v22" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></>,
+  paw: <><circle cx="5.5" cy="11" r="1.7" /><circle cx="9.5" cy="6.5" r="1.7" /><circle cx="14.5" cy="6.5" r="1.7" /><circle cx="18.5" cy="11" r="1.7" /><path d="M12 12c-2.4 0-4.3 1.9-4.3 3.9 0 1.6 1.2 2.4 2.4 2.4.8 0 1.2-.4 1.9-.4s1.1.4 1.9.4c1.2 0 2.4-.8 2.4-2.4 0-2-1.9-3.9-4.3-3.9z" /></>,
 }
 
 export default function Icon({ name, size = 18, color = "currentColor", strokeWidth = 2, style }: {

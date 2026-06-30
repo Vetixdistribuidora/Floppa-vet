@@ -5,6 +5,7 @@ import Link from "next/link"
 import { supabase } from "@/lib/supabase"
 import { abrirWhatsApp } from "@/lib/whatsapp"
 import { empresaNombre } from "@/lib/empresa"
+import Icon from "@/components/Icon"
 
 const OLIVA = "var(--accent)"
 const hoyISO = () => new Date().toLocaleDateString("sv-SE")
@@ -101,12 +102,12 @@ export default function DashboardVet() {
   const salaAtendiendo = sala.filter(s => s.estado === "atendiendo").length
 
   const kpis = [
-    { titulo: "En sala", valor: sala.length, sub: `${salaEsperando} esperando · ${salaAtendiendo} en atención`, icon: "🪑", color: "#0d9488", href: "/sala" },
-    { titulo: "Turnos hoy", valor: turnos.length, sub: `${turnosPend} pendiente${turnosPend !== 1 ? "s" : ""}`, icon: "📅", color: "#38bdf8", href: "/turnos" },
-    { titulo: "Internados", valor: internados.length, sub: "en seguimiento", icon: "🏥", color: "#fb7185", href: "/internacion" },
-    { titulo: "Sanidad 7 días", valor: sanidad.length, sub: `${sanVencidas} vencida${sanVencidas !== 1 ? "s" : ""}`, icon: "💉", color: "#f59e0b", href: "/recordatorios" },
-    { titulo: "Pre Venta", valor: "$" + Math.round(totalACobrar).toLocaleString("es-AR"), sub: `${aCobrar.length} pendiente${aCobrar.length !== 1 ? "s" : ""}`, icon: "💲", color: "#22c55e", href: "/cobros" },
-    { titulo: "Pacientes", valor: nPacientes, sub: `${nTutores} tutores`, icon: "🐾", color: "#5ec5c0", href: "/pacientes" },
+    { titulo: "En sala", valor: sala.length, sub: `${salaEsperando} esperando · ${salaAtendiendo} en atención`, icon: "users", color: "#0d9488", href: "/sala" },
+    { titulo: "Turnos hoy", valor: turnos.length, sub: `${turnosPend} pendiente${turnosPend !== 1 ? "s" : ""}`, icon: "calendar", color: "#38bdf8", href: "/turnos" },
+    { titulo: "Internados", valor: internados.length, sub: "en seguimiento", icon: "hospital", color: "#fb7185", href: "/internacion" },
+    { titulo: "Sanidad 7 días", valor: sanidad.length, sub: `${sanVencidas} vencida${sanVencidas !== 1 ? "s" : ""}`, icon: "activity", color: "#f59e0b", href: "/recordatorios" },
+    { titulo: "Pre Venta", valor: "$" + Math.round(totalACobrar).toLocaleString("es-AR"), sub: `${aCobrar.length} pendiente${aCobrar.length !== 1 ? "s" : ""}`, icon: "dollar", color: "#22c55e", href: "/cobros" },
+    { titulo: "Pacientes", valor: nPacientes, sub: `${nTutores} tutores`, icon: "paw", color: "#5ec5c0", href: "/pacientes" },
   ]
 
   if (loading) return <p style={{ color: "#94a3b8", textAlign: "center", padding: 40 }}>Cargando…</p>
@@ -122,7 +123,7 @@ export default function DashboardVet() {
               <div style={{ paddingLeft: 8 }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
                   <span style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", letterSpacing: 0.5, textTransform: "uppercase" }}>{k.titulo}</span>
-                  <span style={{ fontSize: 18 }}>{k.icon}</span>
+                  <Icon name={k.icon} size={18} color={k.color} />
                 </div>
                 <div style={{ fontSize: 24, fontWeight: 800, color: "#1d1b12", lineHeight: 1 }}>{k.valor}</div>
                 <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 6 }}>{k.sub}<span style={{ color: k.color, marginLeft: 6, fontWeight: 600 }}>Ver →</span></div>
@@ -136,7 +137,7 @@ export default function DashboardVet() {
         {/* Sala de espera */}
         <div style={card}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-            <h3 style={{ ...h3, margin: 0 }}>🪑 Sala de espera</h3>
+            <h3 style={{ ...h3, margin: 0 }}>Sala de espera</h3>
             <Link href="/sala" style={{ fontSize: 12.5, color: OLIVA, fontWeight: 700, textDecoration: "none" }}>Ver sala →</Link>
           </div>
           {sala.length === 0 ? <p style={{ color: "#94a3b8", fontSize: 13, margin: 0 }}>Sala vacía.</p> : (
@@ -159,7 +160,7 @@ export default function DashboardVet() {
         {/* Turnos de hoy */}
         <div style={card}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-            <h3 style={{ ...h3, margin: 0 }}>📅 Turnos de hoy</h3>
+            <h3 style={{ ...h3, margin: 0 }}>Turnos de hoy</h3>
             <Link href="/turnos" style={{ fontSize: 12.5, color: OLIVA, fontWeight: 700, textDecoration: "none" }}>Ver agenda →</Link>
           </div>
           {turnos.length === 0 ? <p style={{ color: "#94a3b8", fontSize: 13, margin: 0 }}>No hay turnos para hoy.</p> : (
@@ -179,7 +180,7 @@ export default function DashboardVet() {
         {/* Sanidad próxima */}
         <div style={card}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-            <h3 style={{ ...h3, margin: 0 }}>💉 Sanidad por vencer</h3>
+            <h3 style={{ ...h3, margin: 0 }}>Sanidad por vencer</h3>
             <Link href="/recordatorios" style={{ fontSize: 12.5, color: OLIVA, fontWeight: 700, textDecoration: "none" }}>Ver todo →</Link>
           </div>
           {sanidad.length === 0 ? <p style={{ color: "#94a3b8", fontSize: 13, margin: 0 }}>Nada pendiente en 7 días. ✓</p> : (
@@ -203,14 +204,14 @@ export default function DashboardVet() {
         {/* Internados */}
         <div style={card}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-            <h3 style={{ ...h3, margin: 0 }}>🏥 Internados</h3>
+            <h3 style={{ ...h3, margin: 0 }}>Internados</h3>
             <Link href="/internacion" style={{ fontSize: 12.5, color: OLIVA, fontWeight: 700, textDecoration: "none" }}>Ver →</Link>
           </div>
           {internados.length === 0 ? <p style={{ color: "#94a3b8", fontSize: 13, margin: 0 }}>No hay pacientes internados.</p> : (
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {internados.slice(0, 6).map(i => (
                 <div key={i.id} style={{ display: "flex", justifyContent: "space-between", gap: 10, fontSize: 13, borderBottom: "1px solid #f1f5f9", paddingBottom: 7 }}>
-                  <span><b style={{ color: "#1d1b12" }}>🐾 {i.pacientes?.nombre || "—"}</b>{i.motivo ? ` · ${i.motivo}` : ""}</span>
+                  <span><b style={{ color: "#1d1b12" }}>{i.pacientes?.nombre || "—"}</b>{i.motivo ? ` · ${i.motivo}` : ""}</span>
                   <span style={{ color: "#94a3b8", fontSize: 11, whiteSpace: "nowrap" }}>desde {new Date(i.fecha_ingreso).toLocaleDateString("es-AR", { timeZone: "America/Argentina/Buenos_Aires", day: "2-digit", month: "2-digit" })}</span>
                 </div>
               ))}
@@ -220,7 +221,7 @@ export default function DashboardVet() {
 
         {/* Cumpleaños */}
         <div style={card}>
-          <h3 style={h3}>🎂 Cumpleaños esta semana</h3>
+          <h3 style={h3}>Cumpleaños esta semana</h3>
           {cumples.length === 0 ? <p style={{ color: "#94a3b8", fontSize: 13, margin: 0 }}>Sin cumpleaños próximos.</p> : (
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {cumples.slice(0, 6).map(p => {
