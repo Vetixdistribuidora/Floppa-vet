@@ -843,7 +843,7 @@ export default function Productos() {
 
       {/* Barra de acciones superior */}
       <div className="productos-topbar" style={{ display: "flex", gap: 10, marginBottom: 16, alignItems: "center", flexWrap: "wrap" }}>
-        <input placeholder="🔍 Buscar producto..." value={busqueda}
+        <input placeholder="Buscar producto..." value={busqueda}
           onChange={e => { setBusqueda(e.target.value); setPagina(1) }}
           style={{ flex: 1, minWidth: 200, padding: "10px 14px", borderRadius: 10, border: "1px solid #e2e8f0", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
         {(() => {
@@ -862,23 +862,23 @@ export default function Productos() {
           {busqueda && <span style={{ color: "#9ca3af" }}> · <b style={{ color: "#374151" }}>{productosFiltrados.length}</b> resultados</span>}
         </span>
         <button onClick={() => setMostrarAgregar(!mostrarAgregar)} style={{ ...btnSecundario, position: "relative" }}>
-          {mostrarAgregar ? "✕ Cerrar" : "➕ Agregar"}
+          {mostrarAgregar ? "Cerrar" : "Agregar"}
           {!mostrarAgregar && typeof window !== "undefined" && localStorage.getItem("floppa_borrador_producto") && (
             <span style={{ position: "absolute", top: -4, right: -4, width: 8, height: 8, background: "#f59e0b", borderRadius: "50%", display: "block" }} />
           )}
         </button>
         <button onClick={() => setMostrarImport(!mostrarImport)} style={btnSecundario}>
-          {mostrarImport ? "✕ Cerrar" : "📥 Importar"}
+          {mostrarImport ? "Cerrar" : "Importar"}
         </button>
         <button onClick={exportarStock} style={btnSecundario} title="Exportar stock completo">
-          📊 Stock
+          Stock
         </button>
         <button onClick={exportarListaPrecios} style={btnSecundario} title="Lista de precios para clientes">
-          📋 Precios
+          Precios
         </button>
         {!esVet && (
         <button onClick={() => setModalPrecios(true)} style={{ ...btnPrimario, background: "linear-gradient(135deg, #7c3aed, #8b5cf6)" }}>
-          💲 Actualizar precios
+          Actualizar precios
         </button>
         )}
       </div>
