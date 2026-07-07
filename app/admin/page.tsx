@@ -53,8 +53,20 @@ export default function AdminPage() {
   }
 
   async function cambiarEstado(id: number, nuevoEstado: string) {
-    await supabase.from("suscripciones").update({ estado: nuevoEstado }).eq("id", id)
-    setSuscripciones(prev => prev.map(s => s.id === id ? { ...s, estado: nuevoEstado } : s))
+    // El paywall bloquea si la fecha de vencimiento ya pasó, AUNQUE el estado sea
+    // "activo". Por eso, al activar manualmente hay que dejar la suscripción vigente:
+    //  - activo  → sin vencimiento (cortesía / cliente que activás vos a mano).
+    //  - trial   → renueva 15 días desde hoy.
+    //  - vencido → se deja como está.
+    const patch: any = { estado: nuevoEstado }
+    if (nuevoEstado === "activo") {
+      patch.fecha_vencimiento = null
+    } else if (nuevoEstado === "trial") {
+      const venc = new Date(); venc.setDate(venc.getDate() + 15)
+      patch.fecha_vencimiento = venc.toISOString().split("T")[0]
+    }
+    await supabase.from("suscripciones").update(patch).eq("id", id)
+    setSuscripciones(prev => prev.map(s => s.id === id ? { ...s, ...patch } : s))
   }
 
   const [invitaciones, setInvitaciones] = useState<any[]>([])
