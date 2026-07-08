@@ -30,6 +30,14 @@ html { width: 100%; }
 .pac-card-head { flex-wrap: wrap; }
 .pac-card-actions { flex-basis: 100%; width: 100%; justify-content: flex-start; margin-top: 8px; }
 
+/* Tarjeta de lista con acciones (Sanidad, Consultas, Estudios, Turnos, Sala, Cobros…):
+   en celular el grupo de botones baja a su propia fila alineado a la derecha, para
+   que no se apriete ni se superponga con el texto. En PC queda como fila normal. */
+@media (max-width: 600px) {
+  .list-row { flex-wrap: wrap !important; row-gap: 10px !important; align-items: flex-start !important; }
+  .list-row > .list-actions { width: 100% !important; justify-content: flex-end !important; flex-wrap: wrap !important; }
+}
+
 /* Reset mínimo — no imponer colores ni estilos a botones/inputs
    ya que cada componente define los propios via inline styles */
 *, *::before, *::after {

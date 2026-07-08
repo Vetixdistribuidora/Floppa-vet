@@ -187,7 +187,7 @@ export default function RecordatoriosPage() {
           {filtrados.map(r => {
             const ef = estiloFecha(r); const hecho = r.estado === "hecho"
             return (
-              <div key={r.id} style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 12, padding: "12px 16px", display: "flex", alignItems: "center", gap: 14, opacity: hecho ? 0.65 : 1 }}>
+              <div key={r.id} className="list-row" style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 12, padding: "12px 16px", display: "flex", alignItems: "center", gap: 14, opacity: hecho ? 0.65 : 1 }}>
                 <div style={{ textAlign: "center", background: ef.bg, color: ef.color, borderRadius: 9, padding: "8px 12px", minWidth: 96, fontSize: 12, fontWeight: 700, textTransform: "capitalize" }}>{ef.label}</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontWeight: 700, fontSize: 14.5, color: "#1d1b12", textDecoration: hecho ? "line-through" : "none" }}>
@@ -197,7 +197,7 @@ export default function RecordatoriosPage() {
                   {r.fecha_aplicacion && <div style={{ fontSize: 11.5, color: "#94a3b8", marginTop: 2 }}>💉 Aplicada el {new Date(r.fecha_aplicacion + "T00:00:00").toLocaleDateString("es-AR")}</div>}
                   {r.fecha && <div style={{ fontSize: 12, color: "#0891b2", fontWeight: 700, marginTop: 2 }}>📅 Próxima: {new Date(r.fecha + "T00:00:00").toLocaleDateString("es-AR")}</div>}
                 </div>
-                <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                <div className="list-actions" style={{ display: "flex", gap: 6, flexShrink: 0 }}>
                   {r.pacientes?.clientes?.telefono && (
                     <button onClick={() => recordarWhatsApp(r)} title="Recordar por WhatsApp"
                       style={{ background: "#dcfce7", border: "1px solid #86efac", borderRadius: 7, padding: "5px 10px", cursor: "pointer", fontSize: 13, color: "#15803d", fontWeight: 700 }}>

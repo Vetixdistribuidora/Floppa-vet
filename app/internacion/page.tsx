@@ -334,7 +334,7 @@ export default function InternacionPage() {
                   {registros.map(r => {
                     const v = TIPO_REG[r.tipo] || TIPO_REG.evolucion
                     return (
-                      <div key={r.id} style={{ display: "flex", gap: 12, borderBottom: "1px solid #f1f5f9", paddingBottom: 10 }}>
+                      <div key={r.id} className="list-row" style={{ display: "flex", gap: 12, borderBottom: "1px solid #f1f5f9", paddingBottom: 10 }}>
                         <div style={{ minWidth: 86, fontSize: 12, color: "#64748b", fontWeight: 600 }}>{fmtFechaHora(r.fecha_hora)}</div>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <span style={{ background: v.bg, color: v.color, fontSize: 11, fontWeight: 700, padding: "2px 9px", borderRadius: 999 }}>{v.icon} {v.label}</span>
@@ -356,7 +356,7 @@ export default function InternacionPage() {
                           {r.nota && <div style={{ fontSize: 12.5, color: "#64748b", marginTop: 3 }}>{r.nota}</div>}
                           {r.aplicado_por && <div style={{ fontSize: 11.5, color: "#94a3b8", marginTop: 3 }}>👤 {r.aplicado_por}</div>}
                         </div>
-                        <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                        <div className="list-actions" style={{ display: "flex", gap: 6, flexShrink: 0 }}>
                           <button onClick={() => setEditReg({ ...r, fecha_hora: toLocalInput(r.fecha_hora), peso: r.peso ?? "", temperatura: r.temperatura ?? "", fc: r.fc ?? "", fr: r.fr ?? "", mucosas: r.mucosas ?? "", pulso_femoral: r.pulso_femoral ?? "", extra: Object.fromEntries(Object.entries(r.constantes_extra || {}).map(([k, v]: [string, any]) => [k, v.valor])), tratamiento: r.tratamiento ?? "", aplicado_por: r.aplicado_por ?? "", nota: r.nota ?? "" })} style={{ background: "#f1f5f9", border: "1px solid #e2e8f0", borderRadius: 7, padding: "4px 9px", cursor: "pointer", fontSize: 12, color: "#475569", height: "fit-content" }}>✎</button>
                           {esAdmin && <button onClick={() => setConfirmDelReg(r)} title="Eliminar (solo admin)" style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 7, padding: "4px 9px", cursor: "pointer", fontSize: 12, color: "#dc2626", height: "fit-content" }}>🗑</button>}
                         </div>

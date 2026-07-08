@@ -202,7 +202,7 @@ export default function TurnosPage() {
             const est = ESTADOS[t.estado] || ESTADOS.reservado
             const tutor = t.clientes ? `${t.clientes.nombre || ""} ${t.clientes.apellido || ""}`.trim() : ""
             return (
-              <div key={t.id} style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 12, padding: "12px 16px", display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+              <div key={t.id} className="list-row" style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 12, padding: "12px 16px", display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
                 <div style={{ textAlign: "center", background: "#f4f2e6", color: "var(--accent-dark)", borderRadius: 9, padding: "8px 12px", minWidth: 70, fontWeight: 800, fontSize: 16 }}>
                   {(t.hora || "").slice(0, 5)}
                   <div style={{ fontSize: 10, fontWeight: 600, color: "#94a3b8" }}>{t.duracion || 30}'</div>
@@ -219,7 +219,7 @@ export default function TurnosPage() {
                   style={{ background: est.bg, color: est.color, border: `1px solid ${est.bd}`, borderRadius: 8, padding: "6px 10px", fontSize: 12.5, fontWeight: 700, cursor: "pointer", outline: "none" }}>
                   {Object.entries(ESTADOS).map(([k, v]) => <option key={k} value={k} style={{ background: "white", color: "#1d1b12" }}>{v.label}</option>)}
                 </select>
-                <div style={{ display: "flex", gap: 6 }}>
+                <div className="list-actions" style={{ display: "flex", gap: 6 }}>
                   {t.clientes?.telefono && (
                     <button onClick={() => recordarWhatsApp(t)} title="Recordar por WhatsApp" style={{ background: "#dcfce7", border: "1px solid #86efac", borderRadius: 7, padding: "5px 10px", cursor: "pointer", fontSize: 13, color: "#15803d", fontWeight: 700 }}>💬</button>
                   )}

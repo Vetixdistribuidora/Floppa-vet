@@ -98,7 +98,7 @@ export default function SalaEsperaPage() {
     const urgente = it.prioridad === "urgente"
     const tutor = tutorDe(it)
     return (
-      <div style={{ background: "white", border: `1px solid ${urgente ? "#fecaca" : "#e2e8f0"}`, borderLeft: `4px solid ${urgente ? "#dc2626" : TEAL}`, borderRadius: 12, padding: "12px 16px", display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+      <div className="list-row" style={{ background: "white", border: `1px solid ${urgente ? "#fecaca" : "#e2e8f0"}`, borderLeft: `4px solid ${urgente ? "#dc2626" : TEAL}`, borderRadius: 12, padding: "12px 16px", display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
         {idx != null && <div style={{ fontSize: 22, fontWeight: 800, color: urgente ? "#dc2626" : "#94a3b8", minWidth: 28, textAlign: "center" }}>{idx + 1}</div>}
         <div style={{ flex: 1, minWidth: 160 }}>
           <div style={{ fontWeight: 700, fontSize: 15.5, color: "#1d1b12" }}>
@@ -114,7 +114,7 @@ export default function SalaEsperaPage() {
         <div style={{ textAlign: "right", fontSize: 12, color: "#64748b", whiteSpace: "nowrap" }}>
           {it.estado !== "atendido" ? <>⏱ {esperaTexto(it.check_in_at)}</> : "✓ atendido"}
         </div>
-        <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+        <div className="list-actions" style={{ display: "flex", gap: 6, flexShrink: 0 }}>
           {it.pacientes && <Link href={`/consultas?paciente=${it.pacientes.id}`} title="Abrir consulta" style={{ background: "#f4f2e6", border: "1px solid #e6e8cf", borderRadius: 7, padding: "5px 10px", fontSize: 12, color: "var(--accent)", fontWeight: 700, textDecoration: "none" }}>📋</Link>}
           {it.estado === "esperando" && <button onClick={() => cambiarEstado(it, "atendiendo")} style={{ background: TEAL, color: "white", border: "none", borderRadius: 7, padding: "6px 12px", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>▶ Atender</button>}
           {it.estado === "atendiendo" && it.pacientes && <Link href={`/pacientes/${it.pacientes.id}`} title="Abrir ficha clínica" style={{ background: "#eef0e0", border: "1px solid #cdd6a8", borderRadius: 7, padding: "6px 12px", fontSize: 12.5, color: "var(--accent-dark)", fontWeight: 700, textDecoration: "none" }}>📋 Ficha clínica</Link>}

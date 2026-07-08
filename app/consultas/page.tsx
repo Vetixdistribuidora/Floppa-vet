@@ -389,12 +389,12 @@ export default function ConsultasPage() {
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 13.5, color: "#334155" }}>
                   {c.para_cobrar && (
-                    <div style={{ background: c.cobrado ? "#f0fdf4" : "#fff7ed", border: `1px solid ${c.cobrado ? "#bbf7d0" : "#fed7aa"}`, borderRadius: 8, padding: "8px 12px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
-                      <div style={{ minWidth: 0 }}>
+                    <div className="list-row" style={{ background: c.cobrado ? "#f0fdf4" : "#fff7ed", border: `1px solid ${c.cobrado ? "#bbf7d0" : "#fed7aa"}`, borderRadius: 8, padding: "8px 12px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+                      <div style={{ minWidth: 0, flex: 1 }}>
                         <b style={{ color: c.cobrado ? "#16a34a" : "#c2410c", fontWeight: 800 }}>{c.cobrado ? "✓ Cobrado:" : "💲 A cobrar:"}</b>{" "}
                         <span style={{ fontWeight: 700, color: "#1d1b12", textDecoration: c.cobrado ? "line-through" : "none" }}>{c.para_cobrar}</span>
                       </div>
-                      <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                      <div className="list-actions" style={{ display: "flex", gap: 6, flexShrink: 0 }}>
                         {!c.cobrado && c.pacientes?.cliente_id && (
                           <Link href={`/ventas?cliente=${c.pacientes.cliente_id}&consulta=${c.id}&cobrar=${encodeURIComponent(c.para_cobrar)}`}
                             title="Cobrar en Ventas (abre con el tutor cargado)"

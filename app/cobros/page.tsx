@@ -75,7 +75,7 @@ export default function CobrosPage() {
           {filtrados.map(c => {
             const tutor = tutorDe(c)
             return (
-              <div key={c.id} style={{ background: "white", border: "1px solid #e2e8f0", borderLeft: `4px solid ${c.cobrado ? "#94a3b8" : "#16a34a"}`, borderRadius: 12, padding: "13px 16px", display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+              <div key={c.id} className="list-row" style={{ background: "white", border: "1px solid #e2e8f0", borderLeft: `4px solid ${c.cobrado ? "#94a3b8" : "#16a34a"}`, borderRadius: 12, padding: "13px 16px", display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
                 <div style={{ flex: 1, minWidth: 180 }}>
                   <div style={{ fontWeight: 700, fontSize: 15, color: "#1d1b12" }}>
                     {c.pacientes ? <Link href={`/pacientes/${c.pacientes.id}`} style={{ color: "#1d1b12", textDecoration: "none" }}>🐾 {c.pacientes.nombre}</Link> : "Paciente"}
@@ -89,7 +89,7 @@ export default function CobrosPage() {
                     🗓 {f(c.fecha)}{c.pacientes?.clientes?.telefono ? ` · 📞 ${c.pacientes.clientes.telefono}` : ""}
                   </div>
                 </div>
-                <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+                <div className="list-actions" style={{ display: "flex", gap: 8, flexShrink: 0 }}>
                   {!c.cobrado && c.pacientes?.cliente_id && (
                     <Link href={`/ventas?cliente=${c.pacientes.cliente_id}&consulta=${c.id}&cobrar=${encodeURIComponent(c.para_cobrar)}`}
                       style={{ background: "#1d1b12", color: "white", borderRadius: 8, padding: "8px 14px", fontSize: 13, fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap" }}>Cobrar →</Link>
