@@ -88,7 +88,10 @@ export default function Shell({ children }: { children: React.ReactNode }) {
           setRubro(org.rubro || ""); setMostrarRubro(org.mostrar_rubro !== false)
           setRubroDisplay(org.rubro_display || ""); setOrden(Array.isArray(org.orden_modulos) ? org.orden_modulos : null)
           setLogoUrl(org.logo_url || null); setTema(org.tema || "")
-          const { data: ou } = await supabase.from("org_usuarios").select("rol").maybeSingle()
+          // Filtrar por user_id: la política org_usuarios_select deja ver a todo
+          // el equipo, así que sin el filtro un org con varios usuarios devuelve
+          // varias filas y maybeSingle() falla (cayendo por error a "admin").
+          const { data: ou } = await supabase.from("org_usuarios").select("rol").eq("user_id", session.user.id).maybeSingle()
           setRol(ou?.rol || "admin")
           // Suscripción de la organización (para el paywall)
           const { data: susc } = await supabase.from("suscripciones")
