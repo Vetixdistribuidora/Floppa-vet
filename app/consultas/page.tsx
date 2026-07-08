@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react"
 import Link from "next/link"
 import { supabase } from "@/lib/supabase"
 import ComboBox from "@/components/ComboBox"
+import { useRol } from "@/lib/useRol"
 
 const OLIVA = "var(--accent)"
 const hoyISO = () => new Date().toISOString().split("T")[0]
@@ -56,6 +57,7 @@ function resumenItems(items: any[]): string {
 }
 
 export default function ConsultasPage() {
+  const { esAdmin } = useRol()
   const [consultas, setConsultas] = useState<any[]>([])
   const [pacientes, setPacientes] = useState<any[]>([])
   const [filtroPaciente, setFiltroPaciente] = useState("")
@@ -352,7 +354,7 @@ export default function ConsultasPage() {
                   <div style={{ fontSize: 26 }}>🏥</div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontWeight: 700, fontSize: 14.5, color: "#1d1b12" }}>
-                      Internación{it.motivo ? ` · ${it.motivo}` : ""}{it.jaula ? <span style={{ color: "#0d9488", fontWeight: 800 }}> · Jaula {it.jaula}</span> : null}
+                      Internación{it.motivo ? ` · ${it.motivo}` : ""}{it.jaula ? <span style={{ color: "#0d9488", fontWeight: 800 }}> · Canil {it.jaula}</span> : null}
                       {internado && <span style={{ marginLeft: 8, background: "#fef2f2", color: "#e11d48", fontSize: 10.5, fontWeight: 800, padding: "2px 8px", borderRadius: 999 }}>internado</span>}
                     </div>
                     <div style={{ fontSize: 12.5, color: "#64748b", marginTop: 2 }}>
@@ -377,12 +379,12 @@ export default function ConsultasPage() {
                       {pac?.nombre || "Paciente"} {pac?.especie && <span style={{ color: "#94a3b8", fontWeight: 500, fontSize: 13 }}>· {pac.especie}</span>}
                     </div>
                     <div style={{ fontSize: 12.5, color: "#64748b", marginTop: 2 }}>
-                      🗓 {fechaCorta(c.fecha)}{dueño && ` · Dueño: ${dueño}`}
+                      🗓 {fechaCorta(c.fecha)}{dueño && ` · Dueño: ${dueño}`}{c.creado_por && ` · 👤 ${c.creado_por}`}
                     </div>
                   </div>
                   <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
                     <button onClick={() => abrirEditar(c)} style={{ background: "#f1f5f9", border: "1px solid #e2e8f0", borderRadius: 7, padding: "4px 9px", cursor: "pointer", fontSize: 12, color: "#475569" }}>✎</button>
-                    <button onClick={() => setConfirmEliminar(c)} style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 7, padding: "4px 9px", cursor: "pointer", fontSize: 12, color: "#dc2626" }}>🗑</button>
+                    {esAdmin && <button onClick={() => setConfirmEliminar(c)} title="Eliminar (solo admin)" style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 7, padding: "4px 9px", cursor: "pointer", fontSize: 12, color: "#dc2626" }}>🗑</button>}
                   </div>
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 13.5, color: "#334155" }}>

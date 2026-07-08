@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react"
 import Link from "next/link"
 import { supabase } from "@/lib/supabase"
 import ComboBox from "@/components/ComboBox"
+import { useRol } from "@/lib/useRol"
 
 const ESPECIES = ["Perro", "Gato", "Ave", "Conejo", "Roedor", "Reptil", "Equino", "Otro"]
 const ESPECIE_EMOJI: Record<string, string> = { Perro: "🐶", Gato: "🐈", Ave: "🐦", Conejo: "🐰", Roedor: "🐹", Reptil: "🦎", Equino: "🐴", Otro: "🐾" }
@@ -55,6 +56,7 @@ const labelStyle: React.CSSProperties = { display: "block", fontSize: 11, fontWe
 const inputStyle: React.CSSProperties = { width: "100%", padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 9, fontSize: 14, color: "#1d1b12", outline: "none", boxSizing: "border-box", background: "white" }
 
 export default function PacientesPage() {
+  const { esAdmin } = useRol()
   const [pacientes, setPacientes] = useState<any[]>([])
   const [clientes, setClientes] = useState<any[]>([])
   const [busqueda, setBusqueda] = useState("")
@@ -270,7 +272,7 @@ export default function PacientesPage() {
                   <Link href={`/consultas?paciente=${p.id}`} title="Historia clínica (consultas, estudios y sanidad)" style={{ background: "#f4f2e6", border: "1px solid #e6e8cf", borderRadius: 7, padding: "4px 10px", cursor: "pointer", fontSize: 12, color: "var(--accent)", textDecoration: "none", fontWeight: 700, whiteSpace: "nowrap" }}>📋 Historia clínica</Link>
                   <Link href={`/consultas?paciente=${p.id}&nueva=consulta`} title="Agregar a la historia clínica" style={{ background: "#eef0e0", border: "1px solid #cdd6a8", borderRadius: 7, padding: "4px 9px", cursor: "pointer", fontSize: 12, color: "var(--accent-dark)", textDecoration: "none", fontWeight: 700 }}>＋</Link>
                   <button onClick={() => abrirEditar(p)} title="Editar" style={{ background: "#f1f5f9", border: "1px solid #e2e8f0", borderRadius: 7, padding: "4px 9px", cursor: "pointer", fontSize: 12, color: "#475569" }}>✎</button>
-                  <button onClick={() => setConfirmEliminar(p)} title="Eliminar" style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 7, padding: "4px 9px", cursor: "pointer", fontSize: 12, color: "#dc2626" }}>🗑</button>
+                  {esAdmin && <button onClick={() => setConfirmEliminar(p)} title="Eliminar (solo admin)" style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 7, padding: "4px 9px", cursor: "pointer", fontSize: 12, color: "#dc2626" }}>🗑</button>}
                 </div>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginTop: 2 }}>

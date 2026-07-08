@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react"
 import { supabase } from "@/lib/supabase"
 import ComboBox from "@/components/ComboBox"
+import { useRol } from "@/lib/useRol"
 
 const OLIVA = "var(--accent)"
 const TIPOS = ["Análisis de sangre", "Análisis de orina", "Ecografía", "Radiografía", "Citología", "Biopsia", "Cultivo", "Raspaje", "Informe", "Certificado", "Otro"]
@@ -40,6 +41,7 @@ const labelStyle: React.CSSProperties = { display: "block", fontSize: 11, fontWe
 const inputStyle: React.CSSProperties = { width: "100%", padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 9, fontSize: 14, color: "#1d1b12", outline: "none", boxSizing: "border-box", background: "white" }
 
 export default function EstudiosPage() {
+  const { esAdmin } = useRol()
   const [estudios, setEstudios] = useState<any[]>([])
   const [pacientes, setPacientes] = useState<any[]>([])
   const [orgId, setOrgId] = useState<string | null>(null)
@@ -184,7 +186,7 @@ export default function EstudiosPage() {
               </div>
               <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
                 <button onClick={() => descargar(e)} style={{ flex: 1, background: "#ecfeff", border: "1px solid #a5f3fc", borderRadius: 8, padding: "7px 10px", cursor: "pointer", fontSize: 13, color: "#0891b2", fontWeight: 700 }}>⬇ Abrir</button>
-                <button onClick={() => setConfirmEliminar(e)} style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 8, padding: "7px 11px", cursor: "pointer", fontSize: 13, color: "#dc2626" }}>🗑</button>
+                {esAdmin && <button onClick={() => setConfirmEliminar(e)} title="Eliminar (solo admin)" style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 8, padding: "7px 11px", cursor: "pointer", fontSize: 13, color: "#dc2626" }}>🗑</button>}
               </div>
             </div>
           ))}

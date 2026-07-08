@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase"
 import ComboBox from "@/components/ComboBox"
 import { nowARInput, isoToARInput, arInputToISO, fmtFechaHoraAR, fmtFechaAR } from "@/lib/fecha"
+import { useRol } from "@/lib/useRol"
 
 const OLIVA = "var(--accent)"
 const TIPO_REG: Record<string, { label: string; icon: string; bg: string; color: string }> = {
@@ -28,9 +29,10 @@ const toLocalInput = isoToARInput
 const fmtFechaHora = fmtFechaHoraAR
 const fmtFecha = fmtFechaAR
 const medVacio = () => ({ medicamento: "", dosis: "", frecuencia: "" })
-const regVacio = () => ({ fecha_hora: nowLocal(), peso: "", temperatura: "", fc: "", fr: "", mucosas: "", meds: [medVacio()], evolucion: "", aplicado_por: "", nota: "" })
+const regVacio = () => ({ fecha_hora: nowLocal(), peso: "", temperatura: "", fc: "", fr: "", mucosas: "", pulso_femoral: "", extra: {} as Record<string, string>, meds: [medVacio()], evolucion: "", aplicado_por: "", nota: "" })
 
 export default function InternacionPage() {
+  const { esAdmin } = useRol()
   const [lista, setLista] = useState<any[]>([])
   const [filtro, setFiltro] = useState<"internado" | "historial">("internado")
   const [activa, setActiva] = useState<any | null>(null)
@@ -50,16 +52,18 @@ export default function InternacionPage() {
   const [guardandoEdit, setGuardandoEdit] = useState(false)
   const [confirmDelReg, setConfirmDelReg] = useState<any | null>(null)
   const [confirmDelInt, setConfirmDelInt] = useState(false)
+  const [constantesDef, setConstantesDef] = useState<any[]>([])
 
   function mostrar(m: string, t: "ok" | "error") { setToast({ mensaje: m, tipo: t }); setTimeout(() => setToast(null), 3000) }
 
   async function cargar() {
     setCargando(true)
-    const [{ data: ii }, { data: pac }] = await Promise.all([
+    const [{ data: ii }, { data: pac }, { data: cd }] = await Promise.all([
       supabase.from("internaciones").select("*, pacientes(nombre, especie, raza), clientes(nombre, apellido, telefono)").order("fecha_ingreso", { ascending: false }),
       supabase.from("pacientes").select("id, nombre, especie, cliente_id").eq("fallecido", false).order("nombre"),
+      supabase.from("constantes_personalizadas").select("*").eq("activo", true).order("orden"),
     ])
-    setLista(ii || []); setPacientes(pac || [])
+    setLista(ii || []); setPacientes(pac || []); setConstantesDef(cd || [])
     setCargando(false)
   }
   useEffect(() => { cargar() }, [])
@@ -101,9 +105,19 @@ export default function InternacionPage() {
       .join("\n")
   }
 
+  function extraAConstantes(extra: Record<string, string>): Record<string, { valor: string; unidad: string | null }> | null {
+    const out: Record<string, { valor: string; unidad: string | null }> = {}
+    for (const def of constantesDef) {
+      const v = (extra[def.nombre] || "").trim()
+      if (v) out[def.nombre] = { valor: v, unidad: def.unidad || null }
+    }
+    return Object.keys(out).length ? out : null
+  }
+
   async function agregarRegistro() {
     if (!activa) return
-    const hayConst = reg.peso || reg.temperatura || reg.fc || reg.fr || reg.mucosas
+    const extraObj = extraAConstantes(reg.extra)
+    const hayConst = reg.peso || reg.temperatura || reg.fc || reg.fr || reg.mucosas || reg.pulso_femoral.trim() || extraObj
     const medsTxt = medsATexto(reg.meds)
     const hayMed = !!medsTxt
     const hayEvo = reg.evolucion.trim()
@@ -115,7 +129,7 @@ export default function InternacionPage() {
       aplicado_por: reg.aplicado_por.trim() || null,
     }
     const filas: any[] = []
-    if (hayConst) filas.push({ ...base, tipo: "constante", peso: reg.peso ? Number(reg.peso) : null, temperatura: reg.temperatura ? Number(reg.temperatura) : null, fc: reg.fc ? Number(reg.fc) : null, fr: reg.fr ? Number(reg.fr) : null, mucosas: reg.mucosas.trim() || null })
+    if (hayConst) filas.push({ ...base, tipo: "constante", peso: reg.peso ? Number(reg.peso) : null, temperatura: reg.temperatura ? Number(reg.temperatura) : null, fc: reg.fc ? Number(reg.fc) : null, fr: reg.fr ? Number(reg.fr) : null, mucosas: reg.mucosas.trim() || null, pulso_femoral: reg.pulso_femoral.trim() || null, constantes_extra: extraObj })
     if (hayMed) filas.push({ ...base, tipo: "medicacion", tratamiento: medsTxt })
     if (hayEvo) filas.push({ ...base, tipo: "evolucion", tratamiento: reg.evolucion.trim() })
     if (reg.nota.trim() && filas.length) filas[0].nota = reg.nota.trim()
@@ -142,6 +156,8 @@ export default function InternacionPage() {
         fc: editReg.fc !== "" && editReg.fc != null ? Number(editReg.fc) : null,
         fr: editReg.fr !== "" && editReg.fr != null ? Number(editReg.fr) : null,
         mucosas: (editReg.mucosas || "").trim() || null,
+        pulso_femoral: (editReg.pulso_femoral || "").trim() || null,
+        constantes_extra: extraAConstantes(editReg.extra || {}),
       })
     } else {
       payload.tratamiento = (editReg.tratamiento || "").trim() || null
@@ -202,7 +218,7 @@ export default function InternacionPage() {
               const sel = activa?.id === i.id
               return (
                 <div key={i.id} onClick={() => abrirFicha(i)} style={{ background: sel ? "#f4f2e6" : "white", border: `1px solid ${sel ? "#cdd6a8" : "#e2e8f0"}`, borderLeft: sel ? "3px solid var(--accent)" : "3px solid transparent", borderRadius: 12, padding: "12px 14px", cursor: "pointer" }}>
-                  <div style={{ fontWeight: 700, fontSize: 14, color: "#1d1b12" }}>🐾 {i.pacientes?.nombre || "—"}{i.jaula && <span style={{ color: "#0d9488", fontWeight: 800 }}> · Jaula {i.jaula}</span>}</div>
+                  <div style={{ fontWeight: 700, fontSize: 14, color: "#1d1b12" }}>🐾 {i.pacientes?.nombre || "—"}{i.jaula && <span style={{ color: "#0d9488", fontWeight: 800 }}> · Canil {i.jaula}</span>}</div>
                   <div style={{ fontSize: 12, color: "#64748b", marginTop: 2 }}>{i.motivo || "Sin motivo"}</div>
                   <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 4 }}>
                     {i.estado === "internado" ? `Ingresó ${fmtFecha(i.fecha_ingreso)}` : `Alta ${i.fecha_egreso ? fmtFecha(i.fecha_egreso) : ""}`}
@@ -226,7 +242,7 @@ export default function InternacionPage() {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, flexWrap: "wrap" }}>
                 <div>
                   <div style={{ fontSize: 19, fontWeight: 800, color: "#1d1b12" }}>🐾 {activa.pacientes?.nombre}
-                    {activa.jaula && <span style={{ fontSize: 19, fontWeight: 800, color: "#0d9488" }}> · 🏠 Jaula {activa.jaula}</span>}
+                    {activa.jaula && <span style={{ fontSize: 19, fontWeight: 800, color: "#0d9488" }}> · 🏠 Canil {activa.jaula}</span>}
                     <span style={{ fontSize: 13, fontWeight: 500, color: "#64748b" }}> {activa.pacientes?.especie ? `· ${activa.pacientes.especie}` : ""}{activa.pacientes?.raza ? ` ${activa.pacientes.raza}` : ""}</span>
                   </div>
                   <div style={{ fontSize: 13, color: "#475569", marginTop: 4 }}>
@@ -241,7 +257,7 @@ export default function InternacionPage() {
                   {activa.estado === "internado"
                     ? <button onClick={() => setConfirmAlta(true)} style={{ background: "#dcfce7", border: "1px solid #86efac", color: "#15803d", borderRadius: 9, padding: "9px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>✓ Dar de alta</button>
                     : <span style={{ background: "#f1f5f9", border: "1px solid #e2e8f0", color: "#64748b", borderRadius: 9, padding: "7px 14px", fontSize: 12.5, fontWeight: 700 }}>Dado de alta</span>}
-                  <button onClick={() => setConfirmDelInt(true)} title="Eliminar internación" style={{ background: "#fef2f2", border: "1px solid #fecaca", color: "#dc2626", borderRadius: 9, padding: "9px 12px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>🗑</button>
+                  {esAdmin && <button onClick={() => setConfirmDelInt(true)} title="Eliminar internación (solo admin)" style={{ background: "#fef2f2", border: "1px solid #fecaca", color: "#dc2626", borderRadius: 9, padding: "9px 12px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>🗑</button>}
                 </div>
               </div>
             </div>
@@ -268,6 +284,13 @@ export default function InternacionPage() {
                     <div><label style={labelStyle}>FC (lpm)</label><input type="number" value={reg.fc} onChange={e => setReg({ ...reg, fc: e.target.value })} style={inputStyle} /></div>
                     <div><label style={labelStyle}>FR (rpm)</label><input type="number" value={reg.fr} onChange={e => setReg({ ...reg, fr: e.target.value })} style={inputStyle} /></div>
                     <div><label style={labelStyle}>Mucosas</label><input value={reg.mucosas} onChange={e => setReg({ ...reg, mucosas: e.target.value })} placeholder="rosadas…" style={inputStyle} /></div>
+                    <div><label style={labelStyle}>Pulso femoral</label><input value={reg.pulso_femoral} onChange={e => setReg({ ...reg, pulso_femoral: e.target.value })} placeholder="presente, fuerte…" style={inputStyle} /></div>
+                    {constantesDef.map(def => (
+                      <div key={def.id}>
+                        <label style={labelStyle}>{def.nombre}{def.unidad ? ` (${def.unidad})` : ""}</label>
+                        <input value={reg.extra[def.nombre] || ""} onChange={e => setReg({ ...reg, extra: { ...reg.extra, [def.nombre]: e.target.value } })} style={inputStyle} />
+                      </div>
+                    ))}
                   </div>
                 </div>
 
@@ -322,6 +345,10 @@ export default function InternacionPage() {
                               {r.fc != null && <span><b>FC:</b> {r.fc}</span>}
                               {r.fr != null && <span><b>FR:</b> {r.fr}</span>}
                               {r.mucosas && <span><b>Mucosas:</b> {r.mucosas}</span>}
+                              {r.pulso_femoral && <span><b>Pulso femoral:</b> {r.pulso_femoral}</span>}
+                              {r.constantes_extra && Object.entries(r.constantes_extra as Record<string, any>).map(([nombre, v]: [string, any]) => (
+                                <span key={nombre}><b>{nombre}:</b> {v.valor}{v.unidad ? ` ${v.unidad}` : ""}</span>
+                              ))}
                             </div>
                           ) : (
                             <div style={{ fontSize: 13.5, color: "#1d1b12", marginTop: 5, whiteSpace: "pre-wrap" }}>{r.tratamiento}</div>
@@ -330,8 +357,8 @@ export default function InternacionPage() {
                           {r.aplicado_por && <div style={{ fontSize: 11.5, color: "#94a3b8", marginTop: 3 }}>👤 {r.aplicado_por}</div>}
                         </div>
                         <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
-                          <button onClick={() => setEditReg({ ...r, fecha_hora: toLocalInput(r.fecha_hora), peso: r.peso ?? "", temperatura: r.temperatura ?? "", fc: r.fc ?? "", fr: r.fr ?? "", mucosas: r.mucosas ?? "", tratamiento: r.tratamiento ?? "", aplicado_por: r.aplicado_por ?? "", nota: r.nota ?? "" })} style={{ background: "#f1f5f9", border: "1px solid #e2e8f0", borderRadius: 7, padding: "4px 9px", cursor: "pointer", fontSize: 12, color: "#475569", height: "fit-content" }}>✎</button>
-                          <button onClick={() => setConfirmDelReg(r)} style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 7, padding: "4px 9px", cursor: "pointer", fontSize: 12, color: "#dc2626", height: "fit-content" }}>🗑</button>
+                          <button onClick={() => setEditReg({ ...r, fecha_hora: toLocalInput(r.fecha_hora), peso: r.peso ?? "", temperatura: r.temperatura ?? "", fc: r.fc ?? "", fr: r.fr ?? "", mucosas: r.mucosas ?? "", pulso_femoral: r.pulso_femoral ?? "", extra: Object.fromEntries(Object.entries(r.constantes_extra || {}).map(([k, v]: [string, any]) => [k, v.valor])), tratamiento: r.tratamiento ?? "", aplicado_por: r.aplicado_por ?? "", nota: r.nota ?? "" })} style={{ background: "#f1f5f9", border: "1px solid #e2e8f0", borderRadius: 7, padding: "4px 9px", cursor: "pointer", fontSize: 12, color: "#475569", height: "fit-content" }}>✎</button>
+                          {esAdmin && <button onClick={() => setConfirmDelReg(r)} title="Eliminar (solo admin)" style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 7, padding: "4px 9px", cursor: "pointer", fontSize: 12, color: "#dc2626", height: "fit-content" }}>🗑</button>}
                         </div>
                       </div>
                     )
@@ -358,6 +385,13 @@ export default function InternacionPage() {
                   <div><label style={labelStyle}>FC (lpm)</label><input type="number" value={editReg.fc} onChange={e => setEditReg({ ...editReg, fc: e.target.value })} style={inputStyle} /></div>
                   <div><label style={labelStyle}>FR (rpm)</label><input type="number" value={editReg.fr} onChange={e => setEditReg({ ...editReg, fr: e.target.value })} style={inputStyle} /></div>
                   <div style={{ gridColumn: "1 / -1" }}><label style={labelStyle}>Mucosas</label><input value={editReg.mucosas} onChange={e => setEditReg({ ...editReg, mucosas: e.target.value })} style={inputStyle} /></div>
+                  <div><label style={labelStyle}>Pulso femoral</label><input value={editReg.pulso_femoral || ""} onChange={e => setEditReg({ ...editReg, pulso_femoral: e.target.value })} style={inputStyle} /></div>
+                  {constantesDef.map(def => (
+                    <div key={def.id}>
+                      <label style={labelStyle}>{def.nombre}{def.unidad ? ` (${def.unidad})` : ""}</label>
+                      <input value={(editReg.extra || {})[def.nombre] || ""} onChange={e => setEditReg({ ...editReg, extra: { ...(editReg.extra || {}), [def.nombre]: e.target.value } })} style={inputStyle} />
+                    </div>
+                  ))}
                 </>
               ) : (
                 <div style={{ gridColumn: "1 / -1" }}><label style={labelStyle}>{editReg.tipo === "medicacion" ? "Medicación / tratamiento" : "Evolución"}</label><textarea value={editReg.tratamiento} onChange={e => setEditReg({ ...editReg, tratamiento: e.target.value })} rows={3} style={{ ...inputStyle, resize: "vertical" }} /></div>
@@ -423,7 +457,7 @@ export default function InternacionPage() {
                   <input value={formNueva.motivo} onChange={e => setFormNueva({ ...formNueva, motivo: e.target.value })} placeholder="Ej: Postquirúrgico, gastroenteritis…" style={inputStyle} />
                 </div>
                 <div>
-                  <label style={labelStyle}>Jaula</label>
+                  <label style={labelStyle}>Canil</label>
                   <input value={formNueva.jaula} onChange={e => setFormNueva({ ...formNueva, jaula: e.target.value })} placeholder="Ej: 3 / A2" style={inputStyle} />
                 </div>
               </div>

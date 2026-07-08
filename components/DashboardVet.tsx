@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase"
 import { abrirWhatsApp } from "@/lib/whatsapp"
 import { empresaNombre } from "@/lib/empresa"
 import Icon from "@/components/Icon"
+import TopProductosChart from "@/components/TopProductosChart"
 
 const OLIVA = "var(--accent)"
 const hoyISO = () => new Date().toLocaleDateString("sv-SE")
@@ -239,6 +240,8 @@ export default function DashboardVet() {
             </div>
           )}
         </div>
+
+        <TopProductosChart />
       </div>
     </div>
   )

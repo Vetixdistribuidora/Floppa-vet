@@ -6,6 +6,7 @@ import Link from "next/link"
 import { supabase } from "@/lib/supabase"
 import { empresaEncabezadoHTML, empresaInfoHTML, empresaNombre } from "@/lib/empresa"
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts"
+import ComboBox from "@/components/ComboBox"
 
 const OLIVA = "#6f7d49"
 // Tipos de consulta con color (mismos que en la historia clínica de /consultas).
@@ -41,6 +42,27 @@ export default function FichaPaciente() {
   const [modalDeceso, setModalDeceso] = useState(false)
   const [fechaDeceso, setFechaDeceso] = useState(new Date().toISOString().split("T")[0])
   const [guardandoDeceso, setGuardandoDeceso] = useState(false)
+  const [clientes, setClientes] = useState<any[]>([])
+  const [modalTransferir, setModalTransferir] = useState(false)
+  const [nuevoTutorId, setNuevoTutorId] = useState("")
+  const [transfiriendo, setTransfiriendo] = useState(false)
+
+  async function transferirTutor() {
+    if (!nuevoTutorId || !p) return
+    setTransfiriendo(true)
+    const nuevoId = Number(nuevoTutorId)
+    const { error } = await supabase.from("pacientes").update({ cliente_id: nuevoId }).eq("id", id)
+    if (!error) {
+      await Promise.all([
+        supabase.from("internaciones").update({ cliente_id: nuevoId }).eq("paciente_id", id),
+        supabase.from("turnos").update({ cliente_id: nuevoId }).eq("paciente_id", id),
+      ])
+    }
+    setTransfiriendo(false)
+    if (error) { alert("Error al transferir: " + error.message); return }
+    setModalTransferir(false); setNuevoTutorId("")
+    cargar()
+  }
 
   async function marcarDeceso() {
     setGuardandoDeceso(true)
@@ -54,13 +76,14 @@ export default function FichaPaciente() {
 
   async function cargar() {
     setCargando(true)
-    const [{ data: pac }, { data: con }, { data: est }, { data: san }] = await Promise.all([
+    const [{ data: pac }, { data: con }, { data: est }, { data: san }, { data: cli }] = await Promise.all([
       supabase.from("pacientes").select("*, clientes(nombre, apellido, telefono, email, localidad)").eq("id", id).maybeSingle(),
       supabase.from("consultas").select("*").eq("paciente_id", id).order("fecha", { ascending: false }),
       supabase.from("estudios").select("*").eq("paciente_id", id).order("created_at", { ascending: false }),
       supabase.from("recordatorios").select("*").eq("paciente_id", id).order("fecha", { ascending: false }),
+      supabase.from("clientes").select("id, nombre, apellido").order("nombre"),
     ])
-    setP(pac); setConsultas(con || []); setEstudios(est || []); setSanidad(san || [])
+    setP(pac); setConsultas(con || []); setEstudios(est || []); setSanidad(san || []); setClientes(cli || [])
     setCargando(false)
   }
   useEffect(() => { cargar() }, [id])
@@ -112,6 +135,7 @@ export default function FichaPaciente() {
         <button onClick={() => router.push("/pacientes")} style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 9, padding: "8px 14px", fontSize: 13, fontWeight: 600, color: "#475569", cursor: "pointer" }}>← Pacientes</button>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           <Link href={`/consultas?paciente=${id}`} style={{ background: "#eef0e0", border: "1px solid #cdd6a8", borderRadius: 9, padding: "9px 16px", fontSize: 13, fontWeight: 700, color: "var(--accent-dark)", textDecoration: "none" }}>📋 Historia clínica</Link>
+          <button onClick={() => setModalTransferir(true)} style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 9, padding: "9px 14px", fontSize: 13, fontWeight: 600, color: "#475569", cursor: "pointer" }}>🔁 Transferir tutor</button>
           {p.fallecido
             ? <button onClick={revertirDeceso} style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 9, padding: "9px 14px", fontSize: 13, fontWeight: 600, color: "#475569", cursor: "pointer" }}>↩ Revertir deceso</button>
             : <button onClick={() => setModalDeceso(true)} style={{ background: "white", border: "1px solid #fecaca", borderRadius: 9, padding: "9px 14px", fontSize: 13, fontWeight: 600, color: "#b91c1c", cursor: "pointer" }}>🕊 Marcar deceso</button>}
@@ -145,6 +169,12 @@ export default function FichaPaciente() {
         <div style={{ marginTop: 10, fontSize: 13, color: "#475569" }}>
           <b style={{ color: "#64748b" }}>Tutor:</b> {dueño || "sin asignar"}{p.clientes?.telefono ? ` · 📞 ${p.clientes.telefono}` : ""}{p.clientes?.email ? ` · 📧 ${p.clientes.email}` : ""}
         </div>
+        {(p.creado_por || p.actualizado_por) && (
+          <div style={{ marginTop: 6, fontSize: 11.5, color: "#94a3b8" }}>
+            {p.creado_por && <span>Agregado por {p.creado_por}</span>}
+            {p.actualizado_por && p.actualizado_por !== p.creado_por && <span>{p.creado_por ? " · " : ""}Últ. modificación: {p.actualizado_por}</span>}
+          </div>
+        )}
         {p.notas && (
           <div style={{ marginTop: 12, background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 8, padding: "10px 14px", fontSize: 13 }}>
             <b style={{ color: "#b45309", fontWeight: 800 }}>Nota / patología:</b>{" "}
@@ -179,7 +209,7 @@ export default function FichaPaciente() {
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {sanidad.map(s => (
               <div key={s.id} style={{ display: "flex", justifyContent: "space-between", gap: 10, fontSize: 13, borderBottom: "1px solid #f1f5f9", paddingBottom: 7 }}>
-                <span><b style={{ color: "#1d1b12" }}>{s.tipo}</b>{s.descripcion ? ` · ${s.descripcion}` : ""}</span>
+                <span><b style={{ color: "#1d1b12" }}>{s.tipo}</b>{s.descripcion ? ` · ${s.descripcion}` : ""}{s.creado_por ? <span style={{ color: "#94a3b8", fontWeight: 400 }}> · 👤 {s.creado_por}</span> : null}</span>
                 <span style={{ color: "#64748b", whiteSpace: "nowrap" }}>{s.fecha_aplicacion ? `aplic. ${f(s.fecha_aplicacion)} · ` : ""}próx. <b style={{ color: "#0891b2" }}>{f(s.fecha)}</b></span>
               </div>
             ))}
@@ -207,6 +237,7 @@ export default function FichaPaciente() {
                 {c.diagnostico && <div><b style={{ color: "var(--accent-dark)" }}>Dx:</b> {c.diagnostico}</div>}
                 {c.tratamiento && <div><b style={{ color: "var(--accent-dark)" }}>Tto:</b> {c.tratamiento}</div>}
                 {c.para_cobrar && !c.cobrado && <div style={{ color: "#c2410c", fontWeight: 700 }}>💲 A cobrar: {c.para_cobrar}</div>}
+                {c.creado_por && <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 3 }}>👤 {c.creado_por}</div>}
               </div>
             )})}
           </div>
@@ -223,13 +254,38 @@ export default function FichaPaciente() {
           <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
             {estudios.map(e => (
               <div key={e.id} style={{ display: "flex", justifyContent: "space-between", gap: 10, fontSize: 13, alignItems: "center", borderBottom: "1px solid #f1f5f9", paddingBottom: 7 }}>
-                <span><b style={{ color: "#1d1b12" }}>{e.titulo}</b> <span style={{ color: "#94a3b8" }}>· {e.tipo} · {f(e.created_at?.slice(0, 10))}</span></span>
+                <span><b style={{ color: "#1d1b12" }}>{e.titulo}</b> <span style={{ color: "#94a3b8" }}>· {e.tipo} · {f(e.created_at?.slice(0, 10))}{e.creado_por ? ` · 👤 ${e.creado_por}` : ""}</span></span>
                 <button onClick={() => abrirEstudio(e)} style={{ background: "#ecfeff", border: "1px solid #a5f3fc", borderRadius: 7, padding: "5px 11px", cursor: "pointer", fontSize: 12.5, color: "#0891b2", fontWeight: 700, whiteSpace: "nowrap" }}>⬇ Abrir</button>
               </div>
             ))}
           </div>
         )}
       </div>
+
+      {/* Modal transferir tutor */}
+      {modalTransferir && (
+        <div onClick={() => setModalTransferir(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: "white", borderRadius: 16, padding: "26px 28px", width: "100%", maxWidth: 420 }}>
+            <p style={{ fontWeight: 800, color: "#1d1b12", fontSize: 16, marginBottom: 6 }}>Transferir a {p.nombre} a otro tutor</p>
+            <p style={{ fontSize: 13, color: "#64748b", marginBottom: 14 }}>
+              Tutor actual: <b>{dueño || "sin asignar"}</b>. Se mueve <b>solo {p.nombre}</b>
+              {dueño ? ` — el resto de las mascotas de ${dueño} no se ven afectadas` : ""}.
+              Su historia clínica, internaciones, estudios y sanidad quedan asociados igual, pero ahora bajo el nuevo tutor.
+            </p>
+            <ComboBox
+              options={clientes.filter(c => c.id !== p.cliente_id).map(c => ({ value: String(c.id), label: `${c.nombre} ${c.apellido || ""}`.trim() }))}
+              value={nuevoTutorId}
+              onChange={setNuevoTutorId}
+              placeholder="Buscar nuevo tutor…"
+              allowEmpty={false}
+            />
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 20 }}>
+              <button onClick={() => { setModalTransferir(false); setNuevoTutorId("") }} style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 9, padding: "9px 18px", fontWeight: 600, color: "#475569", cursor: "pointer" }}>Cancelar</button>
+              <button onClick={transferirTutor} disabled={!nuevoTutorId || transfiriendo} style={{ background: OLIVA, border: "none", borderRadius: 9, padding: "9px 20px", fontWeight: 700, color: "white", cursor: (!nuevoTutorId || transfiriendo) ? "not-allowed" : "pointer", opacity: (!nuevoTutorId || transfiriendo) ? 0.6 : 1 }}>{transfiriendo ? "Transfiriendo…" : "Confirmar transferencia"}</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal deceso */}
       {modalDeceso && (

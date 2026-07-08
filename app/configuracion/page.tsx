@@ -48,6 +48,9 @@ export default function ConfiguracionPage() {
   const [modulosRolSel, setModulosRolSel] = useState<Record<string, string[]>>({})
   const [guardandoPermisos, setGuardandoPermisos] = useState(false)
   const [permisosGuardados, setPermisosGuardados] = useState(false)
+  const [constantes, setConstantes] = useState<any[]>([])
+  const [formConstante, setFormConstante] = useState({ nombre: "", unidad: "" })
+  const [guardandoConstante, setGuardandoConstante] = useState(false)
 
   useEffect(() => { cargar() }, [])
 
@@ -114,7 +117,31 @@ export default function ConfiguracionPage() {
     const { data: miOu } = await supabase.from("org_usuarios").select("rol").eq("user_id", user.id).maybeSingle()
     setEsAdmin((miOu?.rol || "admin") === "admin")
     cargarUsuarios()
+    cargarConstantes()
     setLoading(false)
+  }
+
+  async function cargarConstantes() {
+    const { data } = await supabase.from("constantes_personalizadas").select("*").order("orden").order("id")
+    setConstantes(data || [])
+  }
+  async function agregarConstante() {
+    if (!formConstante.nombre.trim()) return
+    setGuardandoConstante(true)
+    const orden = constantes.length ? Math.max(...constantes.map(c => c.orden || 0)) + 1 : 0
+    const { error } = await supabase.from("constantes_personalizadas").insert([{ nombre: formConstante.nombre.trim(), unidad: formConstante.unidad.trim() || null, orden }])
+    setGuardandoConstante(false)
+    if (error) { alert("Error: " + error.message); return }
+    setFormConstante({ nombre: "", unidad: "" }); cargarConstantes()
+  }
+  async function toggleActivoConstante(c: any) {
+    await supabase.from("constantes_personalizadas").update({ activo: !c.activo }).eq("id", c.id)
+    cargarConstantes()
+  }
+  async function eliminarConstante(c: any) {
+    if (!confirm(`¿Eliminar la constante "${c.nombre}"? Los valores ya cargados en internaciones anteriores no se borran.`)) return
+    await supabase.from("constantes_personalizadas").delete().eq("id", c.id)
+    cargarConstantes()
   }
 
   async function cargarUsuarios() {
@@ -707,6 +734,50 @@ export default function ConfiguracionPage() {
               </button>
             )
           })}
+        </div>
+      </div>
+      )}
+
+      {/* ── Constantes personalizadas de internación (solo admin) ───────────── */}
+      {esAdmin && (
+      <div style={{
+        background: "white", border: "1px solid #e2e8f0",
+        borderRadius: 20, padding: "24px 28px",
+        boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
+      }}>
+        <h2 style={{ margin: "0 0 4px", color: "#1d1b12", fontSize: 17, fontWeight: 700 }}>🌡️ Constantes de internación</h2>
+        <p style={{ margin: "0 0 18px", color: "#64748b", fontSize: 13 }}>
+          Además de peso, temperatura, FC, FR, mucosas y pulso femoral, podés agregar tus propias constantes
+          (con su unidad de medida) para que aparezcan como campo en la hoja de internación.
+        </p>
+        {constantes.length > 0 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 16 }}>
+            {constantes.map(c => (
+              <div key={c.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, padding: "9px 12px", border: "1px solid #e7e1cf", borderRadius: 10, background: c.activo ? "#faf9f1" : "#f8fafc" }}>
+                <span style={{ fontSize: 13.5, fontWeight: 600, color: c.activo ? "#1d1b12" : "#94a3b8" }}>
+                  {c.nombre}{c.unidad ? <span style={{ color: "#94a3b8", fontWeight: 500 }}> ({c.unidad})</span> : ""}
+                  {!c.activo && <span style={{ marginLeft: 8, fontSize: 11, fontWeight: 700, color: "#94a3b8" }}>inactiva</span>}
+                </span>
+                <span style={{ display: "flex", gap: 6 }}>
+                  <button onClick={() => toggleActivoConstante(c)} style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 7, padding: "4px 10px", fontSize: 12, cursor: "pointer", color: "#475569", fontWeight: 700 }}>{c.activo ? "Desactivar" : "Activar"}</button>
+                  <button onClick={() => eliminarConstante(c)} style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 7, padding: "4px 10px", fontSize: 12, cursor: "pointer", color: "#dc2626", fontWeight: 700 }}>Eliminar</button>
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "flex-end" }}>
+          <div>
+            <label style={{ display: "block", fontSize: 11, color: "#64748b", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 5 }}>Nombre</label>
+            <input value={formConstante.nombre} onChange={e => setFormConstante({ ...formConstante, nombre: e.target.value })} placeholder="Ej: Presión arterial" style={{ padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 14, color: "#1d1b12", outline: "none", width: 220 }} />
+          </div>
+          <div>
+            <label style={{ display: "block", fontSize: 11, color: "#64748b", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 5 }}>Unidad</label>
+            <input value={formConstante.unidad} onChange={e => setFormConstante({ ...formConstante, unidad: e.target.value })} placeholder="Ej: mmHg, seg, %..." style={{ padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 14, color: "#1d1b12", outline: "none", width: 140 }} />
+          </div>
+          <button onClick={agregarConstante} disabled={guardandoConstante || !formConstante.nombre.trim()} style={{ padding: "11px 20px", background: "#1d1b12", border: "none", borderRadius: 9, color: "white", fontSize: 13, fontWeight: 700, cursor: guardandoConstante ? "not-allowed" : "pointer" }}>
+            {guardandoConstante ? "Agregando..." : "+ Agregar constante"}
+          </button>
         </div>
       </div>
       )}

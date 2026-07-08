@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase"
 import ComboBox from "@/components/ComboBox"
 import { abrirWhatsApp } from "@/lib/whatsapp"
 import { empresaNombre } from "@/lib/empresa"
+import { useRol } from "@/lib/useRol"
 
 const OLIVA = "var(--accent)"
 const TIPOS = ["Vacuna Antirrábica", "Vacuna Quíntuple", "Vacuna Triple", "Vacuna Leucemia Felina", "Desparasitación Interna", "Desparasitación Externa", "Medicación", "Otro"]
@@ -31,6 +32,7 @@ const inputStyle: React.CSSProperties = { width: "100%", padding: "10px 12px", b
 const formVacio = () => ({ paciente_id: "", fecha_aplicacion: hoyISO(), fecha: "", tipo: "Vacuna Antirrábica", descripcion: "", notas: "" })
 
 export default function RecordatoriosPage() {
+  const { esAdmin } = useRol()
   const [items, setItems] = useState<any[]>([])
   const [pacientes, setPacientes] = useState<any[]>([])
   const [filtro, setFiltro] = useState<"pendientes" | "todos">("pendientes")
@@ -211,7 +213,7 @@ export default function RecordatoriosPage() {
                   )}
                   <button onClick={() => marcarHecho(r, !hecho)} title={hecho ? "Marcar pendiente" : "Marcar hecho"} style={{ background: hecho ? "#f1f5f9" : "#ecfdf3", border: `1px solid ${hecho ? "#e2e8f0" : "#a7f3d0"}`, borderRadius: 7, padding: "5px 10px", cursor: "pointer", fontSize: 13, color: hecho ? "#64748b" : "#16a34a", fontWeight: 700 }}>{hecho ? "↩" : "✓"}</button>
                   <button onClick={() => abrirEditar(r)} style={{ background: "#f1f5f9", border: "1px solid #e2e8f0", borderRadius: 7, padding: "5px 10px", cursor: "pointer", fontSize: 12, color: "#475569" }}>✎</button>
-                  <button onClick={() => setConfirmEliminar(r)} style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 7, padding: "5px 10px", cursor: "pointer", fontSize: 12, color: "#dc2626" }}>🗑</button>
+                  {esAdmin && <button onClick={() => setConfirmEliminar(r)} title="Eliminar (solo admin)" style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 7, padding: "5px 10px", cursor: "pointer", fontSize: 12, color: "#dc2626" }}>🗑</button>}
                 </div>
               </div>
             )
