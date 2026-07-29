@@ -675,9 +675,12 @@ export default function Productos() {
 
     const CHUNK = 100; let procesados = 0; const total = nuevosSinDup.length + existentes.length
 
-    // Nuevos: upsert por nombre (por si ya existe en BD pero no estaba en caché)
+    // Nuevos: upsert por (organizacion_id, nombre) — es el unique real de la tabla
+    // (multitenant). El organizacion_id lo completa el trigger tg_set_org_id en el
+    // INSERT, y ON CONFLICT lo resuelve con ese valor. Usar solo "nombre" acá daba
+    // "no unique or exclusion constraint matching the ON CONFLICT specification".
     for (let i = 0; i < nuevosSinDup.length; i += CHUNK) {
-      const { error } = await supabase.from("productos").upsert(nuevosSinDup.slice(i, i + CHUNK), { onConflict: "nombre" })
+      const { error } = await supabase.from("productos").upsert(nuevosSinDup.slice(i, i + CHUNK), { onConflict: "organizacion_id,nombre" })
       if (error) { mostrarToast("❌ " + error.message, "error"); setImportando(false); return }
       procesados += Math.min(CHUNK, nuevosSinDup.length - i)
       setProgreso(Math.round((procesados / total) * 100))
