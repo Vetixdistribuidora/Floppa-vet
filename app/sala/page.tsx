@@ -30,8 +30,9 @@ export default function SalaEsperaPage() {
   const [cargando, setCargando] = useState(false)
   const [toast, setToast] = useState<any>(null)
   const [modal, setModal] = useState(false)
-  const [form, setForm] = useState<any>({ paciente_id: "", nombre_libre: "", motivo: "", prioridad: "normal" })
+  const [form, setForm] = useState<any>({ paciente_id: "", nombre_libre: "", motivo: "", prioridad: "normal", veterinario: "", numero_orden: "" })
   const [guardando, setGuardando] = useState(false)
+  const [profesionales, setProfesionales] = useState<string[]>([])
   const [, setTick] = useState(0)
 
   function mostrar(m: string, t: "ok" | "error") { setToast({ mensaje: m, tipo: t }); setTimeout(() => setToast(null), 3000) }
@@ -39,15 +40,21 @@ export default function SalaEsperaPage() {
   async function cargar() {
     setCargando(true)
     const inicioHoy = new Date(); inicioHoy.setHours(0, 0, 0, 0)
-    const [{ data: sala }, { data: pac }] = await Promise.all([
+    const [{ data: sala }, { data: pac }, { data: turnosProf }] = await Promise.all([
       supabase.from("sala_espera")
         .select("*, pacientes(id, nombre, especie, clientes(nombre, apellido, telefono))")
         .or(`estado.neq.atendido,check_in_at.gte.${inicioHoy.toISOString()}`)
         .order("check_in_at", { ascending: true }),
       supabase.from("pacientes").select("id, nombre, especie").order("nombre"),
+      supabase.from("turnos").select("profesional").not("profesional", "is", null).limit(500),
     ])
     setItems(sala || [])
     setPacientes(pac || [])
+    // Autocompletado de veterinarios: nombres ya usados en sala + en turnos
+    const nombres = new Set<string>()
+    ;(sala || []).forEach((s: any) => { if (s.veterinario) nombres.add(s.veterinario.trim()) })
+    ;(turnosProf || []).forEach((t: any) => { if (t.profesional) nombres.add(String(t.profesional).trim()) })
+    setProfesionales([...nombres].filter(Boolean).sort())
     setCargando(false)
   }
   useEffect(() => {
@@ -64,10 +71,12 @@ export default function SalaEsperaPage() {
       nombre_libre: form.paciente_id ? null : form.nombre_libre.trim(),
       motivo: form.motivo.trim() || null,
       prioridad: form.prioridad,
+      veterinario: form.veterinario.trim() || null,
+      numero_orden: form.numero_orden !== "" && !isNaN(Number(form.numero_orden)) ? Number(form.numero_orden) : null,
     }])
     setGuardando(false)
     if (error) { mostrar("Error: " + error.message, "error"); return }
-    setModal(false); setForm({ paciente_id: "", nombre_libre: "", motivo: "", prioridad: "normal" })
+    setModal(false); setForm({ paciente_id: "", nombre_libre: "", motivo: "", prioridad: "normal", veterinario: "", numero_orden: "" })
     cargar()
   }
 
@@ -86,8 +95,12 @@ export default function SalaEsperaPage() {
   const nombreDe = (it: any) => it.pacientes?.nombre || it.nombre_libre || "Paciente"
   const tutorDe = (it: any) => it.pacientes?.clientes ? `${it.pacientes.clientes.nombre || ""} ${it.pacientes.clientes.apellido || ""}`.trim() : ""
 
+  // Orden: urgentes primero (triage); luego por número de orden ascendente si lo
+  // tiene (los sin número quedan después), y a igualdad, por orden de llegada.
+  const numKey = (x: any) => (x.numero_orden != null ? Number(x.numero_orden) : Infinity)
   const ordenar = (arr: any[]) => [...arr].sort((a, b) =>
     (a.prioridad === "urgente" ? 0 : 1) - (b.prioridad === "urgente" ? 0 : 1) ||
+    numKey(a) - numKey(b) ||
     a.check_in_at.localeCompare(b.check_in_at))
 
   const esperando = ordenar(items.filter(i => i.estado === "esperando"))
@@ -99,7 +112,14 @@ export default function SalaEsperaPage() {
     const tutor = tutorDe(it)
     return (
       <div className="list-row" style={{ background: "white", border: `1px solid ${urgente ? "#fecaca" : "#e2e8f0"}`, borderLeft: `4px solid ${urgente ? "#dc2626" : TEAL}`, borderRadius: 12, padding: "12px 16px", display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
-        {idx != null && <div style={{ fontSize: 22, fontWeight: 800, color: urgente ? "#dc2626" : "#94a3b8", minWidth: 28, textAlign: "center" }}>{idx + 1}</div>}
+        {it.numero_orden != null ? (
+          <div style={{ minWidth: 46, textAlign: "center", flexShrink: 0 }} title="Número de orden">
+            <div style={{ fontSize: 9, fontWeight: 700, color: "#94a3b8", letterSpacing: 0.5 }}>N°</div>
+            <div style={{ fontSize: 25, fontWeight: 800, color: urgente ? "#dc2626" : TEAL, lineHeight: 1 }}>{it.numero_orden}</div>
+          </div>
+        ) : idx != null ? (
+          <div style={{ fontSize: 22, fontWeight: 800, color: urgente ? "#dc2626" : "#94a3b8", minWidth: 28, textAlign: "center" }}>{idx + 1}</div>
+        ) : null}
         <div style={{ flex: 1, minWidth: 160 }}>
           <div style={{ fontWeight: 700, fontSize: 15.5, color: "#1d1b12" }}>
             {it.pacientes ? <Link href={`/pacientes/${it.pacientes.id}`} style={{ color: "#1d1b12", textDecoration: "none" }}>{nombreDe(it)}</Link> : nombreDe(it)}
@@ -109,6 +129,7 @@ export default function SalaEsperaPage() {
           <div style={{ fontSize: 12.5, color: "#64748b", marginTop: 2 }}>
             {tutor && `👤 ${tutor}`}{it.pacientes?.clientes?.telefono ? ` · 📞 ${it.pacientes.clientes.telefono}` : ""}
           </div>
+          {it.veterinario && <div style={{ fontSize: 12.5, color: TEAL, fontWeight: 700, marginTop: 2 }}>👨‍⚕️ {it.veterinario}</div>}
           {it.motivo && <div style={{ fontSize: 12.5, color: "#475569", marginTop: 2 }}>📝 {it.motivo}</div>}
         </div>
         <div style={{ textAlign: "right", fontSize: 12, color: "#64748b", whiteSpace: "nowrap" }}>
@@ -194,6 +215,19 @@ export default function SalaEsperaPage() {
                   <input value={form.nombre_libre} onChange={e => setForm({ ...form, nombre_libre: e.target.value })} placeholder="Ej: Rocky (consulta de Juan)" style={inputStyle} />
                 </div>
               )}
+              <div style={{ display: "grid", gridTemplateColumns: "90px 1fr", gap: 12 }}>
+                <div>
+                  <label style={labelStyle}>N° de orden</label>
+                  <input type="number" min="1" value={form.numero_orden} onChange={e => setForm({ ...form, numero_orden: e.target.value })} placeholder="Ej: 12" style={inputStyle} />
+                </div>
+                <div>
+                  <label style={labelStyle}>Veterinario a atender</label>
+                  <input list="vet-sugerencias" value={form.veterinario} onChange={e => setForm({ ...form, veterinario: e.target.value })} placeholder="Ej: Dr. Pérez (opcional)" style={inputStyle} />
+                  <datalist id="vet-sugerencias">
+                    {profesionales.map(p => <option key={p} value={p} />)}
+                  </datalist>
+                </div>
+              </div>
               <div>
                 <label style={labelStyle}>Motivo</label>
                 <input value={form.motivo} onChange={e => setForm({ ...form, motivo: e.target.value })} placeholder="Ej: Control, vómitos, vacuna…" style={inputStyle} />
