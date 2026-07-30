@@ -16,22 +16,31 @@ const MODS_COM = ["proveedores", "compras", "cuentas", "reportes", "deudores", "
 // El Inicio se arma POR MÓDULOS (no por rubro): muestra el panel clínico si hay
 // módulos de veterinaria y el comercial si hay módulos de comercio. Un plan
 // Personalizado mixto ve los dos paneles, uno debajo del otro.
+// Excepción por rol: el rol "veterinario" ve SOLO el panel clínico (nunca los
+// números de distribuidora), sin depender de qué módulos tenga asignados.
+// Recepción y admin: comportamiento normal (según módulos de la org).
 export default function DashboardPage() {
   const [estado, setEstado] = useState<{ vet: boolean; com: boolean } | null>(null)
   useEffect(() => {
     let cancelado = false
-    supabase.from("organizaciones").select("rubro, modulos").maybeSingle()
-      .then(
-        ({ data }) => {
-          if (cancelado) return
-          const mods = modulosActivos((data as any)?.modulos)
-          const vet = mods.some(m => MODS_VET.includes(m))
-          const com = mods.some(m => MODS_COM.includes(m))
-          // Fallback: si no hay módulos distintivos, mostrar comercial.
-          setEstado(vet || com ? { vet, com } : { vet: false, com: true })
-        },
-        () => { if (!cancelado) setEstado({ vet: false, com: true }) },
-      )
+    ;(async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      const [{ data: org }, rolRes] = await Promise.all([
+        supabase.from("organizaciones").select("rubro, modulos").maybeSingle(),
+        user
+          ? supabase.from("org_usuarios").select("rol").eq("user_id", user.id).maybeSingle()
+          : Promise.resolve({ data: null as any }),
+      ])
+      if (cancelado) return
+      const mods = modulosActivos((org as any)?.modulos)
+      const vet = mods.some(m => MODS_VET.includes(m))
+      let com = mods.some(m => MODS_COM.includes(m))
+      const rol = (rolRes as any)?.data?.rol
+      // El veterinario no ve la parte comercial del Inicio (mientras tenga panel clínico).
+      if (rol === "veterinario" && vet) com = false
+      // Fallback: si no hay módulos distintivos, mostrar comercial.
+      setEstado(vet || com ? { vet, com } : { vet: false, com: true })
+    })().catch(() => { if (!cancelado) setEstado({ vet: false, com: true }) })
     return () => { cancelado = true }
   }, [])
   if (!estado) return <div style={{ padding: 40, textAlign: "center", color: "#94a3b8" }}>Cargando…</div>
