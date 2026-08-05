@@ -38,6 +38,7 @@ export default function FichaPaciente() {
   const [consultas, setConsultas] = useState<any[]>([])
   const [estudios, setEstudios] = useState<any[]>([])
   const [sanidad, setSanidad] = useState<any[]>([])
+  const [cirugias, setCirugias] = useState<any[]>([])
   const [cargando, setCargando] = useState(true)
   const [modalDeceso, setModalDeceso] = useState(false)
   const [fechaDeceso, setFechaDeceso] = useState(new Date().toISOString().split("T")[0])
@@ -56,6 +57,7 @@ export default function FichaPaciente() {
       await Promise.all([
         supabase.from("internaciones").update({ cliente_id: nuevoId }).eq("paciente_id", id),
         supabase.from("turnos").update({ cliente_id: nuevoId }).eq("paciente_id", id),
+        supabase.from("cirugias").update({ cliente_id: nuevoId }).eq("paciente_id", id),
       ])
     }
     setTransfiriendo(false)
@@ -76,14 +78,15 @@ export default function FichaPaciente() {
 
   async function cargar() {
     setCargando(true)
-    const [{ data: pac }, { data: con }, { data: est }, { data: san }, { data: cli }] = await Promise.all([
+    const [{ data: pac }, { data: con }, { data: est }, { data: san }, { data: cli }, { data: cir }] = await Promise.all([
       supabase.from("pacientes").select("*, clientes(nombre, apellido, telefono, email, localidad)").eq("id", id).maybeSingle(),
       supabase.from("consultas").select("*").eq("paciente_id", id).order("fecha", { ascending: false }),
       supabase.from("estudios").select("*").eq("paciente_id", id).order("created_at", { ascending: false }),
       supabase.from("recordatorios").select("*").eq("paciente_id", id).order("fecha", { ascending: false }),
       supabase.from("clientes").select("id, nombre, apellido").order("nombre"),
+      supabase.from("cirugias").select("*").eq("paciente_id", id).order("fecha", { ascending: false }),
     ])
-    setP(pac); setConsultas(con || []); setEstudios(est || []); setSanidad(san || []); setClientes(cli || [])
+    setP(pac); setConsultas(con || []); setEstudios(est || []); setSanidad(san || []); setClientes(cli || []); setCirugias(cir || [])
     setCargando(false)
   }
   useEffect(() => { cargar() }, [id])
@@ -256,6 +259,32 @@ export default function FichaPaciente() {
               <div key={e.id} style={{ display: "flex", justifyContent: "space-between", gap: 10, fontSize: 13, alignItems: "center", borderBottom: "1px solid #f1f5f9", paddingBottom: 7 }}>
                 <span><b style={{ color: "#1d1b12" }}>{e.titulo}</b> <span style={{ color: "#94a3b8" }}>· {e.tipo} · {f(e.created_at?.slice(0, 10))}{e.creado_por ? ` · 👤 ${e.creado_por}` : ""}</span></span>
                 <button onClick={() => abrirEstudio(e)} style={{ background: "#ecfeff", border: "1px solid #a5f3fc", borderRadius: 7, padding: "5px 11px", cursor: "pointer", fontSize: 12.5, color: "#0891b2", fontWeight: 700, whiteSpace: "nowrap" }}>⬇ Abrir</button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Cirugías */}
+      <div style={card}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+          <h3 style={{ ...h3, margin: 0 }}>🔪 Cirugías ({cirugias.length})</h3>
+          <Link href={`/cirugias?paciente=${id}`} style={{ fontSize: 12.5, color: OLIVA, fontWeight: 700, textDecoration: "none" }}>Gestionar →</Link>
+        </div>
+        {cirugias.length === 0 ? <p style={{ color: "#94a3b8", fontSize: 13, margin: 0 }}>Sin cirugías registradas.</p> : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {cirugias.map(c => (
+              <div key={c.id} style={{ borderLeft: "3px solid #9333ea", paddingLeft: 10, borderBottom: "1px solid #f1f5f9", paddingBottom: 9, fontSize: 13 }}>
+                <div style={{ fontWeight: 700, color: "#475569", marginBottom: 3, display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
+                  <span style={{ background: "#faf5ff", color: "#9333ea", fontSize: 10, fontWeight: 800, padding: "1px 8px", borderRadius: 999, textTransform: "uppercase", letterSpacing: 0.3 }}>Cirugía</span>
+                  🗓 {f(c.fecha)}{c.cirujano ? <span style={{ fontWeight: 500, color: "#64748b" }}> · 🔪 {c.cirujano}</span> : null}
+                </div>
+                {c.procedimiento && <div><b style={{ color: "#7e22ce" }}>Procedimiento:</b> {c.procedimiento}</div>}
+                {c.diagnostico && <div><b style={{ color: "#7e22ce" }}>Dx:</b> {c.diagnostico}</div>}
+                {c.hallazgos && <div><b style={{ color: "#7e22ce" }}>Hallazgos:</b> {c.hallazgos}</div>}
+                {c.complicaciones && <div><b style={{ color: "#b91c1c" }}>Complicaciones:</b> {c.complicaciones}</div>}
+                {c.indicaciones && <div><b style={{ color: "#7e22ce" }}>Post-op:</b> {c.indicaciones}</div>}
+                {c.creado_por && <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 3 }}>👤 {c.creado_por}</div>}
               </div>
             ))}
           </div>

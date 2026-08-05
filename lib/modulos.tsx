@@ -21,6 +21,8 @@ export const MODULOS: Modulo[] = [
     icon: <><rect x="3" y="4.5" width="18" height="16" rx="2" /><path d="M3 9h18" /><path d="M8 2.5v4M16 2.5v4" /><path d="M8 13h3M8 16.5h6" /></> },
   { key: "internacion", label: "Internación", path: "/internacion", color: "#fb7185",
     icon: <><path d="M3 7v11" /><path d="M3 12h11a4 4 0 0 1 4 4v2" /><path d="M21 18v-2" /><circle cx="7.5" cy="10.5" r="2" /></> },
+  { key: "cirugias", label: "Cirugías", path: "/cirugias", color: "#9333ea",
+    icon: <><path d="M14.5 3.5 20 9l-9.5 9.5H5v-5.5z" /><path d="m12.5 5.5 6 6" /><path d="M3 21h6" /></> },
   { key: "productos", label: "Productos", path: "/productos", color: "#34d399",
     icon: <><path d="M20 7l-8-4-8 4 8 4 8-4z" /><path d="M4 7v10l8 4 8-4V7" /></> },
   { key: "clientes", label: "Clientes", path: "/clientes", color: "#a78bfa",
@@ -66,7 +68,7 @@ export const MODULOS_TOGGLEABLES = MODULOS.filter(m => !m.core)
 
 // Presets por rubro: qué módulos vienen activos por defecto
 export const PRESETS_RUBRO: Record<string, string[]> = {
-  veterinaria:   ["sala", "turnos", "internacion", "productos", "tutores", "pacientes", "estudios", "recordatorios", "cobros", "ventas", "caja"],
+  veterinaria:   ["sala", "turnos", "internacion", "cirugias", "productos", "tutores", "pacientes", "estudios", "recordatorios", "cobros", "ventas", "caja"],
   general:       ["productos", "clientes", "ventas", "proveedores", "compras", "caja", "reportes", "deudores"],
   distribuidora: ["productos", "clientes", "ventas", "proveedores", "compras", "cuentas", "caja", "reportes", "deudores", "tienda-online", "pedidos", "cheques", "mermas"],
   // Personalizado: arranca con un mínimo usable; el admin de Floppa habilita el

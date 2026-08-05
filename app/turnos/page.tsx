@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Link from "next/link"
 import { supabase } from "@/lib/supabase"
 import ComboBox from "@/components/ComboBox"
 import { abrirWhatsApp } from "@/lib/whatsapp"
@@ -220,6 +221,9 @@ export default function TurnosPage() {
                   {Object.entries(ESTADOS).map(([k, v]) => <option key={k} value={k} style={{ background: "white", color: "#1d1b12" }}>{v.label}</option>)}
                 </select>
                 <div className="list-actions" style={{ display: "flex", gap: 6 }}>
+                  {t.tipo === "Cirugía" && (
+                    <Link href="/cirugias" title="Ver en Cirugías" style={{ background: "#faf5ff", border: "1px solid #e9d5ff", borderRadius: 7, padding: "5px 10px", cursor: "pointer", fontSize: 13, color: "#7e22ce", fontWeight: 700, textDecoration: "none" }}>🔪</Link>
+                  )}
                   {t.clientes?.telefono && (
                     <button onClick={() => recordarWhatsApp(t)} title="Recordar por WhatsApp" style={{ background: "#dcfce7", border: "1px solid #86efac", borderRadius: 7, padding: "5px 10px", cursor: "pointer", fontSize: 13, color: "#15803d", fontWeight: 700 }}>💬</button>
                   )}

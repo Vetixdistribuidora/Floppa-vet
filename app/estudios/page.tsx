@@ -52,6 +52,7 @@ export default function EstudiosPage() {
   const [modal, setModal] = useState(false)
   const [form, setForm] = useState<any>({ paciente_id: "", titulo: "", tipo: "Análisis de sangre" })
   const [archivo, setArchivo] = useState<File | null>(null)
+  const [arrastrando, setArrastrando] = useState(false)
   const [subiendo, setSubiendo] = useState(false)
   const [confirmEliminar, setConfirmEliminar] = useState<any>(null)
   const fileRef = useRef<HTMLInputElement>(null)
@@ -79,8 +80,16 @@ export default function EstudiosPage() {
   function abrirNuevo() {
     setForm({ paciente_id: filtroPaciente || "", titulo: "", tipo: "Análisis de sangre" })
     setArchivo(null)
+    setArrastrando(false)
     if (fileRef.current) fileRef.current.value = ""
     setModal(true)
+  }
+
+  // Toma un archivo (del input o de un drop), valida tamaño y lo deja listo para subir.
+  function tomarArchivo(f: File | null | undefined) {
+    if (!f) return
+    if (f.size > 25 * 1024 * 1024) { mostrar("El archivo supera los 25 MB", "error"); return }
+    setArchivo(f)
   }
 
   async function subir() {
@@ -220,9 +229,36 @@ export default function EstudiosPage() {
               </div>
               <div style={{ gridColumn: "1 / -1" }}>
                 <label style={labelStyle}>Archivo *</label>
-                <input ref={fileRef} type="file" onChange={e => setArchivo(e.target.files?.[0] || null)}
+                <input ref={fileRef} type="file" onChange={e => tomarArchivo(e.target.files?.[0])}
                   accept=".pdf,.jpg,.jpeg,.png,.webp,.gif,.doc,.docx,.xls,.xlsx,.dcm"
-                  style={{ ...inputStyle, padding: "8px 10px" }} />
+                  style={{ display: "none" }} />
+                <div
+                  onClick={() => fileRef.current?.click()}
+                  onDragOver={e => { e.preventDefault(); setArrastrando(true) }}
+                  onDragLeave={e => { e.preventDefault(); setArrastrando(false) }}
+                  onDrop={e => { e.preventDefault(); setArrastrando(false); tomarArchivo(e.dataTransfer.files?.[0]) }}
+                  style={{
+                    border: `2px dashed ${arrastrando ? OLIVA : archivo ? "#a5f3fc" : "#cbd5e1"}`,
+                    borderRadius: 12, padding: "22px 16px", textAlign: "center", cursor: "pointer",
+                    background: arrastrando ? "#f4f7ec" : archivo ? "#ecfeff" : "#f8fafc",
+                    transition: "border-color .15s, background .15s",
+                  }}>
+                  {archivo ? (
+                    <div>
+                      <div style={{ fontSize: 26, marginBottom: 4 }}>{iconoTipo(form.tipo, archivo.name)}</div>
+                      <div style={{ fontWeight: 700, fontSize: 13.5, color: "#0e7490", wordBreak: "break-word" }}>{archivo.name}</div>
+                      <div style={{ fontSize: 11.5, color: "#64748b", marginTop: 2 }}>{fmtTam(archivo.size)}</div>
+                      <button type="button" onClick={ev => { ev.stopPropagation(); setArchivo(null); if (fileRef.current) fileRef.current.value = "" }}
+                        style={{ marginTop: 8, background: "white", border: "1px solid #e2e8f0", borderRadius: 7, padding: "4px 12px", fontSize: 12, color: "#475569", cursor: "pointer", fontWeight: 600 }}>Cambiar archivo</button>
+                    </div>
+                  ) : (
+                    <div>
+                      <div style={{ fontSize: 26, marginBottom: 6 }}>📎</div>
+                      <div style={{ fontWeight: 700, fontSize: 13.5, color: "#475569" }}>{arrastrando ? "Soltá el archivo acá" : "Arrastrá el archivo acá"}</div>
+                      <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 3 }}>o <span style={{ color: "#0891b2", fontWeight: 700 }}>hacé clic para elegirlo</span></div>
+                    </div>
+                  )}
+                </div>
                 <div style={{ fontSize: 11.5, color: "#94a3b8", marginTop: 5 }}>PDF, imágenes, documentos… hasta 25 MB.</div>
               </div>
             </div>
