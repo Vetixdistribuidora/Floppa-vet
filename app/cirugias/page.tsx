@@ -52,6 +52,29 @@ const cirugiaVacia = () => ({
 })
 const turnoVacio = () => ({ paciente_id: "", hora: "09:00", cirujano: "", notas: "" })
 
+// Selector de cirujano por chips + texto libre (mismo criterio que el veterinario en Sala).
+// Definido a nivel de módulo (no dentro del componente) para que el input no pierda
+// el foco al escribir: si fuera anidado, React lo re-montaría en cada render.
+function SelectorCirujano({ vets, value, onChange }: { vets: string[]; value: string; onChange: (v: string) => void }) {
+  return (
+    <div>
+      {vets.length > 0 && (
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
+          {vets.map(p => (
+            <button key={p} type="button" onClick={() => onChange(value === p ? "" : p)}
+              style={{ padding: "6px 11px", borderRadius: 999, cursor: "pointer", fontSize: 12.5, fontWeight: 600,
+                border: value === p ? `2px solid ${MORADO}` : "1px solid #e2e8f0",
+                background: value === p ? `${MORADO}15` : "white", color: value === p ? MORADO : "#334155" }}>
+              {p}
+            </button>
+          ))}
+        </div>
+      )}
+      <input value={value} onChange={e => onChange(e.target.value)} placeholder="Nombre del cirujano" style={inputStyle} />
+    </div>
+  )
+}
+
 export default function CirugiasPage() {
   const { esAdmin } = useRol()
   const [fecha, setFecha] = useState(hoyISO())
@@ -108,27 +131,6 @@ export default function CirugiasPage() {
     const sub = [tutor ? `Tutor: ${tutor}` : "Sin tutor asignado", cli?.telefono ? `Tel ${cli.telefono}` : "", detalle].filter(Boolean).join("  ·  ")
     return { value: String(p.id), label: p.nombre, sub, keywords: `${tutor} ${cli?.telefono || ""} ${detalle}` }
   })
-
-  // Selector de cirujano por chips (igual criterio que el veterinario en Sala).
-  function SelectorCirujano({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-    return (
-      <div>
-        {vets.length > 0 && (
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
-            {vets.map(p => (
-              <button key={p} type="button" onClick={() => onChange(value === p ? "" : p)}
-                style={{ padding: "6px 11px", borderRadius: 999, cursor: "pointer", fontSize: 12.5, fontWeight: 600,
-                  border: value === p ? `2px solid ${MORADO}` : "1px solid #e2e8f0",
-                  background: value === p ? `${MORADO}15` : "white", color: value === p ? MORADO : "#334155" }}>
-                {p}
-              </button>
-            ))}
-          </div>
-        )}
-        <input value={value} onChange={e => onChange(e.target.value)} placeholder="Nombre del cirujano" style={inputStyle} />
-      </div>
-    )
-  }
 
   // Mapa turno_id -> cirugía registrada (para saber si un turno ya tiene registro).
   const cirugiaPorTurno = new Map<number, any>()
@@ -364,7 +366,7 @@ export default function CirugiasPage() {
               </div>
               <div>
                 <label style={labelStyle}>Cirujano</label>
-                <SelectorCirujano value={formTurno.cirujano} onChange={v => setFormTurno({ ...formTurno, cirujano: v })} />
+                <SelectorCirujano vets={vets} value={formTurno.cirujano} onChange={v => setFormTurno({ ...formTurno, cirujano: v })} />
               </div>
               <div>
                 <label style={labelStyle}>Notas / procedimiento previsto</label>
@@ -405,7 +407,7 @@ export default function CirugiasPage() {
               </div>
               <div style={{ gridColumn: "1 / -1" }}>
                 <label style={labelStyle}>Cirujano</label>
-                <SelectorCirujano value={formCirugia.cirujano} onChange={v => setFormCirugia({ ...formCirugia, cirujano: v })} />
+                <SelectorCirujano vets={vets} value={formCirugia.cirujano} onChange={v => setFormCirugia({ ...formCirugia, cirujano: v })} />
               </div>
               <div>
                 <label style={labelStyle}>Ayudante</label>
