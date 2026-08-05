@@ -51,6 +51,10 @@ export default function ConfiguracionPage() {
   const [constantes, setConstantes] = useState<any[]>([])
   const [formConstante, setFormConstante] = useState({ nombre: "", unidad: "" })
   const [guardandoConstante, setGuardandoConstante] = useState(false)
+  const [miNombre, setMiNombre] = useState("")
+  const [miNombreInicial, setMiNombreInicial] = useState("")
+  const [guardandoMiNombre, setGuardandoMiNombre] = useState(false)
+  const [miNombreOk, setMiNombreOk] = useState(false)
 
   useEffect(() => { cargar() }, [])
 
@@ -114,8 +118,10 @@ export default function ConfiguracionPage() {
       setOrdenForm([...guardado.filter(k => menuKeys.includes(k)), ...menuKeys.filter(k => !guardado.includes(k))])
     }
     // Rol del usuario actual + equipo
-    const { data: miOu } = await supabase.from("org_usuarios").select("rol").eq("user_id", user.id).maybeSingle()
+    const { data: miOu } = await supabase.from("org_usuarios").select("rol, nombre_visible").eq("user_id", user.id).maybeSingle()
     setEsAdmin((miOu?.rol || "admin") === "admin")
+    setMiNombre(miOu?.nombre_visible || "")
+    setMiNombreInicial(miOu?.nombre_visible || "")
     cargarUsuarios()
     cargarConstantes()
     setLoading(false)
@@ -147,6 +153,14 @@ export default function ConfiguracionPage() {
   async function cargarUsuarios() {
     const { data } = await supabase.from("org_usuarios").select("user_id, rol, email").order("rol")
     setUsuarios(data || [])
+  }
+  async function guardarMiNombre() {
+    setGuardandoMiNombre(true)
+    const { error } = await supabase.rpc("set_mi_nombre_visible", { p_nombre: miNombre.trim() })
+    setGuardandoMiNombre(false)
+    if (error) { alert("Error al guardar el nombre: " + error.message); return }
+    setMiNombre(miNombre.trim()); setMiNombreInicial(miNombre.trim())
+    setMiNombreOk(true); setTimeout(() => setMiNombreOk(false), 3000)
   }
   async function invitarUsuario() {
     if (!inviteForm.email.trim() || inviteForm.password.length < 6) { setErrorUsuario("Email y contraseña (mín. 6 caracteres)"); return }
@@ -311,6 +325,27 @@ export default function ConfiguracionPage() {
 
   return (
     <div style={{ maxWidth: 600, margin: "0 auto" }}>
+
+      {/* ── Tu nombre en procedimientos ───────────────────────────────────────── */}
+      <div style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 16, padding: "20px 22px", marginBottom: 20 }}>
+        <h2 style={{ margin: "0 0 4px", fontSize: 16, fontWeight: 800, color: "#1d1b12" }}>👤 Tu nombre en procedimientos</h2>
+        <p style={{ margin: "0 0 14px", fontSize: 13, color: "#64748b" }}>
+          Es el nombre con el que figurás como autor en consultas, cirugías, estudios, sanidad, etc.
+          Si lo dejás vacío, se muestra tu email{usuario?.email ? <> (<b>{usuario.email}</b>)</> : ""}.
+        </p>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <input value={miNombre} onChange={e => setMiNombre(e.target.value)} placeholder="Ej: Dr. Santiago Zabalegui"
+            onKeyDown={e => { if (e.key === "Enter" && miNombre.trim() !== miNombreInicial) guardarMiNombre() }}
+            style={{ flex: 1, minWidth: 220, padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 9, fontSize: 14, color: "#1d1b12", outline: "none", boxSizing: "border-box" }} />
+          <button onClick={guardarMiNombre} disabled={guardandoMiNombre || miNombre.trim() === miNombreInicial}
+            style={{ background: "var(--accent)", border: "none", borderRadius: 9, padding: "10px 20px", fontSize: 14, fontWeight: 700, color: "white",
+              cursor: (guardandoMiNombre || miNombre.trim() === miNombreInicial) ? "not-allowed" : "pointer",
+              opacity: (miNombre.trim() === miNombreInicial) ? 0.55 : 1 }}>
+            {guardandoMiNombre ? "Guardando…" : "Guardar"}
+          </button>
+        </div>
+        {miNombreOk && <p style={{ margin: "10px 0 0", fontSize: 13, color: "#15803d", fontWeight: 700 }}>✓ Guardado. Tus procedimientos ahora figuran con este nombre.</p>}
+      </div>
 
       {/* ── Suscripción ──────────────────────────────────────────────────────── */}
       <div style={{
