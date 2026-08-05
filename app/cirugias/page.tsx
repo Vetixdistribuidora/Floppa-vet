@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import Link from "next/link"
 import { supabase } from "@/lib/supabase"
 import ComboBox from "@/components/ComboBox"
@@ -87,6 +87,17 @@ export default function CirugiasPage() {
   const [toast, setToast] = useState<any>(null)
   const [filtroPaciente, setFiltroPaciente] = useState("")
 
+  // Precios del mes (nomenclador) — imágenes/PDF por organización
+  const [orgId, setOrgId] = useState<string | null>(null)
+  const [modalPrecios, setModalPrecios] = useState(false)
+  const [precios, setPrecios] = useState<any[]>([])
+  const [cargandoPrecios, setCargandoPrecios] = useState(false)
+  const [subiendoPrecio, setSubiendoPrecio] = useState(false)
+  const [arrastrandoPrecio, setArrastrandoPrecio] = useState(false)
+  const [lightbox, setLightbox] = useState<string | null>(null)
+  const [confirmBorrarPrecio, setConfirmBorrarPrecio] = useState<any>(null)
+  const preciosFileRef = useRef<HTMLInputElement>(null)
+
   const [modalTurno, setModalTurno] = useState(false)
   const [formTurno, setFormTurno] = useState<any>(turnoVacio())
   const [modalCirugia, setModalCirugia] = useState(false)
@@ -100,15 +111,16 @@ export default function CirugiasPage() {
     setCargando(true)
     const y = mesAncla.getFullYear(), m = mesAncla.getMonth()
     const desde = isoLocal(new Date(y, m, 1)), hasta = isoLocal(new Date(y, m + 1, 0))
-    const [{ data: tt }, { data: cir }, { data: pac }, { data: vetsTurnos }] = await Promise.all([
+    const [{ data: tt }, { data: cir }, { data: pac }, { data: vetsTurnos }, { data: org }] = await Promise.all([
       supabase.from("turnos").select("*, pacientes(nombre, especie), clientes(nombre, apellido, telefono)")
         .eq("tipo", "Cirugía").gte("fecha", desde).lte("fecha", hasta).order("hora", { ascending: true }),
       supabase.from("cirugias").select("*, pacientes(nombre, especie), clientes(nombre, apellido, telefono)")
         .order("fecha", { ascending: false }).limit(300),
       supabase.from("pacientes").select("id, nombre, especie, raza, cliente_id, clientes(id, nombre, apellido, telefono)").eq("fallecido", false).order("nombre"),
       supabase.from("turnos").select("profesional").not("profesional", "is", null).limit(500),
+      supabase.from("organizaciones").select("id").maybeSingle(),
     ])
-    setTurnos(tt || []); setCirugias(cir || []); setPacientes(pac || [])
+    setTurnos(tt || []); setCirugias(cir || []); setPacientes(pac || []); setOrgId((org as any)?.id ?? null)
     const nombres = new Set<string>()
     ;(vetsTurnos || []).forEach((t: any) => { if (t.profesional) nombres.add(String(t.profesional).trim()) })
     ;(cir || []).forEach((c: any) => { if (c.cirujano) nombres.add(String(c.cirujano).trim()) })
@@ -122,6 +134,50 @@ export default function CirugiasPage() {
   }, [])
 
   function moverMes(delta: number) { setMesAncla(prev => new Date(prev.getFullYear(), prev.getMonth() + delta, 1)) }
+
+  // ---- Precios del mes (nomenclador) ----
+  function abrirPrecios() { setModalPrecios(true); cargarPrecios() }
+  async function cargarPrecios() {
+    if (!orgId) return
+    setCargandoPrecios(true)
+    const { data: files } = await supabase.storage.from("precios").list(orgId, { limit: 100, sortBy: { column: "created_at", order: "desc" } })
+    const items = (files || []).filter((f: any) => f.name && f.id) // descarta placeholders de carpeta
+    const paths = items.map((f: any) => `${orgId}/${f.name}`)
+    const urlByPath = new Map<string, string>()
+    if (paths.length) {
+      const { data: signed } = await supabase.storage.from("precios").createSignedUrls(paths, 3600)
+      ;(signed || []).forEach((s: any, i: number) => { if (s?.signedUrl) urlByPath.set(paths[i], s.signedUrl) })
+    }
+    setPrecios(items.map((f: any) => {
+      const path = `${orgId}/${f.name}`
+      const mime = f.metadata?.mimetype || ""
+      return { name: f.name, path, url: urlByPath.get(path), isPdf: /pdf/i.test(mime) || /\.pdf$/i.test(f.name), size: f.metadata?.size, created: f.created_at }
+    }))
+    setCargandoPrecios(false)
+  }
+  function tomarPrecio(f?: File | null) {
+    if (!f) return
+    if (f.size > 25 * 1024 * 1024) { mostrar("El archivo supera los 25 MB", "error"); return }
+    subirPrecio(f)
+  }
+  async function subirPrecio(file: File) {
+    if (!orgId) { mostrar("No se pudo identificar la organización", "error"); return }
+    setSubiendoPrecio(true)
+    const safe = file.name.replace(/[^\w.\-]+/g, "_")
+    const path = `${orgId}/${Date.now()}_${safe}`
+    const { error } = await supabase.storage.from("precios").upload(path, file, { upsert: false })
+    setSubiendoPrecio(false)
+    if (preciosFileRef.current) preciosFileRef.current.value = ""
+    if (error) { mostrar("Error al subir: " + error.message, "error"); return }
+    mostrar("Agregado a Precios del mes", "ok"); cargarPrecios()
+  }
+  async function eliminarPrecio() {
+    if (!confirmBorrarPrecio) return
+    const { error } = await supabase.storage.from("precios").remove([confirmBorrarPrecio.path])
+    if (error) mostrar("Error al eliminar", "error")
+    else { mostrar("Eliminado", "ok"); setPrecios(prev => prev.filter(x => x.path !== confirmBorrarPrecio.path)) }
+    setConfirmBorrarPrecio(null)
+  }
 
   // Opciones de paciente con tutor/teléfono para el buscador (mismo estilo que Sala).
   const opcionesPaciente = pacientes.map(p => {
@@ -222,6 +278,7 @@ export default function CirugiasPage() {
           <span style={{ fontSize: 16, fontWeight: 800, color: "#1d1b12", textTransform: "capitalize", minWidth: 150, textAlign: "center" }}>{mesNombre(mesAncla)}</span>
           <button onClick={() => moverMes(1)} title="Mes siguiente" style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 9, padding: "8px 12px", fontSize: 15, cursor: "pointer", color: "#475569" }}>→</button>
           <button onClick={() => { setMesAncla(new Date(new Date().getFullYear(), new Date().getMonth(), 1)); setFecha(hoyISO()) }} style={{ background: "#faf5ff", border: "1px solid #e9d5ff", borderRadius: 9, padding: "8px 12px", fontSize: 13, fontWeight: 700, cursor: "pointer", color: "#7e22ce" }}>Hoy</button>
+          <button onClick={abrirPrecios} title="Ver el nomenclador / precios cargados" style={{ background: "#ecfeff", border: "1px solid #a5f3fc", borderRadius: 9, padding: "8px 12px", fontSize: 13, fontWeight: 700, cursor: "pointer", color: "#0e7490", whiteSpace: "nowrap" }}>💲 Precios del mes</button>
         </div>
         <button onClick={abrirCoordinar} style={{ background: MORADO, color: "white", border: "none", borderRadius: 10, padding: "11px 18px", fontSize: 14, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>+ Coordinar cirugía</button>
       </div>
@@ -456,6 +513,85 @@ export default function CirugiasPage() {
             <div style={{ display: "flex", justifyContent: "center", gap: 10 }}>
               <button onClick={() => setConfirmEliminar(null)} style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 9, padding: "9px 18px", fontWeight: 600, color: "#475569", cursor: "pointer" }}>Cancelar</button>
               <button onClick={eliminarCirugia} style={{ background: "#dc2626", border: "none", borderRadius: 9, padding: "9px 20px", fontWeight: 700, color: "white", cursor: "pointer" }}>Eliminar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Precios del mes (nomenclador) */}
+      {modalPrecios && (
+        <div onClick={() => setModalPrecios(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "flex-start", justifyContent: "center", zIndex: 1000, padding: 20, overflowY: "auto" }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: "white", borderRadius: 18, padding: "24px 26px", width: "100%", maxWidth: 900, margin: "auto" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: 4 }}>
+              <div>
+                <h2 style={{ margin: 0, fontSize: 19, fontWeight: 800, color: "#1d1b12" }}>💲 Precios del mes · Nomenclador</h2>
+                <p style={{ margin: "4px 0 0", fontSize: 13, color: "#64748b" }}>Subí las imágenes del nomenclador. Tocá una imagen para agrandarla y leer los precios.</p>
+              </div>
+              <button onClick={() => setModalPrecios(false)} style={{ background: "#f1f5f9", border: "1px solid #e2e8f0", borderRadius: 8, padding: "6px 12px", fontSize: 14, color: "#475569", cursor: "pointer", fontWeight: 700 }}>✕</button>
+            </div>
+
+            {/* Zona para subir */}
+            <input ref={preciosFileRef} type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,.gif" onChange={e => tomarPrecio(e.target.files?.[0])} style={{ display: "none" }} />
+            <div
+              onClick={() => !subiendoPrecio && preciosFileRef.current?.click()}
+              onDragOver={e => { e.preventDefault(); setArrastrandoPrecio(true) }}
+              onDragLeave={e => { e.preventDefault(); setArrastrandoPrecio(false) }}
+              onDrop={e => { e.preventDefault(); setArrastrandoPrecio(false); tomarPrecio(e.dataTransfer.files?.[0]) }}
+              style={{ margin: "16px 0", border: `2px dashed ${arrastrandoPrecio ? "#0891b2" : "#cbd5e1"}`, borderRadius: 12, padding: "18px 16px", textAlign: "center", cursor: subiendoPrecio ? "wait" : "pointer", background: arrastrandoPrecio ? "#ecfeff" : "#f8fafc" }}>
+              <div style={{ fontSize: 22, marginBottom: 4 }}>{subiendoPrecio ? "⏳" : "⬆️"}</div>
+              <div style={{ fontWeight: 700, fontSize: 13.5, color: "#475569" }}>{subiendoPrecio ? "Subiendo…" : arrastrandoPrecio ? "Soltá la imagen acá" : "Arrastrá una imagen o PDF, o hacé clic para elegir"}</div>
+              <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 3 }}>Imágenes o PDF · hasta 25 MB</div>
+            </div>
+
+            {cargandoPrecios ? (
+              <p style={{ color: "#94a3b8", textAlign: "center", padding: 30 }}>Cargando…</p>
+            ) : precios.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "30px 20px", color: "#94a3b8" }}>
+                <div style={{ fontSize: 34, marginBottom: 8 }}>🧾</div>
+                <p style={{ fontWeight: 600, color: "#475569", margin: 0 }}>Todavía no hay precios cargados</p>
+                <p style={{ fontSize: 12.5, marginTop: 4 }}>Subí las imágenes del nomenclador de este mes.</p>
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                {precios.map(p => (
+                  <div key={p.path} style={{ border: "1px solid #e2e8f0", borderRadius: 12, overflow: "hidden", background: "white" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, padding: "9px 12px", borderBottom: "1px solid #f1f5f9" }}>
+                      <span style={{ fontSize: 12.5, color: "#475569", fontWeight: 600, wordBreak: "break-word" }}>{p.isPdf ? "📄 " : "🖼️ "}{p.name.replace(/^\d+_/, "")}</span>
+                      <button onClick={() => setConfirmBorrarPrecio(p)} title="Eliminar" style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 7, padding: "4px 9px", fontSize: 12, color: "#dc2626", cursor: "pointer", flexShrink: 0 }}>🗑</button>
+                    </div>
+                    {p.isPdf ? (
+                      <a href={p.url} target="_blank" rel="noreferrer" style={{ display: "block", padding: "22px", textAlign: "center", color: "#0891b2", fontWeight: 700, textDecoration: "none", fontSize: 14 }}>📄 Abrir PDF del nomenclador</a>
+                    ) : (
+                      <img src={p.url} alt={p.name} onClick={() => p.url && setLightbox(p.url)} style={{ display: "block", width: "100%", height: "auto", cursor: "zoom-in" }} />
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Lightbox (imagen a pantalla grande) */}
+      {lightbox && (
+        <div onClick={() => setLightbox(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.9)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1100, padding: 16, flexDirection: "column", gap: 12 }}>
+          <img src={lightbox} alt="Nomenclador" onClick={e => e.stopPropagation()} style={{ maxWidth: "100%", maxHeight: "82vh", objectFit: "contain", borderRadius: 8, boxShadow: "0 8px 40px rgba(0,0,0,0.5)" }} />
+          <div style={{ display: "flex", gap: 10 }}>
+            <a href={lightbox} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()} style={{ background: "white", borderRadius: 9, padding: "9px 16px", fontSize: 13.5, fontWeight: 700, color: "#0e7490", textDecoration: "none" }}>🔍 Abrir original (zoom)</a>
+            <button onClick={() => setLightbox(null)} style={{ background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 9, padding: "9px 16px", fontSize: 13.5, fontWeight: 700, color: "white", cursor: "pointer" }}>Cerrar ✕</button>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmar borrar precio */}
+      {confirmBorrarPrecio && (
+        <div onClick={() => setConfirmBorrarPrecio(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1200, padding: 20 }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: "white", borderRadius: 16, padding: "26px 28px", width: "100%", maxWidth: 360, textAlign: "center" }}>
+            <div style={{ fontSize: 34, marginBottom: 10 }}>🗑</div>
+            <p style={{ fontWeight: 700, color: "#1d1b12", marginBottom: 20 }}>¿Eliminar esta imagen de precios?</p>
+            <div style={{ display: "flex", justifyContent: "center", gap: 10 }}>
+              <button onClick={() => setConfirmBorrarPrecio(null)} style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 9, padding: "9px 18px", fontWeight: 600, color: "#475569", cursor: "pointer" }}>Cancelar</button>
+              <button onClick={eliminarPrecio} style={{ background: "#dc2626", border: "none", borderRadius: 9, padding: "9px 20px", fontWeight: 700, color: "white", cursor: "pointer" }}>Eliminar</button>
             </div>
           </div>
         </div>
