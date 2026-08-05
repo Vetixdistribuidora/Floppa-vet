@@ -2,7 +2,14 @@
 
 import { useState, useRef, useEffect } from "react"
 
-export interface ComboOption { value: string; label: string }
+export interface ComboOption {
+  value: string
+  label: string
+  /** Segunda línea (gris) debajo del label. Ej: tutor, teléfono, especie. */
+  sub?: string
+  /** Texto extra por el que también se puede filtrar (no se muestra). Ej: nombre del tutor. */
+  keywords?: string
+}
 
 // Select con búsqueda: muestra el seleccionado cuando está cerrado y permite
 // escribir para filtrar cuando se enfoca. Útil con listas largas (ej. tutores).
@@ -31,7 +38,12 @@ export default function ComboBox({
   }, [])
 
   const filtered = query.trim()
-    ? options.filter(o => o.label.toLowerCase().includes(query.toLowerCase()))
+    ? options.filter(o => {
+        const q = query.toLowerCase()
+        return o.label.toLowerCase().includes(q)
+          || (o.sub ?? "").toLowerCase().includes(q)
+          || (o.keywords ?? "").toLowerCase().includes(q)
+      })
     : options
 
   const inputStyle: React.CSSProperties = {
@@ -69,7 +81,8 @@ export default function ComboBox({
               style={{ padding: "9px 12px", cursor: "pointer", fontSize: 13.5, color: "#0f172a", background: o.value === value ? "#f4f2e6" : "white" }}
               onMouseEnter={e => (e.currentTarget.style.background = "#f8fafc")}
               onMouseLeave={e => (e.currentTarget.style.background = o.value === value ? "#f4f2e6" : "white")}>
-              {o.label}
+              <div style={{ fontWeight: o.sub ? 600 : 400 }}>{o.label}</div>
+              {o.sub && <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 1 }}>{o.sub}</div>}
             </div>
           ))}
         </div>

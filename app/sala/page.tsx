@@ -45,7 +45,7 @@ export default function SalaEsperaPage() {
         .select("*, pacientes(id, nombre, especie, clientes(nombre, apellido, telefono))")
         .or(`estado.neq.atendido,check_in_at.gte.${inicioHoy.toISOString()}`)
         .order("check_in_at", { ascending: true }),
-      supabase.from("pacientes").select("id, nombre, especie").order("nombre"),
+      supabase.from("pacientes").select("id, nombre, especie, raza, clientes(nombre, apellido, telefono)").order("nombre"),
       supabase.from("turnos").select("profesional").not("profesional", "is", null).limit(500),
     ])
     setItems(sala || [])
@@ -202,10 +202,25 @@ export default function SalaEsperaPage() {
               <div>
                 <label style={labelStyle}>Paciente</label>
                 <ComboBox
-                  options={pacientes.map(p => ({ value: String(p.id), label: `${p.nombre}${p.especie ? ` (${p.especie})` : ""}` }))}
+                  options={pacientes.map(p => {
+                    const cli = (p as any).clientes
+                    const tutor = cli ? `${cli.nombre || ""} ${cli.apellido || ""}`.trim() : ""
+                    const detalle = [p.especie, (p as any).raza].filter(Boolean).join(" · ")
+                    const sub = [
+                      tutor ? `Tutor: ${tutor}` : "Sin tutor asignado",
+                      cli?.telefono ? `Tel ${cli.telefono}` : "",
+                      detalle,
+                    ].filter(Boolean).join("  ·  ")
+                    return {
+                      value: String(p.id),
+                      label: p.nombre,
+                      sub,
+                      keywords: `${tutor} ${cli?.telefono || ""} ${detalle}`,
+                    }
+                  })}
                   value={form.paciente_id}
                   onChange={v => setForm({ ...form, paciente_id: v })}
-                  placeholder="Buscar paciente…"
+                  placeholder="Buscar por mascota, tutor o teléfono…"
                   emptyLabel="— Sin registrar (escribir nombre) —"
                 />
               </div>
@@ -215,18 +230,33 @@ export default function SalaEsperaPage() {
                   <input value={form.nombre_libre} onChange={e => setForm({ ...form, nombre_libre: e.target.value })} placeholder="Ej: Rocky (consulta de Juan)" style={inputStyle} />
                 </div>
               )}
-              <div style={{ display: "grid", gridTemplateColumns: "90px 1fr", gap: 12 }}>
-                <div>
-                  <label style={labelStyle}>N° de orden</label>
-                  <input type="number" min="1" value={form.numero_orden} onChange={e => setForm({ ...form, numero_orden: e.target.value })} placeholder="Ej: 12" style={inputStyle} />
-                </div>
-                <div>
-                  <label style={labelStyle}>Veterinario a atender</label>
-                  <input list="vet-sugerencias" value={form.veterinario} onChange={e => setForm({ ...form, veterinario: e.target.value })} placeholder="Ej: Dr. Pérez (opcional)" style={inputStyle} />
-                  <datalist id="vet-sugerencias">
-                    {profesionales.map(p => <option key={p} value={p} />)}
-                  </datalist>
-                </div>
+              <div>
+                <label style={labelStyle}>N° de orden (ticket)</label>
+                <input type="number" min="1" value={form.numero_orden} onChange={e => setForm({ ...form, numero_orden: e.target.value })} placeholder="Número que retiró la persona · Ej: 12" style={inputStyle} />
+              </div>
+              <div>
+                <label style={labelStyle}>Veterinario a atender</label>
+                {profesionales.length > 0 && (
+                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
+                    <button type="button" onClick={() => setForm({ ...form, veterinario: "" })}
+                      style={{ padding: "6px 11px", borderRadius: 999, cursor: "pointer", fontSize: 12.5, fontWeight: 600,
+                        border: form.veterinario === "" ? `2px solid ${TEAL}` : "1px solid #e2e8f0",
+                        background: form.veterinario === "" ? `${TEAL}15` : "white",
+                        color: form.veterinario === "" ? TEAL : "#64748b" }}>
+                      Sin preferencia
+                    </button>
+                    {profesionales.map(p => (
+                      <button key={p} type="button" onClick={() => setForm({ ...form, veterinario: p })}
+                        style={{ padding: "6px 11px", borderRadius: 999, cursor: "pointer", fontSize: 12.5, fontWeight: 600,
+                          border: form.veterinario === p ? `2px solid ${TEAL}` : "1px solid #e2e8f0",
+                          background: form.veterinario === p ? `${TEAL}15` : "white",
+                          color: form.veterinario === p ? TEAL : "#334155" }}>
+                        {p}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <input value={form.veterinario} onChange={e => setForm({ ...form, veterinario: e.target.value })} placeholder="Otro veterinario… (o dejalo vacío si no tiene preferencia)" style={inputStyle} />
               </div>
               <div>
                 <label style={labelStyle}>Motivo</label>
