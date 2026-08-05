@@ -1,13 +1,16 @@
 -- ============================================================================
---  Nombre visible del autor: en vez del mail, mostrar el nombre que cada
---  usuario configura (ej. "Dr. Santiago Zabalegui") en creado_por/actualizado_por.
+--  FIX: el reetiquetado de autor no tomaba efecto por DOS motivos:
+--   1) el trigger tg_set_autor forzaba NEW.creado_por := OLD.creado_por en cada
+--      UPDATE, revirtiendo cualquier cambio de autor.
+--   2) la función leía email/org con auth.email()/get_my_org_id() que podían venir
+--      NULL; ahora los lee de org_usuarios por auth.uid().
+--  Incluye backfill de los registros ya cargados con el email.
 -- ============================================================================
 
--- 1) Cada usuario tiene un nombre visible (opcional). Si está vacío, se usa el mail.
-ALTER TABLE org_usuarios ADD COLUMN IF NOT EXISTS nombre_visible text;
-
--- 2) El trigger de autoría escribe el nombre visible del usuario logueado
---    (con fallback al email si no configuró ninguno).
+-- 1) Trigger: en UPDATE ya NO pisa creado_por (los updates normales de la app no
+--    tocan esa columna, así que sigue conservando el autor original; pero un
+--    relabel explícito ahora sí puede cambiarlo). actualizado_por solo se pisa si
+--    hay un autor de sesión (no lo borra en updates de servicio/backfill).
 CREATE OR REPLACE FUNCTION tg_set_autor()
 RETURNS TRIGGER
 LANGUAGE plpgsql
@@ -27,16 +30,17 @@ BEGIN
     NEW.creado_por := v_autor;
     NEW.actualizado_por := v_autor;
   ELSIF TG_OP = 'UPDATE' THEN
-    NEW.creado_por := OLD.creado_por;   -- se conserva el autor original
-    NEW.actualizado_por := v_autor;
+    IF v_autor IS NOT NULL THEN
+      NEW.actualizado_por := v_autor;
+    END IF;
+    -- creado_por se deja como venga: los updates de la app no lo mandan
+    -- (queda igual), y un relabel explícito puede cambiarlo.
   END IF;
   RETURN NEW;
 END;
 $$;
 
--- 3) Cada usuario setea su propio nombre visible. La función también actualiza
---    sus registros clínicos ya cargados (los que figuran con su mail o su nombre
---    anterior), acotado a su organización. Devuelve el valor que quedará visible.
+-- 2) Función para setear el nombre visible (email/org desde org_usuarios por uid).
 CREATE OR REPLACE FUNCTION set_mi_nombre_visible(p_nombre text)
 RETURNS text
 LANGUAGE plpgsql
@@ -54,18 +58,14 @@ DECLARE
 BEGIN
   IF v_uid IS NULL THEN RAISE EXCEPTION 'No autenticado'; END IF;
 
-  -- Email y org se leen desde org_usuarios por user_id (auth.uid es confiable acá).
-  -- No usamos auth.email()/get_my_org_id() porque pueden venir NULL en este contexto.
   SELECT email, organizacion_id, NULLIF(btrim(nombre_visible), '')
     INTO v_email, v_org, v_old
     FROM org_usuarios WHERE user_id = v_uid LIMIT 1;
 
   UPDATE org_usuarios SET nombre_visible = v_new WHERE user_id = v_uid;
 
-  v_dest := COALESCE(v_new, v_email, auth.email());  -- qué mostrar de acá en más
+  v_dest := COALESCE(v_new, v_email, auth.email());
 
-  -- Reetiquetar registros existentes de mi organización: los que figuran con mi
-  -- email o con mi nombre anterior pasan al nombre nuevo.
   IF v_org IS NOT NULL THEN
     FOREACH t IN ARRAY ARRAY['pacientes','consultas','internaciones','internacion_registros','estudios','recordatorios','cirugias'] LOOP
       IF v_email IS NOT NULL THEN
@@ -83,4 +83,21 @@ BEGIN
 END;
 $$;
 
-GRANT EXECUTE ON FUNCTION set_mi_nombre_visible(text) TO authenticated;
+-- 3) Backfill único: convertir a nombre los registros que figuran con el email
+--    de cada usuario que ya tiene nombre_visible (dentro de su organización).
+DO $$
+DECLARE
+  u RECORD;
+  t TEXT;
+BEGIN
+  FOR u IN
+    SELECT organizacion_id, email, NULLIF(btrim(nombre_visible), '') AS nom
+    FROM org_usuarios
+    WHERE NULLIF(btrim(nombre_visible), '') IS NOT NULL AND email IS NOT NULL
+  LOOP
+    FOREACH t IN ARRAY ARRAY['pacientes','consultas','internaciones','internacion_registros','estudios','recordatorios','cirugias'] LOOP
+      EXECUTE format('UPDATE %I SET creado_por = $1 WHERE organizacion_id = $2 AND creado_por = $3', t) USING u.nom, u.organizacion_id, u.email;
+      EXECUTE format('UPDATE %I SET actualizado_por = $1 WHERE organizacion_id = $2 AND actualizado_por = $3', t) USING u.nom, u.organizacion_id, u.email;
+    END LOOP;
+  END LOOP;
+END $$;
