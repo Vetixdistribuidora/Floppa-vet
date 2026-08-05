@@ -334,7 +334,7 @@ export default function ConfiguracionPage() {
           Si lo dejás vacío, se muestra tu email{usuario?.email ? <> (<b>{usuario.email}</b>)</> : ""}.
         </p>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <input value={miNombre} onChange={e => setMiNombre(e.target.value)} placeholder="Ej: Dr. Santiago Zabalegui"
+          <input value={miNombre} onChange={e => setMiNombre(e.target.value)} placeholder="Nombre y apellido"
             onKeyDown={e => { if (e.key === "Enter" && miNombre.trim() !== miNombreInicial) guardarMiNombre() }}
             style={{ flex: 1, minWidth: 220, padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 9, fontSize: 14, color: "#1d1b12", outline: "none", boxSizing: "border-box" }} />
           <button onClick={guardarMiNombre} disabled={guardandoMiNombre || miNombre.trim() === miNombreInicial}
