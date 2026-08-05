@@ -45,12 +45,35 @@ function celdasMes(ancla: Date): (Date | null)[] {
 }
 const DIAS_SEM = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"]
 
+const externoVacio = {
+  externo: false, paciente_libre: "", especie: "", raza: "", edad: "", sexo: "",
+  propietario_nombre: "", propietario_apellido: "", propietario_telefono: "", monto: "",
+}
 const cirugiaVacia = () => ({
   id: null as number | null, paciente_id: "", turno_id: null as number | null,
   fecha: hoyISO(), estado: "realizada", cirujano: "", ayudante: "", anestesia: "",
   procedimiento: "", diagnostico: "", hallazgos: "", complicaciones: "", indicaciones: "", notas: "",
+  ...externoVacio,
 })
-const turnoVacio = () => ({ paciente_id: "", hora: "09:00", cirujano: "", notas: "" })
+const turnoVacio = () => ({ paciente_id: "", hora: "09:00", cirujano: "", notas: "", ...externoVacio })
+
+function fmtMonto(n: any) { const v = Number(n); return isNaN(v) || v === 0 ? "" : "$" + v.toLocaleString("es-AR") }
+
+// Campos externos + monto para el payload (a la base). Si no es externo, deja los
+// datos de mascota/propietario en null pero conserva el monto (aplica a ambos casos).
+function camposExternoPayload(f: any) {
+  const monto = f.monto !== "" && !isNaN(Number(f.monto)) ? Number(f.monto) : null
+  if (!f.externo) return {
+    paciente_libre: null, especie: null, raza: null, edad: null, sexo: null,
+    propietario_nombre: null, propietario_apellido: null, propietario_telefono: null, monto,
+  }
+  return {
+    paciente_libre: f.paciente_libre.trim() || null, especie: f.especie.trim() || null,
+    raza: f.raza.trim() || null, edad: f.edad.trim() || null, sexo: f.sexo || null,
+    propietario_nombre: f.propietario_nombre.trim() || null, propietario_apellido: f.propietario_apellido.trim() || null,
+    propietario_telefono: f.propietario_telefono.trim() || null, monto,
+  }
+}
 
 // Selector de cirujano por chips + texto libre (mismo criterio que el veterinario en Sala).
 // Definido a nivel de módulo (no dentro del componente) para que el input no pierda
@@ -71,6 +94,48 @@ function SelectorCirujano({ vets, value, onChange }: { vets: string[]; value: st
         </div>
       )}
       <input value={value} onChange={e => onChange(e.target.value)} placeholder="Nombre del cirujano" style={inputStyle} />
+    </div>
+  )
+}
+
+// Toggle Registrado / Externo (a nivel de módulo para no perder foco al re-render).
+function ToggleExterno({ externo, onChange }: { externo: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <div style={{ display: "flex", gap: 8 }}>
+      {[[false, "Paciente registrado"], [true, "Paciente externo (no vuelve)"]].map(([v, lab]) => (
+        <button key={String(v)} type="button" onClick={() => onChange(v as boolean)}
+          style={{ flex: 1, padding: "9px", borderRadius: 9, cursor: "pointer", fontWeight: 700, fontSize: 12.5,
+            border: externo === v ? `2px solid ${MORADO}` : "1px solid #e2e8f0",
+            background: externo === v ? `${MORADO}15` : "white", color: externo === v ? MORADO : "#64748b" }}>
+          {lab as string}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+// Campos de mascota + propietario para pacientes no registrados. `upd` mergea el patch.
+function CamposExterno({ f, upd }: { f: any; upd: (patch: any) => void }) {
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, background: "#faf5ff", border: "1px solid #e9d5ff", borderRadius: 10, padding: 14 }}>
+      <div style={{ gridColumn: "1 / -1", fontSize: 11, fontWeight: 800, color: "#7e22ce", textTransform: "uppercase", letterSpacing: 0.4 }}>Mascota</div>
+      <div style={{ gridColumn: "1 / -1" }}>
+        <label style={labelStyle}>Nombre de la mascota *</label>
+        <input value={f.paciente_libre} onChange={e => upd({ paciente_libre: e.target.value })} placeholder="Ej: Rocky" style={inputStyle} />
+      </div>
+      <div><label style={labelStyle}>Especie</label><input value={f.especie} onChange={e => upd({ especie: e.target.value })} placeholder="Perro, gato…" style={inputStyle} /></div>
+      <div><label style={labelStyle}>Raza</label><input value={f.raza} onChange={e => upd({ raza: e.target.value })} style={inputStyle} /></div>
+      <div><label style={labelStyle}>Edad</label><input value={f.edad} onChange={e => upd({ edad: e.target.value })} placeholder="Ej: 3 años" style={inputStyle} /></div>
+      <div>
+        <label style={labelStyle}>Sexo</label>
+        <select value={f.sexo} onChange={e => upd({ sexo: e.target.value })} style={inputStyle}>
+          <option value="">—</option><option value="Macho">Macho</option><option value="Hembra">Hembra</option>
+        </select>
+      </div>
+      <div style={{ gridColumn: "1 / -1", fontSize: 11, fontWeight: 800, color: "#7e22ce", textTransform: "uppercase", letterSpacing: 0.4, marginTop: 2 }}>Propietario</div>
+      <div><label style={labelStyle}>Nombre</label><input value={f.propietario_nombre} onChange={e => upd({ propietario_nombre: e.target.value })} style={inputStyle} /></div>
+      <div><label style={labelStyle}>Apellido</label><input value={f.propietario_apellido} onChange={e => upd({ propietario_apellido: e.target.value })} style={inputStyle} /></div>
+      <div style={{ gridColumn: "1 / -1" }}><label style={labelStyle}>Teléfono</label><input value={f.propietario_telefono} onChange={e => upd({ propietario_telefono: e.target.value })} placeholder="Para contactarlo" style={inputStyle} /></div>
     </div>
   )
 }
@@ -198,14 +263,16 @@ export default function CirugiasPage() {
   // ---- Coordinar (agendar) cirugía = crear turno tipo Cirugía ----
   function abrirCoordinar() { setFormTurno(turnoVacio()); setModalTurno(true) }
   async function guardarTurno() {
-    if (!formTurno.paciente_id) { mostrar("Elegí el paciente", "error"); return }
+    if (!formTurno.externo && !formTurno.paciente_id) { mostrar("Elegí el paciente o cargá uno externo", "error"); return }
+    if (formTurno.externo && !formTurno.paciente_libre.trim()) { mostrar("Poné el nombre de la mascota", "error"); return }
     setGuardando(true)
     const pac = pacientes.find(p => String(p.id) === formTurno.paciente_id)
     const { error } = await supabase.from("turnos").insert([{
-      paciente_id: Number(formTurno.paciente_id),
-      cliente_id: pac?.cliente_id ?? pac?.clientes?.id ?? null,
+      paciente_id: formTurno.externo ? null : (formTurno.paciente_id ? Number(formTurno.paciente_id) : null),
+      cliente_id: formTurno.externo ? null : (pac?.cliente_id ?? pac?.clientes?.id ?? null),
       fecha, hora: formTurno.hora, duracion: 60, tipo: "Cirugía",
       profesional: formTurno.cirujano.trim() || null, notas: formTurno.notas.trim() || null,
+      ...camposExternoPayload(formTurno),
     }])
     setGuardando(false)
     if (error) { mostrar("Error: " + error.message, "error"); return }
@@ -217,7 +284,13 @@ export default function CirugiasPage() {
   function abrirRegistroDesdeTurno(t: any) {
     const existente = cirugiaPorTurno.get(Number(t.id))
     if (existente) { abrirEditarCirugia(existente); return }
-    setFormCirugia({ ...cirugiaVacia(), paciente_id: t.paciente_id ? String(t.paciente_id) : "", turno_id: Number(t.id), fecha: t.fecha, cirujano: t.profesional || "" })
+    setFormCirugia({
+      ...cirugiaVacia(), paciente_id: t.paciente_id ? String(t.paciente_id) : "", turno_id: Number(t.id), fecha: t.fecha, cirujano: t.profesional || "",
+      externo: !t.paciente_id && !!(t.paciente_libre || t.propietario_nombre),
+      paciente_libre: t.paciente_libre || "", especie: t.especie || "", raza: t.raza || "", edad: t.edad || "", sexo: t.sexo || "",
+      propietario_nombre: t.propietario_nombre || "", propietario_apellido: t.propietario_apellido || "", propietario_telefono: t.propietario_telefono || "",
+      monto: t.monto != null ? String(t.monto) : "",
+    })
     setModalCirugia(true)
   }
   function abrirEditarCirugia(c: any) {
@@ -226,17 +299,22 @@ export default function CirugiasPage() {
       fecha: c.fecha || hoyISO(), estado: c.estado || "realizada", cirujano: c.cirujano || "", ayudante: c.ayudante || "",
       anestesia: c.anestesia || "", procedimiento: c.procedimiento || "", diagnostico: c.diagnostico || "",
       hallazgos: c.hallazgos || "", complicaciones: c.complicaciones || "", indicaciones: c.indicaciones || "", notas: c.notas || "",
+      externo: !c.paciente_id && !!(c.paciente_libre || c.propietario_nombre),
+      paciente_libre: c.paciente_libre || "", especie: c.especie || "", raza: c.raza || "", edad: c.edad || "", sexo: c.sexo || "",
+      propietario_nombre: c.propietario_nombre || "", propietario_apellido: c.propietario_apellido || "", propietario_telefono: c.propietario_telefono || "",
+      monto: c.monto != null ? String(c.monto) : "",
     })
     setModalCirugia(true)
   }
   async function guardarCirugia() {
-    if (!formCirugia.paciente_id) { mostrar("Elegí el paciente", "error"); return }
+    if (!formCirugia.externo && !formCirugia.paciente_id) { mostrar("Elegí el paciente o cargá uno externo", "error"); return }
+    if (formCirugia.externo && !formCirugia.paciente_libre.trim()) { mostrar("Poné el nombre de la mascota", "error"); return }
     if (!formCirugia.procedimiento.trim()) { mostrar("Indicá el procedimiento", "error"); return }
     setGuardando(true)
     const pac = pacientes.find(p => String(p.id) === formCirugia.paciente_id)
     const payload: any = {
-      paciente_id: Number(formCirugia.paciente_id),
-      cliente_id: pac?.cliente_id ?? pac?.clientes?.id ?? null,
+      paciente_id: formCirugia.externo ? null : (formCirugia.paciente_id ? Number(formCirugia.paciente_id) : null),
+      cliente_id: formCirugia.externo ? null : (pac?.cliente_id ?? pac?.clientes?.id ?? null),
       turno_id: formCirugia.turno_id,
       fecha: formCirugia.fecha, estado: formCirugia.estado,
       cirujano: formCirugia.cirujano.trim() || null, ayudante: formCirugia.ayudante.trim() || null,
@@ -244,6 +322,7 @@ export default function CirugiasPage() {
       diagnostico: formCirugia.diagnostico.trim() || null, hallazgos: formCirugia.hallazgos.trim() || null,
       complicaciones: formCirugia.complicaciones.trim() || null, indicaciones: formCirugia.indicaciones.trim() || null,
       notas: formCirugia.notas.trim() || null,
+      ...camposExternoPayload(formCirugia),
     }
     try {
       if (formCirugia.id) {
@@ -266,6 +345,11 @@ export default function CirugiasPage() {
 
   const cirugiasFiltradas = cirugias.filter(c => !filtroPaciente || String(c.paciente_id) === filtroPaciente)
   const tutorDe = (x: any) => x.clientes ? `${x.clientes.nombre || ""} ${x.clientes.apellido || ""}`.trim() : ""
+  const nombrePac = (x: any) => x.pacientes?.nombre || x.paciente_libre || "Paciente"
+  const especiePac = (x: any) => x.pacientes?.especie || x.especie || ""
+  const propDe = (x: any) => tutorDe(x) || `${x.propietario_nombre || ""} ${x.propietario_apellido || ""}`.trim()
+  const telDe = (x: any) => x.clientes?.telefono || x.propietario_telefono || ""
+  const esExterno = (x: any) => !x.paciente_id && !!(x.paciente_libre || x.propietario_nombre)
 
   return (
     <div>
@@ -324,17 +408,17 @@ export default function CirugiasPage() {
         <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 26 }}>
           {turnosDia.map(t => {
             const yaReg = cirugiaPorTurno.get(Number(t.id))
-            const tutor = tutorDe(t)
             return (
               <div key={t.id} className="list-row" style={{ background: "white", border: "1px solid #e2e8f0", borderLeft: `4px solid ${MORADO}`, borderRadius: 12, padding: "12px 16px", display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
                 <div style={{ textAlign: "center", background: "#faf5ff", color: "#7e22ce", borderRadius: 9, padding: "8px 12px", minWidth: 66, fontWeight: 800, fontSize: 16 }}>{(t.hora || "").slice(0, 5)}</div>
                 <div style={{ flex: 1, minWidth: 150 }}>
                   <div style={{ fontWeight: 700, fontSize: 14.5, color: "#1d1b12" }}>
-                    {t.pacientes ? <Link href={`/pacientes/${t.paciente_id}`} style={{ color: "#1d1b12", textDecoration: "none" }}>🐾 {t.pacientes.nombre}</Link> : "🐾 Paciente"}
-                    {t.pacientes?.especie && <span style={{ fontWeight: 500, color: "#94a3b8", fontSize: 13 }}> · {t.pacientes.especie}</span>}
+                    {t.pacientes ? <Link href={`/pacientes/${t.paciente_id}`} style={{ color: "#1d1b12", textDecoration: "none" }}>🐾 {t.pacientes.nombre}</Link> : <>🐾 {nombrePac(t)}</>}
+                    {especiePac(t) && <span style={{ fontWeight: 500, color: "#94a3b8", fontSize: 13 }}> · {especiePac(t)}</span>}
+                    {esExterno(t) && <span style={{ marginLeft: 8, background: "#faf5ff", color: "#7e22ce", fontSize: 10, fontWeight: 800, padding: "2px 7px", borderRadius: 999 }}>EXTERNO</span>}
                   </div>
                   <div style={{ fontSize: 12.5, color: "#64748b", marginTop: 2 }}>
-                    {tutor && <span>👤 {tutor}</span>}{t.profesional && <span> · 🔪 {t.profesional}</span>}{t.notas && <span> · {t.notas}</span>}
+                    {propDe(t) && <span>👤 {propDe(t)}</span>}{telDe(t) && <span> · 📞 {telDe(t)}</span>}{t.profesional && <span> · 🔪 {t.profesional}</span>}{fmtMonto(t.monto) && <span> · 💲 {fmtMonto(t.monto)}</span>}{t.notas && <span> · {t.notas}</span>}
                   </div>
                 </div>
                 {yaReg
@@ -370,7 +454,6 @@ export default function CirugiasPage() {
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {cirugiasFiltradas.map(c => {
             const est = ESTADOS[c.estado] || ESTADOS.realizada
-            const tutor = tutorDe(c)
             return (
               <div key={c.id} style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 12, padding: "14px 16px" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, flexWrap: "wrap" }}>
@@ -380,10 +463,12 @@ export default function CirugiasPage() {
                       <span style={{ marginLeft: 8, background: est.bg, color: est.color, border: `1px solid ${est.bd}`, borderRadius: 999, padding: "2px 9px", fontSize: 10.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: 0.3 }}>{est.label}</span>
                     </div>
                     <div style={{ fontSize: 12.5, color: "#64748b", marginTop: 3 }}>
-                      {c.pacientes ? <Link href={`/pacientes/${c.paciente_id}`} style={{ color: "#475569", fontWeight: 700, textDecoration: "none" }}>🐾 {c.pacientes.nombre}</Link> : "🐾 —"}
-                      {tutor && <span> · 👤 {tutor}</span>}
+                      {c.pacientes ? <Link href={`/pacientes/${c.paciente_id}`} style={{ color: "#475569", fontWeight: 700, textDecoration: "none" }}>🐾 {c.pacientes.nombre}</Link> : <>🐾 {nombrePac(c)}</>}
+                      {esExterno(c) && <span style={{ marginLeft: 6, background: "#faf5ff", color: "#7e22ce", fontSize: 9.5, fontWeight: 800, padding: "1px 6px", borderRadius: 999 }}>EXTERNO</span>}
+                      {propDe(c) && <span> · 👤 {propDe(c)}</span>}
                       <span> · 🗓 {fechaCorta(c.fecha)}</span>
                       {c.cirujano && <span> · 🔪 {c.cirujano}</span>}
+                      {fmtMonto(c.monto) && <span> · 💲 <b style={{ color: "#15803d" }}>{fmtMonto(c.monto)}</b></span>}
                     </div>
                   </div>
                   <div style={{ display: "flex", gap: 6 }}>
@@ -414,12 +499,21 @@ export default function CirugiasPage() {
             <p style={{ margin: "0 0 18px", fontSize: 13, color: "#64748b" }}>Se agenda para el <b style={{ textTransform: "capitalize" }}>{fechaLarga(fecha)}</b>. Aparece en el calendario y en Turnos.</p>
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               <div>
-                <label style={labelStyle}>Paciente *</label>
-                <ComboBox options={opcionesPaciente} value={formTurno.paciente_id} onChange={v => setFormTurno({ ...formTurno, paciente_id: v })} placeholder="Buscar por mascota, tutor o teléfono…" allowEmpty={false} />
+                <label style={labelStyle}>Paciente</label>
+                <ToggleExterno externo={formTurno.externo} onChange={v => setFormTurno({ ...formTurno, externo: v })} />
               </div>
-              <div>
-                <label style={labelStyle}>Hora</label>
-                <input type="time" value={formTurno.hora} onChange={e => setFormTurno({ ...formTurno, hora: e.target.value })} style={inputStyle} />
+              {formTurno.externo
+                ? <CamposExterno f={formTurno} upd={patch => setFormTurno({ ...formTurno, ...patch })} />
+                : <ComboBox options={opcionesPaciente} value={formTurno.paciente_id} onChange={v => setFormTurno({ ...formTurno, paciente_id: v })} placeholder="Buscar por mascota, tutor o teléfono…" allowEmpty={false} />}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <div>
+                  <label style={labelStyle}>Hora</label>
+                  <input type="time" value={formTurno.hora} onChange={e => setFormTurno({ ...formTurno, hora: e.target.value })} style={inputStyle} />
+                </div>
+                <div>
+                  <label style={labelStyle}>Monto (opcional)</label>
+                  <input type="number" min="0" value={formTurno.monto} onChange={e => setFormTurno({ ...formTurno, monto: e.target.value })} placeholder="$" style={inputStyle} />
+                </div>
               </div>
               <div>
                 <label style={labelStyle}>Cirujano</label>
@@ -445,8 +539,13 @@ export default function CirugiasPage() {
             <h2 style={{ margin: "0 0 18px", fontSize: 19, fontWeight: 800, color: "#1d1b12" }}>{formCirugia.id ? "Cirugía" : "Registrar cirugía"}</h2>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
               <div style={{ gridColumn: "1 / -1" }}>
-                <label style={labelStyle}>Paciente *</label>
-                <ComboBox options={opcionesPaciente} value={formCirugia.paciente_id} onChange={v => setFormCirugia({ ...formCirugia, paciente_id: v })} placeholder="Buscar por mascota, tutor o teléfono…" allowEmpty={false} />
+                <label style={labelStyle}>Paciente</label>
+                <ToggleExterno externo={formCirugia.externo} onChange={v => setFormCirugia({ ...formCirugia, externo: v })} />
+              </div>
+              <div style={{ gridColumn: "1 / -1" }}>
+                {formCirugia.externo
+                  ? <CamposExterno f={formCirugia} upd={patch => setFormCirugia({ ...formCirugia, ...patch })} />
+                  : <ComboBox options={opcionesPaciente} value={formCirugia.paciente_id} onChange={v => setFormCirugia({ ...formCirugia, paciente_id: v })} placeholder="Buscar por mascota, tutor o teléfono…" allowEmpty={false} />}
               </div>
               <div>
                 <label style={labelStyle}>Fecha</label>
@@ -457,6 +556,10 @@ export default function CirugiasPage() {
                 <select value={formCirugia.estado} onChange={e => setFormCirugia({ ...formCirugia, estado: e.target.value })} style={inputStyle}>
                   {Object.entries(ESTADOS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
                 </select>
+              </div>
+              <div>
+                <label style={labelStyle}>Monto (opcional)</label>
+                <input type="number" min="0" value={formCirugia.monto} onChange={e => setFormCirugia({ ...formCirugia, monto: e.target.value })} placeholder="$" style={inputStyle} />
               </div>
               <div style={{ gridColumn: "1 / -1" }}>
                 <label style={labelStyle}>Procedimiento *</label>
