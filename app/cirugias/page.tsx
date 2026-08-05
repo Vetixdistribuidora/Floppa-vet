@@ -151,6 +151,10 @@ export default function CirugiasPage() {
   const [cargando, setCargando] = useState(false)
   const [toast, setToast] = useState<any>(null)
   const [filtroPaciente, setFiltroPaciente] = useState("")
+  const [busqueda, setBusqueda] = useState("")
+  const [estadoFiltro, setEstadoFiltro] = useState("")
+  const [fDesde, setFDesde] = useState("")
+  const [fHasta, setFHasta] = useState("")
 
   // Precios del mes (nomenclador) — imágenes/PDF por organización
   const [orgId, setOrgId] = useState<string | null>(null)
@@ -343,13 +347,28 @@ export default function CirugiasPage() {
     setConfirmEliminar(null)
   }
 
-  const cirugiasFiltradas = cirugias.filter(c => !filtroPaciente || String(c.paciente_id) === filtroPaciente)
   const tutorDe = (x: any) => x.clientes ? `${x.clientes.nombre || ""} ${x.clientes.apellido || ""}`.trim() : ""
   const nombrePac = (x: any) => x.pacientes?.nombre || x.paciente_libre || "Paciente"
   const especiePac = (x: any) => x.pacientes?.especie || x.especie || ""
   const propDe = (x: any) => tutorDe(x) || `${x.propietario_nombre || ""} ${x.propietario_apellido || ""}`.trim()
   const telDe = (x: any) => x.clientes?.telefono || x.propietario_telefono || ""
   const esExterno = (x: any) => !x.paciente_id && !!(x.paciente_libre || x.propietario_nombre)
+
+  const hayFiltros = !!(busqueda.trim() || estadoFiltro || fDesde || fHasta || filtroPaciente)
+  const cirugiasFiltradas = cirugias.filter(c => {
+    if (filtroPaciente && String(c.paciente_id) !== filtroPaciente) return false
+    if (estadoFiltro && c.estado !== estadoFiltro) return false
+    if (fDesde && (c.fecha || "") < fDesde) return false
+    if (fHasta && (c.fecha || "") > fHasta) return false
+    if (busqueda.trim()) {
+      const q = busqueda.toLowerCase()
+      const campos = [nombrePac(c), propDe(c), c.procedimiento, c.cirujano, c.diagnostico, c.especie, c.raza, c.notas, c.hallazgos, telDe(c)]
+      if (!campos.some(v => (v || "").toString().toLowerCase().includes(q))) return false
+    }
+    return true
+  })
+  const pacienteFiltrado = pacientes.find(p => String(p.id) === filtroPaciente)
+  function limpiarFiltros() { setBusqueda(""); setEstadoFiltro(""); setFDesde(""); setFHasta(""); setFiltroPaciente("") }
 
   return (
     <div>
@@ -434,21 +453,49 @@ export default function CirugiasPage() {
         </div>
       )}
 
-      {/* Registro quirúrgico (cirugías realizadas) */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 12, flexWrap: "wrap" }}>
+      {/* Registro quirúrgico (buscador + lista) */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 10, flexWrap: "wrap" }}>
         <h3 style={{ fontSize: 15, fontWeight: 800, color: "#1d1b12", margin: 0 }}>Registro quirúrgico ({cirugiasFiltradas.length})</h3>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <select value={filtroPaciente} onChange={e => setFiltroPaciente(e.target.value)} style={{ ...inputStyle, width: "auto", padding: "8px 12px" }}>
-            <option value="">Todos los pacientes</option>
-            {pacientes.map(p => <option key={p.id} value={p.id}>{p.nombre}{p.especie ? ` (${p.especie})` : ""}</option>)}
-          </select>
-          <button onClick={abrirRegistroNuevo} style={{ background: "white", border: `1px solid ${MORADO}`, color: MORADO, borderRadius: 9, padding: "8px 14px", fontSize: 13, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>+ Registrar cirugía</button>
-        </div>
+        <button onClick={abrirRegistroNuevo} style={{ background: "white", border: `1px solid ${MORADO}`, color: MORADO, borderRadius: 9, padding: "8px 14px", fontSize: 13, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>+ Registrar cirugía</button>
       </div>
+
+      {/* Barra de búsqueda */}
+      <div style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 12, padding: "12px 14px", marginBottom: 14, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "flex-end" }}>
+        <div style={{ flex: 2, minWidth: 220 }}>
+          <label style={labelStyle}>Buscar</label>
+          <input value={busqueda} onChange={e => setBusqueda(e.target.value)} placeholder="Procedimiento, paciente, propietario, cirujano, diagnóstico…" style={inputStyle} />
+        </div>
+        <div style={{ flex: 1, minWidth: 130 }}>
+          <label style={labelStyle}>Estado</label>
+          <select value={estadoFiltro} onChange={e => setEstadoFiltro(e.target.value)} style={inputStyle}>
+            <option value="">Todos</option>
+            {Object.entries(ESTADOS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+          </select>
+        </div>
+        <div style={{ minWidth: 130 }}>
+          <label style={labelStyle}>Desde</label>
+          <input type="date" value={fDesde} onChange={e => setFDesde(e.target.value)} style={inputStyle} />
+        </div>
+        <div style={{ minWidth: 130 }}>
+          <label style={labelStyle}>Hasta</label>
+          <input type="date" value={fHasta} onChange={e => setFHasta(e.target.value)} style={inputStyle} />
+        </div>
+        {hayFiltros && (
+          <button onClick={limpiarFiltros} style={{ background: "#f1f5f9", border: "1px solid #e2e8f0", borderRadius: 9, padding: "9px 14px", fontSize: 13, fontWeight: 700, color: "#475569", cursor: "pointer", whiteSpace: "nowrap" }}>✕ Limpiar</button>
+        )}
+      </div>
+
+      {pacienteFiltrado && (
+        <div style={{ background: "#faf5ff", border: "1px solid #e9d5ff", borderRadius: 10, padding: "8px 14px", marginBottom: 12, fontSize: 13, color: "#7e22ce", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
+          <span>🔪 Cirugías de <b>{pacienteFiltrado.nombre}</b></span>
+          <button onClick={() => setFiltroPaciente("")} style={{ background: "transparent", border: "none", color: "#7e22ce", cursor: "pointer", fontWeight: 700, fontSize: 13 }}>Ver todas ✕</button>
+        </div>
+      )}
 
       {cirugiasFiltradas.length === 0 ? (
         <div style={{ textAlign: "center", padding: "34px 20px", color: "#94a3b8" }}>
-          <p style={{ fontWeight: 600, color: "#475569" }}>Todavía no hay cirugías registradas.</p>
+          <p style={{ fontWeight: 600, color: "#475569" }}>{hayFiltros ? "Sin resultados para la búsqueda." : "Todavía no hay cirugías registradas."}</p>
+          {hayFiltros && <button onClick={limpiarFiltros} style={{ marginTop: 8, background: "#f1f5f9", border: "1px solid #e2e8f0", borderRadius: 9, padding: "7px 14px", fontSize: 13, fontWeight: 700, color: "#475569", cursor: "pointer" }}>✕ Limpiar filtros</button>}
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
