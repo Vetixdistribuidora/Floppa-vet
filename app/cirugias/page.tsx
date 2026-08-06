@@ -4,7 +4,6 @@ import { useEffect, useState, useRef } from "react"
 import Link from "next/link"
 import { supabase } from "@/lib/supabase"
 import ComboBox from "@/components/ComboBox"
-import { useRol } from "@/lib/useRol"
 
 const MORADO = "#9333ea"
 const ESTADOS: Record<string, { label: string; bg: string; color: string; bd: string }> = {
@@ -141,7 +140,6 @@ function CamposExterno({ f, upd }: { f: any; upd: (patch: any) => void }) {
 }
 
 export default function CirugiasPage() {
-  const { esAdmin } = useRol()
   const [fecha, setFecha] = useState(hoyISO())
   const [mesAncla, setMesAncla] = useState(() => { const d = new Date(); d.setDate(1); return d })
   const [turnos, setTurnos] = useState<any[]>([])       // turnos tipo Cirugía del mes visible
@@ -520,7 +518,7 @@ export default function CirugiasPage() {
                   </div>
                   <div style={{ display: "flex", gap: 6 }}>
                     <button onClick={() => abrirEditarCirugia(c)} style={{ background: "#f1f5f9", border: "1px solid #e2e8f0", borderRadius: 7, padding: "6px 12px", fontSize: 12.5, color: "#475569", cursor: "pointer", fontWeight: 700 }}>✎ Ver / editar</button>
-                    {esAdmin && <button onClick={() => setConfirmEliminar(c)} title="Eliminar (solo admin)" style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 7, padding: "6px 10px", fontSize: 12.5, color: "#dc2626", cursor: "pointer" }}>🗑</button>}
+                    <button onClick={() => setConfirmEliminar(c)} title="Eliminar" style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 7, padding: "6px 10px", fontSize: 12.5, color: "#dc2626", cursor: "pointer" }}>🗑</button>
                   </div>
                 </div>
                 {(c.diagnostico || c.hallazgos || c.indicaciones || c.complicaciones) && (
