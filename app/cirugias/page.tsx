@@ -171,6 +171,7 @@ export default function CirugiasPage() {
   const [formCirugia, setFormCirugia] = useState<any>(cirugiaVacia())
   const [guardando, setGuardando] = useState(false)
   const [confirmEliminar, setConfirmEliminar] = useState<any>(null)
+  const [confirmBorrarTurno, setConfirmBorrarTurno] = useState<any>(null)
 
   function mostrar(m: string, t: "ok" | "error") { setToast({ mensaje: m, tipo: t }); setTimeout(() => setToast(null), 3000) }
 
@@ -337,6 +338,13 @@ export default function CirugiasPage() {
       setModalCirugia(false); cargar()
     } catch (e: any) { mostrar("Error: " + (e?.message || "desconocido"), "error") } finally { setGuardando(false) }
   }
+  async function eliminarTurno() {
+    if (!confirmBorrarTurno) return
+    const { error } = await supabase.from("turnos").delete().eq("id", confirmBorrarTurno.id)
+    if (error) mostrar("Error al eliminar el turno", "error")
+    else { mostrar("Cirugía agendada eliminada", "ok"); cargar() }
+    setConfirmBorrarTurno(null)
+  }
   async function eliminarCirugia() {
     if (!confirmEliminar) return
     const { error } = await supabase.from("cirugias").delete().eq("id", confirmEliminar.id)
@@ -445,6 +453,7 @@ export default function CirugiasPage() {
                   style={{ background: yaReg ? "#f1f5f9" : MORADO, color: yaReg ? "#475569" : "white", border: yaReg ? "1px solid #e2e8f0" : "none", borderRadius: 8, padding: "7px 14px", fontSize: 13, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>
                   {yaReg ? "Ver registro" : "Registrar cirugía"}
                 </button>
+                <button onClick={() => setConfirmBorrarTurno(t)} title="Eliminar cirugía agendada" style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 8, padding: "7px 10px", fontSize: 13, color: "#dc2626", cursor: "pointer" }}>🗑</button>
               </div>
             )
           })}
@@ -727,6 +736,24 @@ export default function CirugiasPage() {
           <div style={{ display: "flex", gap: 10 }}>
             <a href={lightbox} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()} style={{ background: "white", borderRadius: 9, padding: "9px 16px", fontSize: 13.5, fontWeight: 700, color: "#0e7490", textDecoration: "none" }}>🔍 Abrir original (zoom)</a>
             <button onClick={() => setLightbox(null)} style={{ background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 9, padding: "9px 16px", fontSize: 13.5, fontWeight: 700, color: "white", cursor: "pointer" }}>Cerrar ✕</button>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmar borrar turno de cirugía (agendada) */}
+      {confirmBorrarTurno && (
+        <div onClick={() => setConfirmBorrarTurno(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1200, padding: 20 }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: "white", borderRadius: 16, padding: "26px 28px", width: "100%", maxWidth: 400, textAlign: "center" }}>
+            <div style={{ fontSize: 34, marginBottom: 10 }}>🗑</div>
+            <p style={{ fontWeight: 700, color: "#1d1b12", marginBottom: 6 }}>¿Eliminar esta cirugía agendada?</p>
+            <p style={{ fontSize: 13, color: "#64748b", marginBottom: 20 }}>
+              Se quita del calendario y también del módulo Turnos.
+              {cirugiaPorTurno.get(Number(confirmBorrarTurno.id)) ? " El registro quirúrgico ya cargado se conserva (queda desvinculado del turno)." : ""}
+            </p>
+            <div style={{ display: "flex", justifyContent: "center", gap: 10 }}>
+              <button onClick={() => setConfirmBorrarTurno(null)} style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 9, padding: "9px 18px", fontWeight: 600, color: "#475569", cursor: "pointer" }}>Cancelar</button>
+              <button onClick={eliminarTurno} style={{ background: "#dc2626", border: "none", borderRadius: 9, padding: "9px 20px", fontWeight: 700, color: "white", cursor: "pointer" }}>Eliminar</button>
+            </div>
           </div>
         </div>
       )}
